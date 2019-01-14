@@ -11,7 +11,6 @@ function getChannelList () {
 }
 
 function crawlChannelList () {
-  getChannelList() // TODO: Remove
   setInterval(getChannelList, 1000 * 60 * 60) // 1 hour
 }
 
