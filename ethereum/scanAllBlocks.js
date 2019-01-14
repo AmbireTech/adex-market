@@ -9,7 +9,6 @@ function scanAllBlocks (provider) {
 
 function getTopicsFromInfo (info) {
   return info.transactionReceipts.map((r) => {
-    // eslint-disable-next-line no-unused-expressions
     if (r.logs[0]) {
       return r.logs[0].topics.slice(1).map(t => t)[0]
     }
