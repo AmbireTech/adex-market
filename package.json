@@ -1,0 +1,30 @@
+{
+  "name": "adex-ethereum-watcher",
+  "version": "0.0.1",
+  "description": "Tool that watches the Ethereum blockchain for OUTPACE channels",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index",
+    "dev-start": "nodemon index",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "adex",
+    "watcher"
+  ],
+  "author": "Smart Code OOD",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^6.2.0",
+    "ethers": "^4.0.18",
+    "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.10.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-node": "^8.0.0",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0"
+  }
+}
