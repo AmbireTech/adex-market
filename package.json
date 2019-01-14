@@ -1,7 +1,7 @@
 {
-  "name": "adex-ethereum-watcher",
+  "name": "adex-market",
   "version": "0.0.1",
-  "description": "Tool that watches the Ethereum blockchain for OUTPACE channels",
+  "description": "Adex Market",
   "main": "index.js",
   "scripts": {
     "start": "node index",
@@ -10,7 +10,8 @@
   },
   "keywords": [
     "adex",
-    "watcher"
+    "watcher",
+    "market"
   ],
   "author": "Smart Code OOD",
   "license": "MIT",

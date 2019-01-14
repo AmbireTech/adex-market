@@ -1,7 +1,5 @@
-require('dotenv').config()
-const provider = require('./ethereum/getProvider')
-const scanAllBlocks = require('./ethereum/scanAllBlocks')
-const crawlChannelList = require('./services/crawlChannelList')
+const ethereumWatcher = require('./ethereum-watcher')
+const provider = ethereumWatcher.provider
 
-scanAllBlocks(provider)
-crawlChannelList()
+ethereumWatcher.crawlChannelList()
+ethereumWatcher.scanAllBlocks(provider)

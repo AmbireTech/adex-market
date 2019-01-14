@@ -1,5 +1,4 @@
 # adex-market
 
-## Ethereum Watcher
-### .env
+## .env
 `ETHERSCAN_API_KEY` - API key for Etherscan
