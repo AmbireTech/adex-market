@@ -18,7 +18,8 @@
   "dependencies": {
     "dotenv": "^6.2.0",
     "ethers": "^4.0.18",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.5"
   },
   "devDependencies": {
     "eslint": "^5.10.0",

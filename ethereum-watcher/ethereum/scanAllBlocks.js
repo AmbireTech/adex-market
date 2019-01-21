@@ -1,15 +1,18 @@
-const getTransactionsInfo = require('./getTransactionsInfo')
+const getReceipts = require('./getTransactionsInfo')
 
 function scanAllBlocks (provider) {
-  getTransactionsInfo(provider)
-    .then((info) => {
-      console.log(getTopicsFromInfo(info))
+  getReceipts(provider)
+    .then((receiptsPromise) => {
+      Promise.all(receiptsPromise)
+        .then((receipts) => {
+          console.log(getTopicsFromReceipt(receipts))
+        })
     })
 }
 
-function getTopicsFromInfo (info) {
-  return info.transactionReceipts.map((r) => {
-    if (r.logs[0]) {
+function getTopicsFromReceipt (receipts) {
+  return receipts.map((r) => {
+    if (r && r.logs[0]) {
       return r.logs[0].topics.slice(1).map(t => t)[0]
     }
   })
