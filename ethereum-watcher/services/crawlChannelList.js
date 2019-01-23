@@ -3,20 +3,26 @@ const rp = require('request-promise-native')
 const convertToUsd = require('../cryptonator/convertToUsd').convertToUsd
 const db = require('../../db')
 
-function addChannelsToDb (channels) {
-  const channelsCol = db.getMongo().collection('channels')
+function addCampaignsAndValidatorsToDb (channels) {
+  const channelsCol = db.getMongo().collection('campaigns')
+  const validatorsCol = db.getMongo().collection('validators')
+
   const channelsToInsert = channels.map((c) => {
     return channelsCol.updateOne({ _id: c.id }, { $set: c }, { upsert: true })
   })
 
-  return Promise.all(channelsToInsert)
+  const validators = channels.reduce((valArr, c) => {
+    c.spec.validators.map((v) => {
+      valArr.push(v)
+    })
+    return valArr
+  }, [])
+
+  const validatorsToInsert = validators.map((v) => validatorsCol.updateOne({ _id: v.id }, { $set: v }, { upsert: true }))
+
+  return Promise.all(channelsToInsert, validatorsToInsert)
 }
 
-function sortByUsd (channels) {
-  return channels.sort((a, b) => a.depositInUSD > b.depositInUSD)
-}
-
-// TODO: Maybe add USD price during crawling so this is not executed every call
 function getChannelsSortedByUSD () {
   return getAllChannels()
     .then((channels) => {
@@ -28,13 +34,13 @@ function getChannelsSortedByUSD () {
           })
       })
       return Promise.all(channelsPromise).then((results) => {
-        return sortByUsd(results)
+        return results.sort((a, b) => b.depositInUSD - a.depositInUSD)
       })
     })
 }
 
 function getAllChannels () {
-  const channelsCol = db.getMongo().collection('channels')
+  const channelsCol = db.getMongo().collection('campaigns')
   return channelsCol.find().toArray().then((channels) => { return channels })
 }
 
@@ -52,7 +58,7 @@ function getChannelList () {
     if (err) {
       return console.error(err)
     }
-    addChannelsToDb(body.channels)
+    addCampaignsAndValidatorsToDb(body.channels)
       .then(() => {
         getAllChannels()
       })

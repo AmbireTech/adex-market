@@ -1,13 +1,14 @@
-const ethereumWatcher = require('./ethereum-watcher')
-const provider = ethereumWatcher.provider
+const watcher = require('./ethereum-watcher')
+
 const db = require('./db')
 
 db.connect().then(() => {
-  // TODO: Refactor so calls aren't this long, maybe use class
-  ethereumWatcher.crawlChannelList.crawlChannelList()
+  // De facto discovery loop, rename if necessary
+  watcher.crawlChannelList()
   // testing to see everything is ok
-  ethereumWatcher.crawlChannelList.filterChannelsByStatus('dead').then((res) => console.log(1, res))
-  ethereumWatcher.crawlChannelList.getChannelsSortedByUSD().then((res) => console.log(2, res))
-  ethereumWatcher.crawlChannelList.getAllChannels().then((res) => console.log(3, res))
-  ethereumWatcher.scanAllBlocks(provider)
+  watcher.filterChannelsByStatus('dead').then((res) => console.log(1, res))
+  watcher.filterChannelsByStatus('live').then((res) => console.log(1.5, res))
+  watcher.getChannelsSortedByUSD().then((res) => console.log(2, res))
+  watcher.getAllChannels().then((res) => console.log(3, res))
+  watcher.scanAllBlocks(watcher.provider)
 })
