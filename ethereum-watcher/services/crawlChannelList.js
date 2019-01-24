@@ -1,15 +1,10 @@
-const SENTRY_URL = require('../cfg').sentryUrl
+const initialValidators = require('../../cfg').initialValidators
 const rp = require('request-promise-native')
 const convertToUsd = require('../cryptonator/convertToUsd').convertToUsd
 const db = require('../../db')
 
-function addCampaignsAndValidatorsToDb (channels) {
-  const channelsCol = db.getMongo().collection('campaigns')
+function addValidatorsToDb (channels) {
   const validatorsCol = db.getMongo().collection('validators')
-
-  const channelsToInsert = channels.map((c) => {
-    return channelsCol.updateOne({ _id: c.id }, { $set: c }, { upsert: true })
-  })
 
   const validators = channels.reduce((valArr, c) => {
     c.spec.validators.map((v) => {
@@ -20,7 +15,17 @@ function addCampaignsAndValidatorsToDb (channels) {
 
   const validatorsToInsert = validators.map((v) => validatorsCol.updateOne({ _id: v.id }, { $set: v }, { upsert: true }))
 
-  return Promise.all(channelsToInsert, validatorsToInsert)
+  return Promise.all(validatorsToInsert)
+}
+
+function addCampaignsToDb (channels) {
+  const channelsCol = db.getMongo().collection('campaigns')
+
+  const channelsToInsert = channels.map((c) => {
+    return channelsCol.updateOne({ _id: c.id }, { $set: c }, { upsert: true })
+  })
+
+  return Promise.all(channelsToInsert)
 }
 
 function getChannelsSortedByUSD () {
@@ -54,14 +59,19 @@ function filterChannelsByStatus (status) {
 }
 
 function getChannelList () {
-  rp(`${SENTRY_URL}/channel/list`, { json: true }, (err, res, body) => {
-    if (err) {
-      return console.error(err)
-    }
-    addCampaignsAndValidatorsToDb(body.channels)
-      .then(() => {
-        getAllChannels()
-      })
+  initialValidators.map((v) => {
+    rp(`${v}/channel/list`, { json: true }, (err, res, body) => {
+      if (err) {
+        return console.error(err)
+      }
+      addCampaignsToDb(body.channels)
+        .then(() => {
+          addValidatorsToDb(body.channels)
+        })
+        .then(() => {
+          getAllChannels()
+        })
+    })
   })
 }
 
