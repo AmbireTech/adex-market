@@ -1,10 +1,21 @@
 const express = require('express')
 const db = require('../db')
+const getRequest = require('../helpers/getRequest')
 
 const router = express.Router()
 
 router.get('/', getCampaigns)
 router.get('/:id', getCampaignInfo)
+
+function getBalanceTree (validatorUrl, channelId) {
+  return getRequest(`${validatorUrl}/channel/${channelId}/tree`)
+    .then((res) => {
+      return res
+    })
+    .catch((err) => {
+      return err
+    })
+}
 
 function getCampaigns (req, res, next) {
   const limit = +req.query.limit || 100
@@ -31,7 +42,14 @@ function getCampaignInfo (req, res, next) {
     .find({ '_id': id })
     .toArray()
     .then((result) => {
-      res.send(result)
+      const validators = result[0].spec.validators
+      const leaderBalanceTree = getBalanceTree(validators[0].url, id)
+      const followerBalanceTree = getBalanceTree(validators[1].url, id)
+
+      Promise.all([leaderBalanceTree, followerBalanceTree])
+        .then((trees) => {
+          res.send({ leaderBalanceTree: trees[0], followerBalanceTree: trees[1] })
+        })
     })
 }
 
