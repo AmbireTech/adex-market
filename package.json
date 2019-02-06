@@ -20,6 +20,7 @@
     "dotenv": "^6.2.0",
     "ethers": "^4.0.18",
     "express": "^4.16.4",
+    "moment": "^2.24.0",
     "mongodb": "^3.1.12",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.5"

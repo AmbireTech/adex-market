@@ -1,18 +1,17 @@
-// Assuming validatorMessage object has properties:
-// type - "Heartbeat", "NewState" or "ApproveState"
-// timestamp - Unix timestamp, number of milliseconds elapsed since January 1, 1970, 00:00:00
-// isHealthy - boolean
-// Assuming campaign.validUntil is also Unix timestamp
-// Assuming period of recency of all types of validatorMessage is 2 minutes
-
 const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const cfg = require('../cfg')
 const util = require('util')
+const moment = require('moment')
+
+function isDateRecent (lastEvAggr) {
+  const date = new Date(lastEvAggr)
+  return moment().diff(date, new Date(Date.now())) <= cfg.recency
+}
 
 function reduceMessages (type, recent) {
   return (messages, m) => {
-    if (m.type === type && (!recent || Date.now() - m.timestamp <= cfg.recency)) {
+    if (m.type === type && (!recent || isDateRecent(m.lastEvAggr))) {
       messages.push(m)
     }
     return messages
@@ -21,7 +20,7 @@ function reduceMessages (type, recent) {
 
 function containsMessages (type, recent) {
   return (m) => {
-    return m.type === type && (!recent || Date.now() - m.timestamp <= cfg.recency)
+    return m.type === type && (!recent || isDateRecent(m.lastEvAggr))
   }
 }
 
@@ -55,11 +54,10 @@ function isDisconnected (messages) {
     const match = heartbeatMessagesFollower.some((h2) => {
       return util.isDeepStrictEqual(h1, h2)
     })
-
     if (match) matchingMessages++
   })
 
-  return matchingMessages < (totalMessages / 2)
+  return matchingMessages <= (totalMessages / 2)
 }
 
 function isInvalid (messages) {
@@ -106,7 +104,7 @@ function isActive (messages) {
   const recentNewStateLeader = messages[0].reduce(reduceMessages('NewState', true), [])
   const recentNewStateFollower = messages[1].reduce(reduceMessages('NewState', true), [])
   const approved = messages[1].reduce(getApproveStateMessage)
-  const isHealthy = approved.isHealthy
+  const isHealthy = approved ? approved.isHealthy : false
 
   if (recentHbLeader.length > 0 &&
       recentHbFollower.length > 0 &&
@@ -123,11 +121,15 @@ function isExhausted (campaign) {
 }
 
 function isExpired (campaign) {
-  return campaign.validUntil < Date.now()
+  return moment(new Date(Date.now())).isAfter(new Date(campaign.validUntil))
 }
 
 function getStatus (messages, campaign) {
-  if (isInitializing(messages)) {
+  if (isExhausted(campaign)) {
+    return 'Exhausted'
+  } else if (isExpired(campaign)) {
+    return 'Expired'
+  } else if (isInitializing(messages)) {
     return 'Initializing'
   } else if (isOffline(messages)) {
     return 'Offline'
@@ -141,10 +143,6 @@ function getStatus (messages, campaign) {
     return 'Ready'
   } else if (isActive(messages)) {
     return 'Active'
-  } else if (isExhausted(campaign)) {
-    return 'Exhausted'
-  } else if (isExpired(campaign)) {
-    return 'Expired'
   } else {
     return 'No status detected'
   }
@@ -167,6 +165,9 @@ function getValidatorMessagesOfCampaign (campaign) {
 }
 
 function queryValidators () {
+  console.log(getStatus(disconnectedValidator1, expiredCampaign))
+  // console.log(getStatus(disconnectedValidator2))
+
   db.getMongo().collection('campaigns')
     .find()
     .toArray()
