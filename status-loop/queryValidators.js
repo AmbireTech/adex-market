@@ -165,9 +165,6 @@ function getValidatorMessagesOfCampaign (campaign) {
 }
 
 function queryValidators () {
-  console.log(getStatus(disconnectedValidator1, expiredCampaign))
-  // console.log(getStatus(disconnectedValidator2))
-
   db.getMongo().collection('campaigns')
     .find()
     .toArray()
