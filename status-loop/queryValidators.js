@@ -4,14 +4,15 @@ const cfg = require('../cfg')
 const util = require('util')
 const moment = require('moment')
 
-function isDateRecent (lastEvAggr) {
-  const date = new Date(lastEvAggr)
+function isDateRecent (timestamp) {
+  const date = new Date(timestamp)
   return moment().diff(date, new Date(Date.now())) <= cfg.recency
 }
 
 function reduceMessages (type, recent) {
   return (messages, m) => {
-    if (m.type === type && (!recent || isDateRecent(m.lastEvAggr))) {
+    const timestamp = m.lastEvAggr || m.timestamp
+    if (m.type === type && (!recent || isDateRecent(timestamp))) {
       messages.push(m)
     }
     return messages
@@ -20,7 +21,8 @@ function reduceMessages (type, recent) {
 
 function containsMessages (type, recent) {
   return (m) => {
-    return m.type === type && (!recent || isDateRecent(m.lastEvAggr))
+    const timestamp = m.lastEvAggr || m.timestamp
+    return m.type === type && (!recent || isDateRecent(timestamp))
   }
 }
 
@@ -116,19 +118,20 @@ function isActive (messages) {
   return false
 }
 
-function isExhausted (campaign) {
-// TODO
+function isExhausted (campaign, balanceTree) {
+  const totalBalances = Object.keys(balanceTree).reduce((total, current) => total + current, 0)
+  return totalBalances >= campaign.depositAmount
 }
 
 function isExpired (campaign) {
   return moment(new Date(Date.now())).isAfter(new Date(campaign.validUntil))
 }
 
-function getStatus (messages, campaign) {
-  if (isExhausted(campaign)) {
-    return 'Exhausted'
-  } else if (isExpired(campaign)) {
+function getStatus (messages, campaign, balanceTree) {
+  if (isExpired(campaign)) {
     return 'Expired'
+  } else if (isExhausted(campaign, balanceTree)) {
+    return 'Exhausted'
   } else if (isInitializing(messages)) {
     return 'Initializing'
   } else if (isOffline(messages)) {
@@ -151,16 +154,15 @@ function getStatus (messages, campaign) {
 function getValidatorMessagesOfCampaign (campaign) {
   const validators = campaign.spec.validators
 
-  const valResults = validators.map((v) => {
-    return getRequest(`${v.url}/channel/${v.id}/validator-messages`)
-      .then((result) => {
-        return result.validatorMessages
-      })
-  })
+  const leaderPromise = getRequest(`${validators[0].url}/channel/${validators[0].id}/validator-messages`)
+  const followerPromise = getRequest(`${validators[1].url}/channel/${validators[1].id}/validator-messages`)
+  const treePromise = getRequest(`${validators[0].url}/channel/${campaign.id}/tree`)
 
-  return Promise.all(valResults)
+  return Promise.all([leaderPromise, followerPromise, treePromise])
     .then((result) => {
-      return getStatus(result, campaign)
+      const messages = [result[0].validatorMessages, result[1].validatorMessages]
+      const balanceTree = result[2].balances
+      return getStatus(messages, campaign, balanceTree)
     })
 }
 
