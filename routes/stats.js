@@ -11,15 +11,26 @@ function getActiveUsers (users, role) {
 }
 
 function getAnonUsers (campaigns, users) {
-  campaigns.map((c) => {
-    getRequest(`${c.spec.validators[0].url}/channels/${c.id}/tree`)
-      .then((result) => {
-        // TODO:
-        // check result.balances for users
-        // check if each user exists in users
-        // if not add him as anon to his according role
+  const usersCol = db.getMongo().collection('users')
+
+  return usersCol.find()
+    .then((result) => {
+      const users = result[0].reduce((usernames, u) => {
+        usernames.push(u.id)
+        return usernames
+      }, [])
+      const allUsersInCampaign = campaigns.map((c) => {
+        getRequest(`${c.spec.validators[0].url}/channels/${c.id}/tree`)
+          .then((result) => {
+            return Object.keys(result.balances)
+          })
       })
-  })
+
+      return Promise.all(allUsersInCampaign)
+        .then((allUsers) => {
+          return allUsers.filter((u) => !users.includes(u))
+        })
+    })
 }
 
 function getData () {

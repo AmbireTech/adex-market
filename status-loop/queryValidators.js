@@ -26,42 +26,42 @@ function containsMessages (type, recent) {
   }
 }
 
-function getApproveStateMessage (arr, m) {
-  if (m.type === 'ApproveState') {
-    return m
-  }
+function getApproveStateMessage (message) {
+  return message.type === 'ApproveState'
 }
 
+// there are no messages at all for at least one validator
 function isInitializing (messages) {
   return messages.some((m) => {
     return m.length === 0
   })
 }
 
+// at least one validator doesn't have a recent Heartbeat message
 function isOffline (messages) {
   return messages.some((m) => {
-    const heartbeatMessages = m.reduce(reduceMessages('Heartbeat', true), [])
-    return heartbeatMessages.length === 0
+    return m.reduce(reduceMessages('Heartbeat', true), []).length === 0
   })
 }
 
+// validators have recent Heartbeat messages, but they don't seem to be propagating messages between one another (the majority of Heartbeats are not found on both validators)
 function isDisconnected (messages) {
   const heartbeatMessagesLeader = messages[0].reduce(reduceMessages('Heartbeat', false), [])
   const heartbeatMessagesFollower = messages[1].reduce(reduceMessages('Heartbeat', false), [])
 
   const totalMessages = heartbeatMessagesLeader.length
-  let matchingMessages = 0
 
-  heartbeatMessagesLeader.map((h1) => {
+  let matchingMessages = heartbeatMessagesLeader.filter((h1) => {
     const match = heartbeatMessagesFollower.some((h2) => {
       return util.isDeepStrictEqual(h1, h2)
     })
-    if (match) matchingMessages++
-  })
+    return match
+  }).length
 
   return matchingMessages <= (totalMessages / 2)
 }
 
+// there are recent NewState messages, but the follower does not issue or propagate ApproveState
 function isInvalid (messages) {
   const recentNewStateLeader = messages[0].some(containsMessages('NewState', true))
   const recentNewStateFollower = messages[1].some(containsMessages('NewState', true))
@@ -73,21 +73,20 @@ function isInvalid (messages) {
   return false
 }
 
+// there are recent NewState and ApproveState, but the ApproveState reports unhealthy
 function isUnhealthy (messages) {
   const recentNewStateLeader = messages[0].some(containsMessages('NewState', true))
   const recentNewStateFollower = messages[1].some(containsMessages('NewState', true))
   const followerPropagatesApproveState = messages[1].some(containsMessages('ApproveState', false))
 
   if (recentNewStateLeader && recentNewStateFollower && followerPropagatesApproveState) {
-    const approved = messages[1].reduce(getApproveStateMessage)
+    const approved = messages[1].filter(getApproveStateMessage)
 
-    if (!approved.isHealthy) {
-      return true
-    }
-    return false
+    return !approved.isHealthy
   }
 }
 
+// both validators have a recent Heartbeat but a NewState has never been emitted
 function isReady (messages) {
   const recentHbLeader = messages[0].reduce(reduceMessages('Heartbeat', true), [])
   const recentHbFollower = messages[1].reduce(reduceMessages('Heartbeat', true), [])
@@ -100,12 +99,13 @@ function isReady (messages) {
   return false
 }
 
+// there are recent NewState, ApproveState and Heartbeat's, and the ApproveState reports healthy
 function isActive (messages) {
   const recentHbLeader = messages[0].reduce(reduceMessages('Heartbeat', true), [])
   const recentHbFollower = messages[1].reduce(reduceMessages('Heartbeat', true), [])
   const recentNewStateLeader = messages[0].reduce(reduceMessages('NewState', true), [])
   const recentNewStateFollower = messages[1].reduce(reduceMessages('NewState', true), [])
-  const approved = messages[1].reduce(getApproveStateMessage)
+  const approved = messages[1].filter(getApproveStateMessage)
   const isHealthy = approved ? approved.isHealthy : false
 
   if (recentHbLeader.length > 0 &&
@@ -118,11 +118,13 @@ function isActive (messages) {
   return false
 }
 
+// all of the funds in the channel have been distributed
 function isExhausted (campaign, balanceTree) {
   const totalBalances = Object.keys(balanceTree).reduce((total, current) => total + current, 0)
   return totalBalances >= campaign.depositAmount
 }
 
+// the channel is expired
 function isExpired (campaign) {
   return moment(new Date(Date.now())).isAfter(new Date(campaign.validUntil))
 }
@@ -151,6 +153,16 @@ function getStatus (messages, campaign, balanceTree) {
   }
 }
 
+function updateStatus (campaign, status) {
+  const campaignCol = db.getMongo().collection('campaigns')
+
+  return campaignCol.findOneAndUpdate(
+    { _id: campaign._id },
+    { $set:
+      { status: status }
+    })
+}
+
 function getValidatorMessagesOfCampaign (campaign) {
   const validators = campaign.spec.validators
 
@@ -174,7 +186,8 @@ function queryValidators () {
       campaigns.map((c) => {
         getValidatorMessagesOfCampaign(c)
           .then((status) => {
-            console.log('Status ===', status)
+            const statusObj = { name: status, lastChecked: new Date().toISOString() }
+            return updateStatus(c, statusObj)
           })
       })
     })

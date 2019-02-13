@@ -1,6 +1,6 @@
 const initialValidators = require('../../cfg').initialValidators
 const rp = require('request-promise-native')
-const convertToUsd = require('../cryptonator/convertToUsd').convertToUsd
+// const convertToUsd = require('adex-currency-converter')
 const db = require('../../db')
 
 function addValidatorsToDb (channels) {
@@ -28,21 +28,21 @@ function addCampaignsToDb (channels) {
   return Promise.all(channelsToInsert)
 }
 
-function getChannelsSortedByUSD () {
-  return getAllChannels()
-    .then((channels) => {
-      const channelsPromise = channels.map((c) => {
-        return convertToUsd(c.depositAsset, c.depositAmount)
-          .then((res) => {
-            c['depositInUSD'] = res
-            return c
-          })
-      })
-      return Promise.all(channelsPromise).then((results) => {
-        return results.sort((a, b) => b.depositInUSD - a.depositInUSD)
-      })
-    })
-}
+// function getChannelsSortedByUSD () {
+//   return getAllChannels()
+//     .then((channels) => {
+//       const channelsPromise = channels.map((c) => {
+//         return convertToUsd(c.depositAsset, c.depositAmount)
+//           .then((res) => {
+//             c['depositInUSD'] = res
+//             return c
+//           })
+//       })
+//       return Promise.all(channelsPromise).then((results) => {
+//         return results.sort((a, b) => b.depositInUSD - a.depositInUSD)
+//       })
+//     })
+// }
 
 function getAllChannels () {
   const channelsCol = db.getMongo().collection('campaigns')
@@ -80,4 +80,4 @@ function crawlChannelList () {
   setInterval(getChannelList, 1000 * 60 * 60) // 1 hour
 }
 
-module.exports = { crawlChannelList, getAllChannels, getChannelsSortedByUSD, filterChannelsByStatus }
+module.exports = { crawlChannelList, getAllChannels, filterChannelsByStatus }
