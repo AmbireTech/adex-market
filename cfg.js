@@ -3,5 +3,6 @@ module.exports = {
   discoverValidators: {
     'enabled': true
   },
-  recency: 1000 * 60 * 2 // TODO: Add seperate for heartbeat, newState and approveState if needed
+  recency: 1000 * 60 * 2, // 2 min TODO: Add seperate for heartbeat, newState and approveState if needed
+  statusLoopTick: 1000 * 60 // 1 min
 }

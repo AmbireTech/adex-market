@@ -1,6 +1,5 @@
 const express = require('express')
 const bodyParser = require('body-parser')
-const watcher = require('./ethereum-watcher')
 const queryValidators = require('./status-loop/queryValidators')
 const campaignsRoutes = require('./routes/campaigns')
 const statsRoutes = require('./routes/stats')
@@ -19,14 +18,7 @@ app.use('/validators', validatorsRoutes)
 
 db.connect()
   .then(() => {
-  // De facto discovery loop, rename if necessary
-    watcher.crawlChannelList()
     queryValidators()
-    // testing to see everything is ok
-    // watcher.filterChannelsByStatus('dead').then((res) => console.log(1, res))
-    // watcher.filterChannelsByStatus('live').then((res) => console.log(1.5, res))
-    // watcher.getChannelsSortedByUSD().then((res) => console.log(2, res))
-    // watcher.getAllChannels().then((res) => console.log(3, res))
   })
   .then(() => {
     app.listen(port, () => console.log(`Magic happens on ${port}`))
