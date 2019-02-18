@@ -1,6 +1,6 @@
 const express = require('express')
 const bodyParser = require('body-parser')
-const queryValidators = require('./status-loop/queryValidators')
+const statusLoop = require('./status-loop/queryValidators')
 const campaignsRoutes = require('./routes/campaigns')
 const statsRoutes = require('./routes/stats')
 const usersRoutes = require('./routes/users')
@@ -17,9 +17,9 @@ app.use('/users', usersRoutes)
 app.use('/validators', validatorsRoutes)
 
 db.connect()
-  .then(() => {
-    queryValidators()
-  })
-  .then(() => {
-    app.listen(port, () => console.log(`Magic happens on ${port}`))
-  })
+	.then(() => {
+		statusLoop()
+	})
+	.then(() => {
+		app.listen(port, () => console.log(`Magic happens on ${port}`))
+	})
