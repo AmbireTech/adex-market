@@ -22,9 +22,8 @@ function getStatus (messages, campaign, balanceTree) {
 		return 'Ready'
 	} else if (isActive(messages)) {
 		return 'Active'
-	} else {
-		return 'No status detected'
 	}
+	return 'No status detected'
 }
 
 function updateStatus (campaign, status) {

@@ -11,25 +11,16 @@ function getActiveUsers (users, role) {
 }
 
 function getAnonUsers (campaigns, users) {
-	const usersCol = db.getMongo().collection('users')
-
-	return usersCol.find()
-		.then((result) => {
-			const users = result[0].reduce((usernames, u) => {
-				usernames.push(u.id)
-				return usernames
-			}, [])
-			const allUsersInCampaign = campaigns.map((c) => {
-				getRequest(`${c.spec.validators[0].url}/channels/${c.id}/tree`)
-					.then((result) => {
-						return Object.keys(result.balances)
-					})
+	const allUsersInCampaign = campaigns.map((c) => {
+		getRequest(`${c.spec.validators[0].url}/channels/${c.id}/tree`)
+			.then((result) => {
+				return Object.keys(result.balances)
 			})
+	})
 
-			return Promise.all(allUsersInCampaign)
-				.then((allUsers) => {
-					return allUsers.filter((u) => !users.includes(u))
-				})
+	return Promise.all(allUsersInCampaign)
+		.then((allUsers) => {
+			return allUsers.filter((u) => !users.includes(u))
 		})
 }
 
@@ -70,25 +61,27 @@ function getStats (req, res, next) {
 			const users = result[0]
 			const campaigns = result[1]
 
-			output.publisherCount = getActiveUsers(users, 'publisher')
-			output.advertiserCount = getActiveUsers(users, 'advertiser')
+			getAnonUsers(campaigns, users)
+				.then((anons) => {
+					output.publisherCount = getActiveUsers(users, 'publisher')
+					output.advertiserCount = getActiveUsers(users, 'advertiser')
+					output.campaignCount = campaigns.length
+					output.anonUsers = anons
 
-			// getAnonUsers(campaigns, users)
-			output.campaignCount = campaigns.length
+					campaigns.map((c) => {
+						if (!output.campaignsByStatus[c.status]) {
+							output.campaignsByStatus[c.status] = 1
+						}
+						if (!output.totalSpentFundsByAssetType[c.depositAsset]) {
+							output.totalSpentFundsByAssetType[c.depositAsset] = c.depositAmount
+						}
 
-			campaigns.map((c) => {
-				if (!output.campaignsByStatus[c.status]) {
-					output.campaignsByStatus[c.status] = 1
-				}
-				if (!output.totalSpentFundsByAssetType[c.depositAsset]) {
-					output.totalSpentFundsByAssetType[c.depositAsset] = c.depositAmount
-				}
+						output.totalSpentFundsByAssetType[c.depositAsset] += c.depositAmount
+						output.campaignsByStatus[c.status]++
+					})
 
-				output.totalSpentFundsByAssetType[c.depositAsset] += c.depositAmount
-				output.campaignsByStatus[c.status]++
-			})
-
-			res.send(output)
+					res.send(output)
+				})
 		})
 }
 
