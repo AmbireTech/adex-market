@@ -10,7 +10,7 @@ function getActiveUsers (users, role) {
 	return users.filter((u) => u.role === role).length
 }
 
-function getAnonUsers (campaigns, users) {
+function getAnonPublishers (campaigns, users) {
 	const allUsersInCampaign = campaigns.map((c) => {
 		getRequest(`${c.spec.validators[0].url}/channels/${c.id}/tree`)
 			.then((result) => {
@@ -22,6 +22,15 @@ function getAnonUsers (campaigns, users) {
 		.then((allUsers) => {
 			return allUsers.filter((u) => !users.includes(u))
 		})
+}
+
+function getAnonAdvertisers (campaigns, users) {
+	const creators = campaigns.reduce((all, c) => {
+		all.push(c.creator)
+		return all
+	}, [])
+
+	return creators.filter((c) => !users.includes(c))
 }
 
 function getData () {
@@ -61,12 +70,13 @@ function getStats (req, res, next) {
 			const users = result[0]
 			const campaigns = result[1]
 
-			getAnonUsers(campaigns, users)
-				.then((anons) => {
+			getAnonPublishers(campaigns, users)
+				.then((anonPublishers) => {
 					output.publisherCount = getActiveUsers(users, 'publisher')
 					output.advertiserCount = getActiveUsers(users, 'advertiser')
 					output.campaignCount = campaigns.length
-					output.anonUsers = anons
+					output.anonPublishers = anonPublishers
+					output.anonAdvertisers = getAnonAdvertisers(campaigns, users)
 
 					campaigns.map((c) => {
 						if (!output.campaignsByStatus[c.status]) {
