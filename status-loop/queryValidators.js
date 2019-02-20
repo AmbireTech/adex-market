@@ -45,6 +45,7 @@ function getValidatorMessagesOfCampaign (campaign) {
 
 	return Promise.all([leaderPromise, followerPromise, treePromise])
 		.then((result) => {
+			console.log(result)
 			const messages = [result[0].validatorMessages, result[1].validatorMessages]
 			const balanceTree = result[2].balances
 			return getStatus(messages, campaign, balanceTree)
