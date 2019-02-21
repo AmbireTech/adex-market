@@ -1,14 +1,8 @@
-const rp = require('request-promise-native')
-
-const options = {
-	headers: {
-		'User-Agent': 'Request-Promise'
-	},
-	json: true
-}
+const fetch = require('node-fetch')
 
 function getRequest (uri) {
-	return rp(uri, options)
+	return fetch(uri)
+		.then(res => res.json())
 }
 
 module.exports = getRequest
