@@ -1,6 +1,7 @@
 const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const cfg = require('../cfg')
+const updateStatus = require('./updateStatus')
 const { isInitializing, isOffline, isDisconnected, isInvalid, isUnhealthy, isReady, isActive, isExhausted, isExpired } = require('../lib/getStatus')
 
 function getStatus (messages, campaign, balanceTree) {
@@ -26,15 +27,7 @@ function getStatus (messages, campaign, balanceTree) {
 	return 'No status detected'
 }
 
-function updateStatus (campaign, status) {
-	const campaignCol = db.getMongo().collection('campaigns')
 
-	return campaignCol.findOneAndUpdate(
-		{ _id: campaign._id },
-		{ $set:
-      { status: status }
-		})
-}
 
 function getValidatorMessagesOfCampaign (campaign) {
 	const validators = campaign.spec.validators
