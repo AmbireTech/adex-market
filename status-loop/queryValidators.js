@@ -27,8 +27,6 @@ function getStatus (messages, campaign, balanceTree) {
 	return 'No status detected'
 }
 
-
-
 function getValidatorMessagesOfCampaign (campaign) {
 	const validators = campaign.spec.validators
 
