@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index",
     "dev-start": "nodemon index",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/index.js"
   },
   "keywords": [
     "adex",
@@ -20,8 +20,8 @@
     "dotenv": "^6.2.0",
     "ethers": "^4.0.18",
     "express": "^4.16.4",
-    "moment": "^2.24.0",
     "mongodb": "^3.1.12",
+    "node-fetch": "^2.3.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.5"
   },
@@ -31,6 +31,7 @@
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-node": "^8.0.0",
     "eslint-plugin-promise": "^4.0.1",
-    "eslint-plugin-standard": "^4.0.0"
+    "eslint-plugin-standard": "^4.0.0",
+    "tape": "^4.10.1"
   }
 }
