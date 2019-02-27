@@ -4,24 +4,24 @@ const cfg = require('../cfg')
 const updateStatus = require('./updateStatus')
 const { isInitializing, isOffline, isDisconnected, isInvalid, isUnhealthy, isReady, isActive, isExhausted, isExpired } = require('../lib/getStatus')
 
-function getStatus (messages, campaign, balanceTree) {
+function getStatus (messagesFromAll, campaign, balanceTree) {
 	if (isExpired(campaign)) {
 		return 'Expired'
 	} else if (isExhausted(campaign, balanceTree)) {
 		return 'Exhausted'
-	} else if (isInitializing(messages)) {
+	} else if (isInitializing(messagesFromAll)) {
 		return 'Initializing'
-	} else if (isOffline(messages)) {
+	} else if (isOffline(messagesFromAll)) {
 		return 'Offline'
-	} else if (isDisconnected(messages)) {
+	} else if (isDisconnected(messagesFromAll)) {
 		return 'Disconnected'
-	} else if (isInvalid(messages)) {
+	} else if (isInvalid(messagesFromAll)) {
 		return 'Invalid'
-	} else if (isUnhealthy(messages)) {
+	} else if (isUnhealthy(messagesFromAll)) {
 		return 'Unhealthy'
-	} else if (isReady(messages)) {
+	} else if (isReady(messagesFromAll)) {
 		return 'Ready'
-	} else if (isActive(messages)) {
+	} else if (isActive(messagesFromAll)) {
 		return 'Active'
 	}
 	return 'No status detected'
@@ -36,9 +36,9 @@ function getValidatorMessagesOfCampaign (campaign) {
 
 	return Promise.all([leaderPromise, followerPromise, treePromise])
 		.then((result) => {
-			const messages = [result[0].validatorMessages, result[1].validatorMessages]
+			const messagesFromAll = [result[0].validatorMessages, result[1].validatorMessages]
 			const balanceTree = result[2].balances
-			return getStatus(messages, campaign, balanceTree)
+			return getStatus(messagesFromAll, campaign, balanceTree)
 		})
 }
 
