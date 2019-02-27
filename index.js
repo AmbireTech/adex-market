@@ -1,6 +1,6 @@
 const express = require('express')
 const bodyParser = require('body-parser')
-const statusLoop = require('./status-loop/queryValidators')
+const startStatusLoop = require('./status-loop/queryValidators')
 const campaignsRoutes = require('./routes/campaigns')
 const statsRoutes = require('./routes/stats')
 const usersRoutes = require('./routes/users')
@@ -18,7 +18,7 @@ app.use('/validators', validatorsRoutes)
 
 db.connect()
 	.then(() => {
-		statusLoop()
+		startStatusLoop()
 	})
 	.then(() => {
 		app.listen(port, () => console.log(`Magic happens on ${port}`))

@@ -58,9 +58,9 @@ function queryValidators () {
 		})
 }
 
-function statusLoop () {
+function startStatusLoop () {
 	queryValidators()
 	setInterval(queryValidators, cfg.statusLoopTick)
 }
 
-module.exports = statusLoop
+module.exports = startStatusLoop
