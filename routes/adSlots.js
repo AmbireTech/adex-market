@@ -1,12 +1,13 @@
 const express = require('express')
 const db = require('../db')
 const ipfs = require('../helpers/ipfs')
+const { adSlotValidator } = require('../helpers/validators')
 
 const router = express.Router()
 
 router.get('/', getAdSlots)
 router.get('/:id', getAdSlotById)
-router.post('/', postAdSlot)
+router.post('/', adSlotValidator, postAdSlot)
 
 function getAdSlots (req, res, next) {
 	const user = req.user

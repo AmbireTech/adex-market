@@ -12,12 +12,14 @@ const adSlotsRoutes = require('./routes/adSlots')
 const adUnitsRoutes = require('./routes/adUnits')
 const mediaRoutes = require('./routes/media')
 const authRoutes = require('./routes/auth')
+const expressValidator = require('express-validator')
 
 const app = express()
 const db = require('./db')
 const port = process.env.PORT || 3012
 
 app.use(bodyParser.json())
+app.use(expressValidator())
 app.use('/campaigns', campaignsRoutes)
 app.use('/stats', statsRoutes)
 app.use('/users', usersRoutes)
