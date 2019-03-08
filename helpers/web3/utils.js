@@ -17,6 +17,7 @@ const getAddrFromPersonalSignedMsg = ({ signature, hash, msg, prefixed = false }
 			user = web3.eth.accounts.recover(recoverFrom, signature, prefixed)
 			return resolve(user)
 		} catch (err) {
+			console.log('err with getting signature')
 			return reject(err)
 		}
 	})
@@ -25,7 +26,6 @@ const getAddrFromPersonalSignedMsg = ({ signature, hash, msg, prefixed = false }
 const getAddrFromEipTypedSignedMsg = ({ signature, typedData }) => {
 	return new Promise((resolve, reject) => {
 		let user
-
 		try {
 			user = sigUtil.recoverTypedSignature({
 				data: typedData,
@@ -67,7 +67,7 @@ const getAddrFromTrezorSignedMsg = ({ signature, hash }) => {
 
 // TODO Figure out what to do with typedData
 const getAddrFromSignedMsg = ({ mode, signature, hash, typedData, msg }) => {
-	console.log('mode', mode)
+	console.log(mode, signature, hash, typedData, msg)
 	switch (mode) {
 	case SIGN_TYPES.EthPersonal.id:
 		// Ledger

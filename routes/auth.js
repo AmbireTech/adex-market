@@ -11,18 +11,15 @@ router.post('/', authUser)
 
 function callToContract (identity) {
 	const identityContract = web3.eth.Contract(identityAbi, identity)
-	const privileges = identityContract.privileges.call()
-	return privileges
+	return identityContract.methods.privileges.call()
 }
 
 function authUser (req, res, next) {
-	const { identity, mode, signature, authToken, hash } = req.body
-
-	return getAddrFromSignedMsg({ mode, signature, hash, msg: authToken })
+	const { identity, mode, signature, authToken, hash, typedData } = req.body
+	return getAddrFromSignedMsg({ mode: mode, signature: signature, hash: hash, typedData: typedData, msg: authToken })
 		.then((recoveredAddr) => {
 			recoveredAddr = recoveredAddr.toLowerCase()
-			console.log('recoveredAddr', recoveredAddr)
-			return callToContract()
+			return callToContract(identity)
 				.then((res) => {
 					let expiryTime = Date.now() + cfg.expiryTime
 
