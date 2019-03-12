@@ -2,6 +2,7 @@ const express = require('express')
 const db = require('../db')
 const ipfs = require('../helpers/ipfs')
 const { adSlotValidator } = require('../helpers/validators')
+const ObjectId = require('mongodb').ObjectId
 
 const router = express.Router()
 
@@ -31,29 +32,25 @@ function getAdSlotById (req, res, next) {
 	const adSlotsCol = db.getMongo().collection('adSlots')
 
 	return adSlotsCol
-		.findOne({ _id: id, owner: user })
-		.then((res) => {
-			res.send(res)
+		.findOne({ _id: ObjectId(id), owner: user })
+		.then((result) => {
+			res.send(result)
 		})
 }
 
 function postAdSlot (req, res, next) {
-	const { _meta, type, fallbackTargetUrl, tags } = req.body
+	const { type, fallbackMediaUrl, fallbackTargetUrl, tags } = req.body
 	const user = req.user
 	const adSlotsCol = db.getMongo().collection('adSlots')
+	const adSlot = { type, fallbackTargetUrl, tags, fallbackMediaUrl, owner: user }
 
-	return ipfs.addFileToIpfs(_meta)
-		.then((ipfsHash) => {
-			const adSlot = { type, fallbackTargetUrl, tags, fallbackMediaUrl: ipfsHash, owner: user }
-
-			return adSlotsCol.insertOne(adSlot, (err, res) => {
-				if (err) {
-					console.error(new Error('Error adding adSlot', err))
-					return Promise.reject(err)
-				}
-				return Promise.resolve(res)
-			})
-		})
+	return adSlotsCol.insertOne(adSlot, (err, result) => {
+		if (err) {
+			console.error(new Error('Error adding adSlot', err))
+			return res.status(403).send()
+		}
+		return res.send(adSlot)
+	})
 }
 
 module.exports = router

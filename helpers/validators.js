@@ -6,6 +6,12 @@ function isUrl (s) {
 	return regexp.test(s)
 }
 
+function isIpfsUrl (s) {
+	// eslint-disable-next-line no-useless-escape
+	var regexp = /(ipfs):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/
+	return regexp.test(s)
+}
+
 function validateTags (tags) {
 	if (typeof tags !== 'object') {
 		return false
@@ -31,25 +37,27 @@ function validateTags (tags) {
 }
 
 function adUnitValidator (req, res, next) {
-	const { type, targetUrl, targetingTag, tags } = req.body
-	const isTypeOk = !types.includes(type)
+	const { type, mediaUrl, targetUrl, targeting, tags } = req.body
+	const isTypeOk = types.includes(type)
 	const isUrlOk = isUrl(targetUrl)
-	const isTargetingOk = targetingTag ? validateTags(targetingTag) : true // because it's optional
+	const isTargetingOk = targeting ? validateTags(targeting) : true // because it's optional
 	const areTagsOk = validateTags(tags)
+	const isMediaUrlOk = isIpfsUrl(mediaUrl)
 
-	if (isTypeOk && isUrlOk && isTargetingOk && areTagsOk) {
+	if (isTypeOk && isUrlOk && isTargetingOk && areTagsOk && isMediaUrlOk) {
 		return next()
 	}
 	return res.status(403).send('invalid data')
 }
 
 function adSlotValidator (req, res, next) {
-	const { type, fallbackTargetUrl, tags } = req.body
-	const isTypeOk = !types.includes(type)
+	const { type, fallbackMediaUrl, fallbackTargetUrl, tags } = req.body
+	const isTypeOk = types.includes(type)
+	const isMediaUrlOk = isIpfsUrl(fallbackMediaUrl)
 	const isUrlOk = isUrl(fallbackTargetUrl)
 	const areTagsOk = validateTags(tags)
 
-	if (isTypeOk && isUrlOk && areTagsOk) {
+	if (isTypeOk && isUrlOk && areTagsOk && isMediaUrlOk) {
 		return next()
 	}
 	return res.status(403).send('invalid data')

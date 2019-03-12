@@ -6,8 +6,7 @@ const ipfsProtocol = process.env.IPFSPROTOCOL || 'https'
 const ipfs = ipfsAPI(ipfsHost, ipfsPort, { protocol: ipfsProtocol })
 
 function addFileToIpfs (file) {
-	let buffer = Buffer.from(file)
-	return ipfs.files.add(buffer)
+	return ipfs.files.add(file)
 		.then(function (res) {
 			if (res[0]) {
 				return res[0].hash
@@ -26,7 +25,7 @@ function addFileToIpfs (file) {
 			}
 		})
 		.catch(function (err) {
-			console.error(err)
+			console.error('fail', err)
 			return Promise.reject(new Error(`IPFS Error: ${err}`))
 		})
 }

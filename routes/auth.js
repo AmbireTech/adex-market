@@ -40,6 +40,9 @@ function authUser (req, res, next) {
 						})
 					}
 				})
+				.catch((err) => {
+					console.error('error making call to the contract', err)
+				})
 		})
 		.catch((err) => {
 			console.log('Error getting addr from signed msg', err)

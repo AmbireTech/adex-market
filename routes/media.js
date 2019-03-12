@@ -9,7 +9,11 @@ function postMedia (req, res, next) {
 	const { media } = req.body
 	return ipfs.addFileToIpfs(media)
 		.then((hash) => {
-			return { ipfs: hash }
+			return res.status(200).send({ ipfs: hash })
+		})
+		.catch((err) => {
+			console.error('error posting media', err)
+			return res.status(403)
 		})
 }
 
