@@ -5,5 +5,5 @@ module.exports = {
 	},
 	recency: 1000 * 60 * 2, // 2 min TODO: Add seperate for heartbeat, newState and approveState if needed
 	statusLoopTick: 1000 * 60, // 1 min
-	expiryTime: Date.now() + 1000 * 60 * 60 * 24 * 30 // 1 month
+	sessionExpiryTime: Date.now() + 1000 * 60 * 60 * 24 * 30 // 1 month
 }

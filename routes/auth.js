@@ -21,7 +21,7 @@ function authUser (req, res, next) {
 			recoveredAddr = recoveredAddr.toLowerCase()
 			return callToContract(identity)
 				.then((res) => {
-					let expiryTime = Date.now() + cfg.expiryTime
+					let sessionExpiryTime = Date.now() + cfg.sessionExpiryTime
 
 					// TODO change if needed when it is known how the result will look like
 					if (res.privileges > 0) {
@@ -29,12 +29,12 @@ function authUser (req, res, next) {
 							if (err != null) {
 								console.log('Error saving session data for user ' + recoveredAddr + ' :' + err)
 							} else {
-								redisClient.expire('session:' + signature, expiryTime, () => { })
+								redisClient.expire('session:' + signature, sessionExpiryTime, () => { })
 								return res.send({
 									status: 'OK',
 									identity: identity,
 									signature: signature,
-									expiryTime: expiryTime
+									expiryTime: sessionExpiryTime
 								})
 							}
 						})
