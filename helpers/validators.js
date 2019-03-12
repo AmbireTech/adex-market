@@ -1,3 +1,4 @@
+// TODO: Move to constants or new helpers repo
 const types = ['legacy_250x250', 'legacy_468x60', 'legacy_336x280', 'legacy_728x90', 'legacy_120x600', 'legacy_160x600']
 
 function isUrl (s) {
@@ -38,7 +39,7 @@ function validateTags (tags) {
 
 function adUnitValidator (req, res, next) {
 	const { type, mediaUrl, targetUrl, targeting, tags } = req.body
-	const isTypeOk = types.includes(type)
+	const isTypeOk = types.includes(type) || type.startsWith('iab_flex_')
 	const isUrlOk = isUrl(targetUrl)
 	const isTargetingOk = targeting ? validateTags(targeting) : true // because it's optional
 	const areTagsOk = validateTags(tags)
@@ -52,7 +53,7 @@ function adUnitValidator (req, res, next) {
 
 function adSlotValidator (req, res, next) {
 	const { type, fallbackMediaUrl, fallbackTargetUrl, tags } = req.body
-	const isTypeOk = types.includes(type)
+	const isTypeOk = types.includes(type) || type.startsWith('iab_flex_')
 	const isMediaUrlOk = isIpfsUrl(fallbackMediaUrl)
 	const isUrlOk = isUrl(fallbackTargetUrl)
 	const areTagsOk = validateTags(tags)
