@@ -1,6 +1,5 @@
 const express = require('express')
 const db = require('../db')
-const ipfs = require('../helpers/ipfs')
 const { adSlotValidator } = require('../helpers/validators')
 const ObjectId = require('mongodb').ObjectId
 

@@ -9,9 +9,12 @@ const router = express.Router()
 
 router.post('/', authUser)
 
-function callToContract (identity) {
-	const identityContract = web3.eth.Contract(identityAbi, identity)
-	return identityContract.methods.privileges.call()
+function callToContract (identityAddress, recoveredAddr) {
+	const identityInstance = new web3.eth.Contract(identityAbi, identityAddress)
+	return identityInstance.methods.privileges().call().then((res) => {
+		console.log('will this line ever be reached', res)
+		return res
+	}).catch(console.log)
 }
 
 function authUser (req, res, next) {
@@ -19,13 +22,14 @@ function authUser (req, res, next) {
 	return getAddrFromSignedMsg({ mode: mode, signature: signature, hash: hash, typedData: typedData, msg: authToken })
 		.then((recoveredAddr) => {
 			recoveredAddr = recoveredAddr.toLowerCase()
-			return callToContract(identity)
-				.then((res) => {
+			return callToContract(identity, recoveredAddr)
+				.then((result) => {
+					console.log('we here now', result)
 					let sessionExpiryTime = Date.now() + cfg.sessionExpiryTime
 
-					// TODO change if needed when it is known how the result will look like
-					if (res.privileges > 0) {
-						redisClient.set('session:' + signature, JSON.stringify({ 'user': recoveredAddr, 'authToken': authToken, 'mode': mode }), (err, res) => {
+					// TODO res might not look exactly like that
+					if (result.privileges > 0) {
+						redisClient.set('session:' + signature, JSON.stringify({ 'user': recoveredAddr, 'authToken': authToken, 'mode': mode }), (err, redisRes) => {
 							if (err != null) {
 								console.log('Error saving session data for user ' + recoveredAddr + ' :' + err)
 							} else {
@@ -45,8 +49,8 @@ function authUser (req, res, next) {
 				})
 		})
 		.catch((err) => {
-			console.log('Error getting addr from signed msg', err)
-			return err
+			console.error('Error getting addr from signed msg', err)
+			return res.status(400).send({ error: 'An error occured while authenticating' })
 		})
 }
 

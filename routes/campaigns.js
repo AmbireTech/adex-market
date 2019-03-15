@@ -42,6 +42,9 @@ function getCampaignInfo (req, res, next) {
 		.find({ '_id': id })
 		.toArray()
 		.then((result) => {
+			if (!result[0]) {
+				res.send({})
+			}
 			const validators = result[0].spec.validators
 			const leaderBalanceTree = getBalanceTree(validators[0].url, id)
 			const followerBalanceTree = getBalanceTree(validators[1].url, id)

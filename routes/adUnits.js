@@ -31,7 +31,7 @@ function getUnitById (req, res, next) {
 	const id = req.params['id']
 	console.log('ID', id)
 	return adUnitCol
-		.findOne({ _id: ObjectId(id), owner: req.user })
+		.findOne({ _id: ObjectId(id), owner: user })
 		.then((result) => {
 			res.send(result)
 		})
