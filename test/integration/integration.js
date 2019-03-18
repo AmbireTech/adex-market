@@ -4,20 +4,20 @@ const marketUrl = process.env.MARKET_URL || 'http://localhost:3012'
 const fs = require('fs')
 const testData = require('../prep-db/testData')
 
-const authMockObj = {
-	identity: '0xa624dEe05d96A0b3E441d0ee3b25Cc5CC0b5b836',
+const mockAuthObj = {
+	identity: '0x27e47D714fe59a13C008341Fc83588876b747c60',
 	address: '0x2aecf52abe359820c48986046959b4136afdfbe2',
 	signature: '0x71860f64f682392b891b9a32315979d48b45b32f351aa9e6719eb42bc1eddd0105fc65ab3aedc0d6a64d151427c64c6264c291ff2bbaab1aff801e32fde8fa861b',
-	mode: '1',
+	mode: 1,
 	authToken: '7036680048500819',
 	hash: '0xcd494760e8805c2a37b26b3ce02c9efe49f610dcff36efee567221ab9a3b8b16',
 	typedData: [{ type: 'uint', name: 'Auth token', value: '7036680048500819' }]
 }
 
-const brokenAuthMockObj = {
+const brokenAuthObj = {
 	identity: '0xa624dEe05d96A0b3E441d0ee3b25Cc5CC0b5b836',
 	address: '0x2aecf52abe359820c48986046959b4136afdfbe2',
-	signature: '0xFEFE',
+	signature: '0x71860f64f682392b891b9a32315979d48b45b32f351aa9e6719eb42bc1eddd0105fc65ab3aedc0d6a64d151427c64c6264c291ff2bbaab1aff801e32fde8fa861b',
 	mode: '1',
 	authToken: '7036680048500819',
 	hash: '0xcd494760e8805c2a37b26b3ce02c9efe49f610dcff36efee567221ab9a3b8b16',
@@ -61,7 +61,7 @@ tape('GET /campaigns', (t) => {
 		.then(res => res.json())
 		.then((res) => {
 			t.ok(Array.isArray(res), 'returns array')
-			t.equal(res.length, 2, 'returns right amount of campaigns')
+			t.equals(res.length, 2, 'returns right amount of campaigns')
 			t.ok(res[0].hasOwnProperty('id'), 'campaign has property id')
 			t.ok(res[0].hasOwnProperty('status'), 'campaign has property status')
 			t.ok(res[0].hasOwnProperty('depositAsset'), 'campaign has property depositAsset')
@@ -75,7 +75,7 @@ tape('GET /campaigns', (t) => {
 			t.ok(Array.isArray(res[0].validators), 'campaign validators is an array')
 			t.equals(res[0].validators.length, 2, 'campaign has two validators')
 			t.equals(typeof res[0].spec, 'object', 'property spec is of type object')
-			t.equal(res[0].status, 'live', 'first campaign is live')
+			t.equals(res[0].status, 'live', 'first campaign is live')
 			t.end()
 		})
 })
@@ -85,7 +85,7 @@ tape('GET /campaigns/:id', (t) => {
 		.then(res => res.json())
 		.then((res) => {
 			t.ok(Array.isArray(res), 'returns array with the element')
-			t.equal(res.length, 1, 'only one campaign is returned')
+			t.equals(res.length, 1, 'only one campaign is returned')
 
 			// LeaderBalanceTree: **exists**
 			// Test: /\_/|
@@ -134,28 +134,28 @@ tape('GET /validators?addr=addr', (t) => {
 		.then(res => res.json())
 		.then((res) => {
 			t.ok(Array.isArray(res), 'returns array')
-			t.equal(res.length, 1, 'only one validator is returned')
-			t.equal(res[0].id, 'awesomeLeader', 'validator with correct id is returned')
-			t.equal(res[0].status, 'active', 'returned validator is of right status')
+			t.equals(res.length, 1, 'only one validator is returned')
+			t.equals(res[0].id, 'awesomeLeader', 'validator with correct id is returned')
+			t.equals(res[0].status, 'active', 'returned validator is of right status')
 			t.end()
 		})
 })
 
-tape('POST /user', (t) => {
+tape('POST /users', (t) => {
 	fetch(`${marketUrl}/user/list`, {
 		method: 'POST',
 		headers: {
 			'Content-type': 'application/json'
 		},
-		body: authMockObj
+		body: testData.users[0]
 	})
 		.then((res) => {
-			t.ok(res.success, 'user is added successfully')
+			t.equals(res.success, true, 'user is added successfully')
 			fetch(`${marketUrl}/user/list`)
 				.then((res) => {
 					t.ok(Array.isArray(res), 'returns array')
-					t.equal(res.length, 2, '2 users, the previous one + the recently added one')
-					t.ok(res.includes(authMockObj), 'the new object has been added') // TODO check if this legit works
+					t.equals(res.length, 2, '2 users, the previous one + the recently added one')
+					t.ok(res.includes(testData.users[0]), 'the new object has been added') // TODO check if this legit works
 					t.end()
 				})
 		})
@@ -169,6 +169,7 @@ tape('GET /user/list', (t) => {
 			t.equals(res.length, 1, 'correct number of users')
 			t.ok(res[0].hasOwnProperty('identity'), 'user has identity address')
 			t.equals(res[0].address, '0x2aecf52abe359820c48986046959b4136afdfbe2', 'correct address')
+			t.end()
 		})
 })
 // TODO test user list with ?hasinteracted
@@ -184,25 +185,24 @@ tape('GET /stats', (t) => {
 			t.ok(res.hasOwnProperty('campaignCount'), 'stats has campaignCount property')
 			t.ok(res.hasOwnProperty('campaignsByStatus'), 'stats has property campaignsByStatus')
 			t.ok(res.hasOwnProperty('totalSpentFundsByAssetType'), 'stats has totalSpentFundsByAssetType')
-			t.equal(typeof res.publisherCount, 'number', 'publisherCount is of correct type')
-			t.equal(typeof res.advertiserCount, 'number', 'advertiserCount is of correct type')
-			t.equal(typeof res.anonPublisherCount, 'number', 'anonPublisherCount is of right type')
-			t.equal(typeof res.anonAdvertiserCount, 'number', 'anonAdvertiserCount is the right type')
-			t.equal(typeof res.campaignCount, 'number', 'campaignCount is of right type')
-			t.equal(typeof res.campaignsByStatus, 'object', 'campaignsByStatus is of right type')
-			t.equal(typeof res.totalSpentFundsByAssetType, 'object', 'totalSpentFundsByAssetType is of right type')
-			t.equal(res.publisherCount, 0, 'publisherCount is the right amount')
-			t.equal(res.advertiserCount, 1, 'advertiserCount is the right amount')
-			t.equal(res.anonPublisherCount, 0, 'anonPublisherCount is right amount')
-			t.equal(res.anonAdvertiserCount, 0, 'anonAdvertiserCount is of right amount')
-			t.equal(res.campaignCount, 2, 'campaignCount is of right amount')
-			t.equal(res.campaignsByStatus['live'], 2, 'live status are the right amount')
-			t.equal(res.totalSpentFundsByAssetType['DAI'], 1250, 'funds are the right amount')
+			t.equals(typeof res.publisherCount, 'number', 'publisherCount is of correct type')
+			t.equals(typeof res.advertiserCount, 'number', 'advertiserCount is of correct type')
+			t.equals(typeof res.anonPublisherCount, 'number', 'anonPublisherCount is of right type')
+			t.equals(typeof res.anonAdvertiserCount, 'number', 'anonAdvertiserCount is the right type')
+			t.equals(typeof res.campaignCount, 'number', 'campaignCount is of right type')
+			t.equals(typeof res.campaignsByStatus, 'object', 'campaignsByStatus is of right type')
+			t.equals(typeof res.totalSpentFundsByAssetType, 'object', 'totalSpentFundsByAssetType is of right type')
+			t.equals(res.publisherCount, 0, 'publisherCount is the right amount')
+			t.equals(res.advertiserCount, 1, 'advertiserCount is the right amount')
+			t.equals(res.anonPublisherCount, 0, 'anonPublisherCount is right amount')
+			t.equals(res.anonAdvertiserCount, 0, 'anonAdvertiserCount is of right amount')
+			t.equals(res.campaignCount, 2, 'campaignCount is of right amount')
+			t.equals(res.campaignsByStatus['live'], 2, 'live status are the right amount')
+			t.equals(res.totalSpentFundsByAssetType['DAI'], 1250, 'funds are the right amount')
 			t.end()
 		})
 })
 
-// TODO: Find a way to make test as authorized to see if it works then
 tape('POST /media unauthorized', (t) => {
 	const stats = fs.statSync('./test/resources/img.jpg')
 	const fileSizeInBytes = stats.size
@@ -217,7 +217,28 @@ tape('POST /media unauthorized', (t) => {
 		body: readStream
 	})
 		.then((res) => {
-			t.equal(res.status, 403, 'Unauthorized to post')
+			t.equals(res.status, 403, 'Unauthorized to post')
+			t.end()
+		})
+})
+
+// TODO
+tape('POST /media authorized', (t) => {
+	const stats = fs.statSync('./test/resources/img.jpg')
+	const fileSizeInBytes = stats.size
+
+	let readStream = fs.createReadStream('./test/resources/img.jpg')
+
+	fetch(`${marketUrl}/media`, {
+		method: 'POST',
+		headers: {
+			'Content-length': fileSizeInBytes,
+			'x-user-signature': '' // TODO
+		},
+		body: readStream
+	})
+		.then((res) => {
+			t.end()
 		})
 })
 
@@ -227,13 +248,31 @@ tape('POST /auth with bad data', (t) => {
 		headers: {
 			'Content-type': 'application/json'
 		},
-		body: brokenAuthMockObj
+		body: brokenAuthObj
 	})
 		.then((res) => {
-			t.equal(res.status, 400, 'Error with authenticating')
+			t.equals(res.status, 400, 'Error with authenticating')
+			t.end()
 		})
 })
-// TODO test with correct data when fixed
+
+tape('POST /auth with correct data', (t) => {
+	fetch(`${marketUrl}/auth`, {
+		method: 'POST',
+		headers: {
+			'Content-type': 'application/json'
+		},
+		body: mockAuthObj
+	})
+		.then((res) => {
+			t.equals(res.status, 'OK', 'Request was successful')
+			t.equals(res.identity, mockAuthObj.identity, 'returns correct identity')
+			t.equals(res.signature, mockAuthObj.signature, 'returns correct signature')
+			t.ok(res.hasOwnProperty('expiryTime'), 'returned object has expiry time')
+			t.equals(typeof res.expiryTime, 'number', 'expiry time is a number')
+			t.end()
+		})
+})
 // TODO test with all modes when fixed
 
 tape('POST /adunits unauthenticated', (t) => {

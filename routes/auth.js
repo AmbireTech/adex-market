@@ -10,11 +10,13 @@ const router = express.Router()
 router.post('/', authUser)
 
 function callToContract (identityAddress, recoveredAddr) {
-	const identityInstance = new web3.eth.Contract(identityAbi, identityAddress)
-	return identityInstance.methods.privileges().call().then((res) => {
-		console.log('will this line ever be reached', res)
-		return res
-	}).catch(console.log)
+	const identityInstance = web3.eth.Contract(identityAbi, identityAddress)
+	return identityInstance.methods.privileges(recoveredAddr).call({ from: recoveredAddr }, (err, res) => {
+		if (err) {
+			return Promise.reject(err)
+		}
+		return Promise.resolve(res)
+	})
 }
 
 function authUser (req, res, next) {
@@ -23,12 +25,12 @@ function authUser (req, res, next) {
 		.then((recoveredAddr) => {
 			recoveredAddr = recoveredAddr.toLowerCase()
 			return callToContract(identity, recoveredAddr)
-				.then((result) => {
-					console.log('we here now', result)
+				.then((privileges) => {
+					console.log('we here now', privileges)
 					let sessionExpiryTime = Date.now() + cfg.sessionExpiryTime
 
 					// TODO res might not look exactly like that
-					if (result.privileges > 0) {
+					if (privileges > 0) {
 						redisClient.set('session:' + signature, JSON.stringify({ 'user': recoveredAddr, 'authToken': authToken, 'mode': mode }), (err, redisRes) => {
 							if (err != null) {
 								console.log('Error saving session data for user ' + recoveredAddr + ' :' + err)

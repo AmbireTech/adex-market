@@ -19,16 +19,17 @@ const validators = [
 	{ _id: 'awesomeFollower', id: 'awesomeFollower', url: 'http://localhost:8006', status: 'active', addr: '0x0000000000000000667265652036697839696e65' }
 ]
 
-const users = [{
-	identity: '0xa624dEe05d96A0b3E441d0ee3b25Cc5CC0b5b836',
-	address: '0x2aecf52abe359820c48986046959b4136afdfbe2',
-	signature: '0x71860f64f682392b891b9a32315979d48b45b32f351aa9e6719eb42bc1eddd0105fc65ab3aedc0d6a64d151427c64c6264c291ff2bbaab1aff801e32fde8fa861b',
-	mode: '1',
-	authToken: '7036680048500819',
-	hash: '0xcd494760e8805c2a37b26b3ce02c9efe49f610dcff36efee567221ab9a3b8b16',
-	typedData: [{ type: 'uint', name: 'Auth token', value: '7036680048500819' }],
-	role: 'advertiser'
-}]
+const users = [
+	{
+		identity: '0x27e47D714fe59a13C008341Fc83588876b747c60',
+		address: '0x2aecf52abe359820c48986046959b4136afdfbe2',
+		signature: '0x71860f64f682392b891b9a32315979d48b45b32f351aa9e6719eb42bc1eddd0105fc65ab3aedc0d6a64d151427c64c6264c291ff2bbaab1aff801e32fde8fa861b',
+		mode: 1,
+		authToken: '7036680048500819',
+		hash: '0xcd494760e8805c2a37b26b3ce02c9efe49f610dcff36efee567221ab9a3b8b16',
+		typedData: [{ type: 'uint', name: 'Auth token', value: '7036680048500819' }]
+	}
+]
 
 const adUnits = [
 	{
