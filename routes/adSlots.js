@@ -11,13 +11,13 @@ router.get('/:id', getAdSlotById)
 router.post('/', adSlotValidator, postAdSlot)
 
 function getAdSlots (req, res, next) {
-	const user = req.user
+	const identity = req.identity
 	const limit = +req.query.limit || 100
 	const skip = +req.query.skip || 0
 	const adSlotsCol = db.getMongo().collection('adSlots')
 
 	return adSlotsCol
-		.find({ owner: user })
+		.find({ owner: identity })
 		.skip(skip)
 		.limit(limit)
 		.toArray()
@@ -27,22 +27,21 @@ function getAdSlots (req, res, next) {
 }
 
 function getAdSlotById (req, res, next) {
-	const user = req.user
+	const identity = req.identity
 	const id = req.params['id']
 	const adSlotsCol = db.getMongo().collection('adSlots')
 
 	return adSlotsCol
-		.findOne({ _id: ObjectId(id), owner: user })
+		.findOne({ _id: ObjectId(id), owner: identity })
 		.then((result) => {
 			res.send(result)
 		})
 }
 
 function postAdSlot (req, res, next) {
-	const { type, fallbackMediaUrl, fallbackTargetUrl, tags } = req.body
-	const user = req.user
+	const { type, fallbackMediaUrl, fallbackTargetUrl, tags, identity } = req.body
 	const adSlotsCol = db.getMongo().collection('adSlots')
-	const adSlot = { type, fallbackTargetUrl, tags, fallbackMediaUrl, owner: user }
+	const adSlot = { type, fallbackTargetUrl, tags, fallbackMediaUrl, owner: identity }
 
 	return adSlotsCol.insertOne(adSlot, (err, result) => {
 		if (err) {

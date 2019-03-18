@@ -23,7 +23,7 @@ function signatureCheck (req, res, next) {
 			}
 			if (reply) {
 				try {
-					req.user = (JSON.parse(reply)).user.toString()
+					req.identity = (JSON.parse(reply)).identity.toString()
 					return next()
 				} catch (err) {
 					console.log('Redis error: Unable to verify user signature')

@@ -10,13 +10,13 @@ router.get('/:id', getUnitById)
 router.post('/', adUnitValidator, postUnit)
 
 function getUnits (req, res, next) {
-	const user = req.user
+	const identity = req.identity
 	const limit = +req.query.limit || 100
 	const skip = +req.query.skip || 0
 	const adUnitCol = db.getMongo().collection('adUnits')
 
 	return adUnitCol
-		.find({ owner: user })
+		.find({ owner: identity })
 		.skip(skip)
 		.limit(limit)
 		.toArray()
@@ -26,12 +26,12 @@ function getUnits (req, res, next) {
 }
 
 function getUnitById (req, res, next) {
-	const user = req.user
+	const identity = req.identity
 	const adUnitCol = db.getMongo().collection('adUnits')
 	const id = req.params['id']
 	console.log('ID', id)
 	return adUnitCol
-		.findOne({ _id: ObjectId(id), owner: req.user })
+		.findOne({ _id: ObjectId(id), owner: identity })
 		.then((result) => {
 			res.send(result)
 		})
@@ -40,7 +40,7 @@ function getUnitById (req, res, next) {
 function postUnit (req, res, next) {
 	const { type, mediaUrl, targetUrl, targeting, tags } = req.body
 	const adUnitCol = db.getMongo().collection('adUnits')
-	const adUnit = { type, mediaUrl, targetUrl, targeting, tags, owner: req.user }
+	const adUnit = { type, mediaUrl, targetUrl, targeting, tags, owner: req.identity }
 	return adUnitCol.insertOne(adUnit, (err, result) => {
 		if (err) {
 			console.error(new Error('error adding adUnit', err))
