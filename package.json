@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index",
     "dev-start": "nodemon index",
-    "test": "node test/index.js"
+    "test": "node test/index.js",
+    "test-integration": "./test/run-integration.sh"
   },
   "keywords": [
     "adex",
