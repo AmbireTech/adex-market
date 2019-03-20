@@ -16,6 +16,8 @@ const adUnitsRoutes = require('./routes/adUnits')
 const mediaRoutes = require('./routes/media')
 const authRoutes = require('./routes/auth')
 
+const seedDb = require('./test/prep-db/seedDb').seedDb
+
 const app = express()
 const db = require('./db')
 const port = process.env.PORT || 3012
@@ -51,8 +53,20 @@ app.use('/media', signatureCheck, mediaRoutes)
 
 db.connect()
 	.then(() => {
+		if (process.env.ENVIRONMENT === 'test') {
+			console.log('Seeding DB for tests', process.env.DB_MONGO_NAME)
+			seedDb(db.getMongo())
+		} else {
+			Promise.resolve()
+		}
+	})
+	.then(() => {
 		startStatusLoop()
 	})
 	.then(() => {
 		app.listen(port, () => console.log(`Magic happens on ${port}`))
+	})
+	.catch((err) => {
+		console.error('Error when starting app', err)
+		throw new Error(err)
 	})
