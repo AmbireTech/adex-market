@@ -29,11 +29,10 @@ function getUnitById (req, res, next) {
 	const identity = req.identity
 	const adUnitCol = db.getMongo().collection('adUnits')
 	const id = req.params['id']
-	console.log('ID', id)
 	return adUnitCol
-		.findOne({ _id: ObjectId(id), owner: identity })
+		.findOne({ _id: id, owner: identity })
 		.then((result) => {
-			res.send(result)
+			res.send([result])
 		})
 }
 
@@ -44,7 +43,7 @@ function postUnit (req, res, next) {
 	return adUnitCol.insertOne(adUnit, (err, result) => {
 		if (err) {
 			console.error(new Error('error adding adUnit', err))
-			return res.status(403).send()
+			return res.status(418).send()
 		}
 		return res.status(200).send(adUnit)
 	})

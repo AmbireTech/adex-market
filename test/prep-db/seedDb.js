@@ -3,7 +3,7 @@ const testData = {
 	campaign: {
 		_id: 'testCampaign1',
 		id: 'testCampaign1',
-		status: 'live',
+		status: 'Active',
 		depositAsset: 'DAI',
 		depositAmount: 1000,
 		validators: ['awesomeLeader', 'awesomeFollower'],
@@ -25,7 +25,8 @@ const testData = {
 		mode: 1,
 		authToken: '7036680048500819',
 		hash: '0xcd494760e8805c2a37b26b3ce02c9efe49f610dcff36efee567221ab9a3b8b16',
-		typedData: [{ type: 'uint', name: 'Auth token', value: '7036680048500819' }]
+		typedData: [{ type: 'uint', name: 'Auth token', value: '7036680048500819' }],
+		role: 'advertiser'
 	},
 	adUnits: [
 		{
@@ -33,21 +34,21 @@ const testData = {
 			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 			targetUrl: 'https://google.com',
 			tags: [{ tag: 'games', score: 42 }, { tag: 'usa', score: 60 }],
-			owner: '0x000000000000000078787874656e746163696f6e'
+			owner: '0x27e47D714fe59a13C008341Fc83588876b747c60'
 		},
 		{
 			type: 'legacy_160x600',
 			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb23',
 			targetUrl: 'https://google.com',
 			tags: [{ tag: 'movies', score: 90 }, { tag: 'captain-marvel', score: 0 }],
-			owner: '0x000000000000000078787874656e746163696f6e'
+			owner: '0x27e47D714fe59a13C008341Fc83588876b747c60'
 		},
 		{
 			type: 'legacy_728x90',
 			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb24',
 			targetUrl: 'https://google.com',
 			tags: [{ tag: 'music', score: 70 }, { tag: 'rap', score: 100 }],
-			owner: '0x000000000000000078787874656e746163696f6e'
+			owner: '0x27e47D714fe59a13C008341Fc83588876b747c60'
 		}
 	],
 	adSlot: {
@@ -55,7 +56,7 @@ const testData = {
 		fallbackMediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 		fallbackTargetUrl: 'https://google.com',
 		tags: [{ tag: 'games', score: 42 }, { tag: 'usa', score: 60 }],
-		owner: '0x78787874656e746163696f6e0000000000000000'
+		owner: '0x27e47D714fe59a13C008341Fc83588876b747c60'
 	}
 }
 

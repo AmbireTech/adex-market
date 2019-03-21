@@ -69,7 +69,6 @@ function getStats (req, res, next) {
 		.then((result) => {
 			const users = result[0]
 			const campaigns = result[1]
-
 			getAnonPublishers(campaigns, users)
 				.then((anonPublishers) => {
 					output.publisherCount = getActiveUsers(users, 'publisher')
@@ -80,10 +79,10 @@ function getStats (req, res, next) {
 
 					campaigns.map((c) => {
 						if (!output.campaignsByStatus[c.status]) {
-							output.campaignsByStatus[c.status] = 1
+							output.campaignsByStatus[c.status] = 0
 						}
 						if (!output.totalSpentFundsByAssetType[c.depositAsset]) {
-							output.totalSpentFundsByAssetType[c.depositAsset] = c.depositAmount
+							output.totalSpentFundsByAssetType[c.depositAsset] = 0
 						}
 
 						output.totalSpentFundsByAssetType[c.depositAsset] += c.depositAmount

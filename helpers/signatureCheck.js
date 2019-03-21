@@ -10,15 +10,11 @@ function signatureCheck (req, res, next) {
 	if (req.method === 'OPTIONS') {
 		return next()
 	}
-
 	let usersig = req.headers['x-user-signature']
-
-	console.log('usersig', usersig)
-
 	if (usersig) {
 		redisClient.get('session:' + usersig, (err, reply) => {
 			if (err) {
-				console.log('redis err', err)
+				console.error('redis err', err)
 				return res.status(500).send({ error: 'Internal error' })
 			}
 			if (reply) {
@@ -26,7 +22,7 @@ function signatureCheck (req, res, next) {
 					req.identity = (JSON.parse(reply)).identity.toString()
 					return next()
 				} catch (err) {
-					console.log('Redis error: Unable to verify user signature')
+					console.error('Redis error: Unable to verify user signature')
 					return res.status(403).send({ error: 'Internal error verifying user signature' })
 				}
 			} else {
@@ -34,7 +30,7 @@ function signatureCheck (req, res, next) {
 			}
 		})
 	} else {
-		console.log('X-User-Signature header missing')
+		console.error('X-User-Signature header missing')
 		return res.status(403).send({ error: 'Authentication required' })
 	}
 }

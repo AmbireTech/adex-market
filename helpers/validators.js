@@ -1,6 +1,10 @@
 // TODO: Move to constants or new helpers repo
 const types = ['legacy_250x250', 'legacy_468x60', 'legacy_336x280', 'legacy_728x90', 'legacy_120x600', 'legacy_160x600']
 
+function isTypeGood (t) {
+	return types.includes(t) || t.startsWith('iab_flex_')
+}
+
 function isUrl (s) {
 	// eslint-disable-next-line no-useless-escape
 	var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/
@@ -9,8 +13,7 @@ function isUrl (s) {
 
 function isIpfsUrl (s) {
 	// eslint-disable-next-line no-useless-escape
-	var regexp = /(ipfs):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/
-	return regexp.test(s)
+	return s.startsWith('ipfs://')
 }
 
 function validateTags (tags) {
@@ -32,14 +35,13 @@ function validateTags (tags) {
 		}
 		return false
 	})
-
 	// if no tags are caught in the filter this means all tags are ok
 	return badTags.length === 0
 }
 
 function adUnitValidator (req, res, next) {
 	const { type, mediaUrl, targetUrl, targeting, tags } = req.body
-	const isTypeOk = types.includes(type) || type.startsWith('iab_flex_')
+	const isTypeOk = isTypeGood(type)
 	const isUrlOk = isUrl(targetUrl)
 	const isTargetingOk = targeting ? validateTags(targeting) : true // because it's optional
 	const areTagsOk = validateTags(tags)
@@ -48,12 +50,12 @@ function adUnitValidator (req, res, next) {
 	if (isTypeOk && isUrlOk && isTargetingOk && areTagsOk && isMediaUrlOk) {
 		return next()
 	}
-	return res.status(403).send('invalid data')
+	return res.status(403).send({ error: 'invalid data' })
 }
 
 function adSlotValidator (req, res, next) {
 	const { type, fallbackMediaUrl, fallbackTargetUrl, tags } = req.body
-	const isTypeOk = types.includes(type) || type.startsWith('iab_flex_')
+	const isTypeOk = isTypeGood(type)
 	const isMediaUrlOk = isIpfsUrl(fallbackMediaUrl)
 	const isUrlOk = isUrl(fallbackTargetUrl)
 	const areTagsOk = validateTags(tags)
@@ -61,7 +63,7 @@ function adSlotValidator (req, res, next) {
 	if (isTypeOk && isUrlOk && areTagsOk && isMediaUrlOk) {
 		return next()
 	}
-	return res.status(403).send('invalid data')
+	return res.status(403).send({ error: 'invalid data' })
 }
 
 module.exports = { adUnitValidator, adSlotValidator }

@@ -25,6 +25,7 @@
     "ethers": "^4.0.18",
     "express": "^4.16.4",
     "express-form-data": "^2.0.8",
+    "form-data": "^2.3.3",
     "fs": "0.0.1-security",
     "header-parser": "^1.0.0",
     "ipfs-api": "^26.1.2",

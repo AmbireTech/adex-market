@@ -31,21 +31,22 @@ function getAdSlotById (req, res, next) {
 	const adSlotsCol = db.getMongo().collection('adSlots')
 
 	return adSlotsCol
-		.findOne({ _id: ObjectId(id), owner: identity })
+		.findOne({ _id: id, owner: identity })
 		.then((result) => {
-			res.send(result)
+			res.send([result])
 		})
 }
 
 function postAdSlot (req, res, next) {
-	const { type, fallbackMediaUrl, fallbackTargetUrl, tags, identity } = req.body
+	const { type, fallbackMediaUrl, fallbackTargetUrl, tags } = req.body
+	const identity = req.identity
 	const adSlotsCol = db.getMongo().collection('adSlots')
 	const adSlot = { type, fallbackTargetUrl, tags, fallbackMediaUrl, owner: identity }
 
 	return adSlotsCol.insertOne(adSlot, (err, result) => {
 		if (err) {
 			console.error(new Error('Error adding adSlot', err))
-			return res.status(403).send()
+			return res.status(420).send()
 		}
 		return res.send(adSlot)
 	})

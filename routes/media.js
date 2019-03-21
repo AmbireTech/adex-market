@@ -13,7 +13,7 @@ function postMedia (req, res, next) {
 		})
 		.catch((err) => {
 			console.error('error posting media', err)
-			return res.status(403)
+			return res.status(401)
 		})
 }
 

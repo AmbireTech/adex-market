@@ -16,7 +16,7 @@ TEST_MARKET_URL="http://localhost:$PORT"
 # echo "Seeding database complete"
 
 PORT=$PORT DB_MONGO_NAME=$MONGO ENVIRONMENT="test" npm start &
-sleep 10
+sleep 6
 
 TEST_MARKET_URL=$TEST_MARKET_URL node ./test/integration/integration.js
 

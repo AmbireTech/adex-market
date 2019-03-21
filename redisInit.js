@@ -35,7 +35,7 @@ redisClient.on('ready', function () {
 })
 
 redisClient.on('error', function (err) {
-	console.log('Error connecting to Redis: ' + err)
+	console.error('Error connecting to Redis: ' + err)
 	process.exit(1)
 })
 

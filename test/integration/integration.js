@@ -4,6 +4,7 @@ const fetch = require('node-fetch')
 const marketUrl = process.env.TEST_MARKET_URL
 const fs = require('fs')
 const testData = require('../prep-db/seedDb').testData
+const FormData = require('form-data')
 
 // TODO export those and other repetitive data into integrationTestsConstants module
 const mockAuthObj = {
@@ -31,7 +32,7 @@ const mockAdUnit = 	{
 	mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb25',
 	targetUrl: 'https://google.com',
 	tags: [{ tag: 'music', score: 70 }, { tag: 'rap', score: 100 }],
-	owner: '0x000000000000000078787874656e746163696f6e'
+	owner: '0x27e47D714fe59a13C008341Fc83588876b747c60'
 }
 
 const brokenAdUnit = {
@@ -39,15 +40,15 @@ const brokenAdUnit = {
 	mediaUrl: 'ipsfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb25',
 	targetUrl: 'htttps://google.com',
 	tags: [{ tag: 'music', score: 70 }, { tag: 'rap', score: 100 }],
-	owner: '0x000000000000000078787874656e746163696f6e'
+	owner: '0x27e47D714fe59a13C008341Fc83588876b747c60'
 }
 
 const mockAdSlot = 	{
-	type: 'legacy_728x91',
+	type: 'legacy_728x90',
 	fallbackMediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 	fallbackTargetUrl: 'https://google.com',
 	tags: [{ tag: 'games', score: 42 }, { tag: 'usa', score: 60 }],
-	owner: '0x78787874656e746163696f6e0000000000000000'
+	owner: '0x27e47D714fe59a13C008341Fc83588876b747c60'
 }
 
 const brokenAdSlot = {
@@ -55,7 +56,7 @@ const brokenAdSlot = {
 	fallbackMediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 	fallbackTargetUrl: 'https://google.com',
 	tags: 'h4x0r',
-	owner: '0x78787874656e746163696f6e0000000000000000'
+	owner: '0x27e47D714fe59a13C008341Fc83588876b747c60'
 }
 
 tape('GET /campaigns', (t) => {
@@ -77,7 +78,7 @@ tape('GET /campaigns', (t) => {
 			t.ok(Array.isArray(res[0].validators), 'campaign validators is an array')
 			t.equals(res[0].validators.length, 2, 'campaign has two validators')
 			t.equals(typeof res[0].spec, 'object', 'property spec is of type object')
-			t.equals(res[0].status, 'live', 'first campaign is live')
+			t.equals(res[0].status, 'Active', 'first campaign is active')
 			t.end()
 		})
 		.catch(err => t.fail(err))
@@ -93,9 +94,9 @@ tape('GET /campaigns/:id', (t) => {
 			// LeaderBalanceTree: **exists**
 			// Test: /\_/|
 			//     Ϟ(๑ﾟoﾟ)Ϟ
-			t.ok(res.hasOwnProperty('leaderBalanceTree'), 'Returns leaderBalanceTree')
+			t.ok(res[0].hasOwnProperty('leaderBalanceTree'), 'Returns leaderBalanceTree')
 
-			t.ok(res.hasOwnProperty('followerBalanceTree'), 'Returns followerBalanceTree')
+			t.ok(res[0].hasOwnProperty('followerBalanceTree'), 'Returns followerBalanceTree')
 			t.end()
 		})
 		.catch(err => t.fail(err))
@@ -148,29 +149,8 @@ tape('GET /validators?addr=addr', (t) => {
 		.catch(err => t.fail(err))
 })
 
-tape('POST /users', (t) => {
-	fetch(`${marketUrl}/user/list`, {
-		method: 'POST',
-		headers: {
-			'Content-type': 'application/json'
-		},
-		body: testData.users[0]
-	})
-		.then((res) => {
-			t.equals(res.success, true, 'user is added successfully')
-			fetch(`${marketUrl}/user/list`)
-				.then((res) => {
-					t.ok(Array.isArray(res), 'returns array')
-					t.equals(res.length, 2, '2 users, the previous one + the recently added one')
-					t.ok(res.some(obj => JSON.stringify(obj) === JSON.stringify(testData.users[0])), 'the new object has been added')
-					t.end()
-				})
-		})
-		.catch(err => t.fail(err))
-})
-
 tape('GET /user/list', (t) => {
-	fetch(`${marketUrl}/user/list`)
+	fetch(`${marketUrl}/users/list`)
 		.then(res => res.json())
 		.then((res) => {
 			t.ok(Array.isArray(res), 'returns array')
@@ -181,6 +161,7 @@ tape('GET /user/list', (t) => {
 		})
 		.catch(err => t.fail(err))
 })
+
 // TODO test user list with ?hasinteracted
 
 tape('GET /stats', (t) => {
@@ -205,26 +186,40 @@ tape('GET /stats', (t) => {
 			t.equals(res.advertiserCount, 1, 'advertiserCount is the right amount')
 			t.equals(res.anonPublisherCount, 0, 'anonPublisherCount is right amount')
 			t.equals(res.anonAdvertiserCount, 0, 'anonAdvertiserCount is of right amount')
-			t.equals(res.campaignCount, 2, 'campaignCount is of right amount')
-			t.equals(res.campaignsByStatus['live'], 2, 'live status are the right amount')
-			t.equals(res.totalSpentFundsByAssetType['DAI'], 1250, 'funds are the right amount')
+			t.equals(res.campaignCount, 1, 'campaignCount is of right amount')
+			t.equals(res.campaignsByStatus['Active'], 1, 'active status campaigns are the right amount')
+			t.equals(res.totalSpentFundsByAssetType['DAI'], 1000, 'funds are the right amount')
 			t.end()
 		})
 		.catch(err => t.fail(err))
 })
 
-tape('POST /media unauthorized', (t) => {
-	const stats = fs.statSync('./test/resources/img.jpg')
-	const fileSizeInBytes = stats.size
-
-	let readStream = fs.createReadStream('./test/resources/img.jpg')
-
-	fetch(`${marketUrl}/media`, {
+tape('POST /users', (t) => {
+	fetch(`${marketUrl}/users`, {
 		method: 'POST',
 		headers: {
-			'Content-length': fileSizeInBytes
+			'Content-type': 'application/json'
 		},
-		body: readStream
+		body: JSON.stringify(testData.user)
+	})
+		.then(res => res.json())
+		.then((res) => {
+			t.equals(res.success, true, 'user is added successfully')
+			fetch(`${marketUrl}/users/list`)
+				.then(res => res.json())
+				.then((res) => {
+					t.ok(Array.isArray(res), 'returns array')
+					t.equals(res.length, 2, '2 users, the previous one + the recently added one')
+					t.ok(res.some(obj => obj.identity === testData.user.identity && obj.signature === testData.user.signature), 'the new object has been added')
+					t.end()
+				})
+		})
+		.catch(err => t.fail(err))
+})
+
+tape('POST /media unauthorized', (t) => {
+	fetch(`${marketUrl}/media`, {
+		method: 'POST'
 	})
 	.then((res) => {
 		t.equals(res.status, 403, 'Unauthorized to post')
@@ -239,25 +234,26 @@ tape('POST on authorized routes', (t) => {
 		headers: {
 			'Content-type': 'application/json'
 		},
-		body: mockAuthObj
+		body: JSON.stringify(mockAuthObj)
 	})
-	.then((res) => {
-		const { authSig } = res
-		const stats = fs.statSync('./test/resources/img.jpg')
-		const fileSizeInBytes = stats.size
-		let readStream = fs.createReadStream('./test/resources/img.jpg')
+	.then(res => res.json())
+	.then((authResult) => {
+		const { signature } = authResult
+
+		const form = new FormData()
+		form.append('media', fs.createReadStream(`${__dirname}/../resources/img.jpg`))
 
 		const postMedia = fetch(`${marketUrl}/media`, {
 			method: 'POST',
 			headers: {
-				'Content-length': fileSizeInBytes,
-				'x-user-signature': authSig
+				'x-user-signature': signature
 			},
-			body: readStream
+			body: form
 		})
+		.then(res => res.json())
 		.then((res) => {
 			t.comment('POST on /media')
-			t.equals(res.status, 200, 'Post was successful')
+			t.equals(typeof res, 'object', 'Something is returned')
 			t.ok(res.hasOwnProperty('ipfs'), 'Returns something called ipfs')
 			t.equals(typeof res.ipfs, 'string', 'IPFS is a string')
 		})
@@ -266,17 +262,23 @@ tape('POST on authorized routes', (t) => {
 			method: 'POST',
 			headers: {
 				'Content-type': 'application/json',
-				'x-user-signature': authSig
+				'x-user-signature': signature
 			},
-			body: mockAdUnit
+			identity: '0x27e47D714fe59a13C008341Fc83588876b747c60',
+			body: JSON.stringify(mockAdUnit)
 		})
 		.then((res) => {
 			t.comment('POST /adunits tests')
-			t.equals(res.status, 200, 'submitted successfully')
-			fetch(`${marketUrl}/adunits`)
+			t.equals(res.status, 200, 'adunit submitted successfully')
+			fetch(`${marketUrl}/adunits`,
+				{
+					headers: { 'x-user-signature': signature },
+					identity: '0x27e47D714fe59a13C008341Fc83588876b747c60'
+				})
+				.then(res => res.json())
 				.then((res) => {
 					t.ok(Array.isArray(res), 'an array is returned')
-					t.equals(res.length, 4, 'new element is added')
+					t.equals(res.length, 4, 'new element is added') // 3 from test data + new one
 				})
 		})
 
@@ -284,9 +286,9 @@ tape('POST on authorized routes', (t) => {
 			method: 'POST',
 			headers: {
 				'Content-type': 'application/json',
-				'x-user-signature': authSig
+				'x-user-signature': signature
 			},
-			body: brokenAdUnit
+			body: JSON.stringify(brokenAdUnit)
 		})
 		.then((res) => {
 			t.comment('POST /adunits - bad data')
@@ -297,14 +299,20 @@ tape('POST on authorized routes', (t) => {
 			method: 'POST',
 			headers: {
 				'Content-type': 'application/json',
-				'x-user-signature': authSig
+				'x-user-signature': signature
 			},
-			body: mockAdSlot
+			identity: '0x27e47D714fe59a13C008341Fc83588876b747c60',
+			body: JSON.stringify(mockAdSlot)
 		})
 		.then((res) => {
 			t.comment('POST /adslots')
 			t.equals(res.status, 200, 'submitted successfully')
-			fetch(`${marketUrl}/adslots`)
+			fetch(`${marketUrl}/adslots`,
+				{
+					headers: { 'x-user-signature': signature },
+					identity: '0x27e47D714fe59a13C008341Fc83588876b747c60'
+				})
+				.then(res => res.json())
 				.then((res) => {
 					t.ok(Array.isArray(res), 'an array is returned')
 					t.equals(res.length, 2, 'new element is added')
@@ -315,16 +323,73 @@ tape('POST on authorized routes', (t) => {
 			method: 'POST',
 			headers: {
 				'Content-type': 'application/json',
-				'x-user-signature': authSig
+				'x-user-signature': signature
 			},
-			body: brokenAdSlot
+			body: JSON.stringify(brokenAdSlot)
 		})
 		.then((res) => {
 			t.comment('/POST adslots - bad data')
 			t.equals(res.status, 403, 'broken adslots cant be submitted')
 		})
 
-		Promise.all([postMedia, postAdUnit, postBadAdUnit, postAdSlot, postBadAdSlot])
+		const getAdUnits = fetch(`${marketUrl}/adunits`,
+			{
+				headers: {
+					'x-user-signature': signature
+				},
+				identity: '0x27e47D714fe59a13C008341Fc83588876b747c60'
+			})
+			.then(res => res.json())
+			.then((res) => {
+				t.ok(Array.isArray(res), 'returns array')
+				t.equals(res.length, 4, 'adunits are the right amount') // 3 from test data + posted one
+				t.ok(res[0].hasOwnProperty('type'), 'adUnit has property type')
+				t.ok(res[0].hasOwnProperty('mediaUrl'), 'adUnit has property mediaUrl')
+				t.ok(res[0].hasOwnProperty('targetUrl'), 'adUnit has property targetUrl')
+				t.ok(res[0].hasOwnProperty('tags'), 'adUnit has property tags')
+				t.ok(res[0].hasOwnProperty('owner'), 'adUnit has property owner')
+				t.equals(res[0].owner, '0x27e47D714fe59a13C008341Fc83588876b747c60', 'unit has correct owner')
+				t.ok(Array.isArray(res[0].tags))
+				t.ok(res[0].tags.length, 'unit has tags')
+			})
+			.catch(err => t.fail(err))
+		// TODO retrieve ID of posted unit/slot so we can target it with the commented out routes
+		// const getAdUnitsById = fetch(`${marketUrl}/adunits/(...)`, { headers: { 'x-user-signature': signature } })
+		// 	.then(res => res.json())
+		// 	.then((res) => {
+		// 		t.ok(Array.isArray(res), 'returns array')
+		// 		t.equals(res.length, 1, 'Only 1 ad unit is retrieved with get')
+		// 		t.equals(res[0].mediaUrl, 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t', 'returns item with correct ipfs hash')
+		// 	})
+		// 	.catch(err => t.fail(err))
+
+		const getAdSlots = fetch(`${marketUrl}/adslots`, { headers: { 'x-user-signature': signature }, identity: '0x27e47D714fe59a13C008341Fc83588876b747c60' })
+			.then(res => res.json())
+			.then((res) => {
+				t.ok(Array.isArray(res), 'returns array')
+				t.equals(res.length, 2, 'returns right amount of slots') // 1 by default + posted one
+				t.ok(res[0].hasOwnProperty('type'), 'slot has property type')
+				t.ok(res[0].hasOwnProperty('fallbackMediaUrl'), 'slot has property fallbackMediaUrl')
+				t.ok(res[0].hasOwnProperty('fallbackTargetUrl'), 'slot has property fallbackTargetUrl')
+				t.ok(res[0].hasOwnProperty('tags'), 'slot has property tags')
+				t.ok(res[0].hasOwnProperty('owner'), 'slot has property owner')
+				t.ok(Array.isArray(res[0].tags), 'slot has tags')
+				t.equals(res[0].tags.length, 2, 'slot has right amount of tags')
+			})
+			.catch(err => t.fail(err))
+
+		// const getAdSlotsById = fetch(`${marketUrl}/adslots/(...)`, { headers: { 'x-user-signature': signature } })
+		// 	.then(res => res.json())
+		// 	.then((res) => {
+		// 		t.ok(Array.isArray(res), 'returns array')
+		// 		t.equals(res.length, 1, 'returns 1 slot by ID')
+		// 		t.equals(res[0].fallbackMediaUrl, 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t', 'slot address is correct')
+		// 		t.equals(res[0].owner, '0x27e47D714fe59a13C008341Fc83588876b747c60', 'owner is correct')
+		// 		t.end()
+		// 	})
+		// 	.catch(err => t.fail(err))
+
+		Promise.all([postMedia, postAdUnit, postBadAdUnit, postAdSlot, postBadAdSlot, getAdUnits, getAdSlots])
 			.then(() => {
 				t.end()
 			})
@@ -339,7 +404,7 @@ tape('POST /auth with bad data', (t) => {
 		headers: {
 			'Content-type': 'application/json'
 		},
-		body: brokenAuthObj
+		body: JSON.stringify(brokenAuthObj)
 	})
 	.then((res) => {
 		t.equals(res.status, 400, 'Error with authenticating')
@@ -354,8 +419,9 @@ tape('POST /auth with correct data', (t) => {
 		headers: {
 			'Content-type': 'application/json'
 		},
-		body: mockAuthObj
+		body: JSON.stringify(mockAuthObj)
 	})
+	.then(res => res.json())
 	.then((res) => {
 		t.equals(res.status, 'OK', 'Request was successful')
 		t.equals(res.identity, mockAuthObj.identity, 'returns correct identity')
@@ -376,7 +442,7 @@ tape('POST /adunits unauthenticated', (t) => {
 		headers: {
 			'Content-type': 'application/json'
 		},
-		body: adUnit
+		body: JSON.stringify(adUnit)
 	})
 	.then((res) => {
 		t.equals(res.status, 403, 'Can\'t post unit when not authenticated')
@@ -385,80 +451,18 @@ tape('POST /adunits unauthenticated', (t) => {
 	.catch(err => t.fail(err))
 })
 
-tape('GET /adunits', (t) => {
-	fetch(`${marketUrl}/adunits`)
-	.then(res => res.json())
-	.then((res) => {
-		t.ok(Array.isArray(res), 'returns array')
-		t.equals(res.length, 3, 'adunits are the right amount')
-		t.ok(res[0].hasOwnProperty('type'), 'adUnit has property')
-		t.ok(res[0].hasOwnProperty('media'), 'adUnit has property')
-		t.ok(res[0].hasOwnProperty('targetUrl'), 'adUnit has property')
-		t.ok(res[0].hasOwnProperty('tags'), 'adUnit has property')
-		t.ok(res[0].hasOwnProperty('owner'), 'adUnit has property')
-		t.equals(res[0].owner, '0x000000000000000078787874656e746163696f6e', 'unit has correct owner')
-		t.ok(Array.isArray(res[0].tags))
-		t.ok(res[0].tags.length, 'unit has tags')
-		t.end()
-	})
-	.catch(err => t.fail(err))
-})
-
-tape('GET /adunits/:id', (t) => {
-	fetch(`${marketUrl}/adunits/QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t`)
-	.then(res => res.json())
-	.then((res) => {
-		t.ok(Array.isArray(res), 'returns array')
-		t.equals(res.length, 1, 'Only 1 ad unit is retrieved')
-		t.equals(res[0].mediaUrl, 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t', 'returns item with correct ipfs hash')
-		t.end()
-	})
-	.catch(err => t.fail(err))
-})
-
 tape('POST /adslots unauthenticated', (t) => {
-	const adSlot = testData.adSlots[0]
+	const adSlot = testData.adSlot
 
 	fetch(`${marketUrl}/adslots`, {
 		method: 'POST',
 		headers: {
 			'Content-type': 'application/json'
 		},
-		body: adSlot
+		body: JSON.stringify(adSlot)
 	})
 	.then((res) => {
 		t.equals(res.status, 403, 'Cannot post adslot when not authenticated')
-		t.end()
-	})
-	.catch(err => t.fail(err))
-})
-
-tape('GET /adslots', (t) => {
-	fetch(`${marketUrl}/adslots`)
-	.then(res => res.json())
-	.then((res) => {
-		t.ok(Array.isArray(res), 'returns array')
-		t.equals(res.length, 1, 'returns 1 slot')
-		t.ok(res[0].hasOwnProperty('type'), 'slot has property type')
-		t.ok(res[0].hasOwnProperty('fallbackMediaUrl'), 'slot has property fallbackMediaUrl')
-		t.ok(res[0].hasOwnProperty('fallbackTargetUrl'), 'slot has property fallbackTargetUrl')
-		t.ok(res[0].hasOwnProperty('tags'), 'slot has property tags')
-		t.ok(res[0].hasOwnProperty('owner'), 'slot has property owner')
-		t.ok(Array.isArray(res[0].tags), 'slot has tags')
-		t.equals(res[0].tags.length, 2, 'slot has right amount of tags')
-		t.end()
-	})
-	.catch(err => t.fail(err))
-})
-
-tape('GET /adslots/:id', (t) => {
-	fetch(`${marketUrl}/adslots/QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t`)
-	.then(res => res.json())
-	.then((res) => {
-		t.ok(Array.isArray(res), 'returns array')
-		t.equals(res.length, 1, 'returns 1 slot')
-		t.equals(res[0].fallbackMediaUrl, 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t', 'slot address is correct')
-		t.equals(res[0].owner, '0x78787874656e746163696f6e0000000000000000', 'owner is correct')
 		t.end()
 	})
 	.catch(err => t.fail(err))

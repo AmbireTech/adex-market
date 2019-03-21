@@ -55,12 +55,12 @@ db.connect()
 	.then(() => {
 		if (process.env.ENVIRONMENT === 'test') {
 			console.log('Seeding DB for tests', process.env.DB_MONGO_NAME)
-			seedDb(db.getMongo())
+			return seedDb(db.getMongo())
 		} else {
-			Promise.resolve()
+			return Promise.resolve()
 		}
 	})
-	.then(() => {
+	.then((res) => {
 		startStatusLoop()
 	})
 	.then(() => {
