@@ -53,7 +53,7 @@ app.use('/media', signatureCheck, mediaRoutes)
 
 db.connect()
 	.then(() => {
-		if (process.env.ENVIRONMENT === 'test') {
+		if (process.env.NODE_ENV === 'test') {
 			console.log('Seeding DB for tests', process.env.DB_MONGO_NAME)
 			return seedDb(db.getMongo())
 		} else {
