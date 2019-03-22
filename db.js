@@ -6,15 +6,15 @@ const dbName = process.env.DB_MONGO_NAME || 'adexMarket'
 let mongoClient = null
 
 function connect () {
-  return MongoClient.connect(url, { useNewUrlParser: true })
-    .then(function (client) {
-      mongoClient = client
-    })
+	return MongoClient.connect(url, { useNewUrlParser: true })
+		.then(function (client) {
+			mongoClient = client
+		})
 }
 
 function getMongo () {
-  if (mongoClient) return mongoClient.db(dbName)
-  else return null
+	if (mongoClient) return mongoClient.db(dbName)
+	else return null
 }
 
 module.exports = { connect, getMongo }
