@@ -8,11 +8,7 @@ router.get('/list', getUserList)
 
 function postUser (req, res, next) {
   const usersCol = db.getMongo().collection('users')
-  const user = req.body // userid, signature, authToken, mode (sigMode), typedData, hash, prefixed
-  // Assuming user has properties:
-  // role (to distinguish advertisers/publishers),
-  // channels, withdrawn (so we can get hasInteracted)
-
+  const user = req.body
   usersCol
     .insertOne(user)
     .then(() => res.send({ success: true }))
