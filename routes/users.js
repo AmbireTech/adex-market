@@ -1,14 +1,15 @@
 const express = require('express')
 const db = require('../db')
+const validateUser = require('../helpers/userValidator')
 
 const router = express.Router()
 
-router.post('/', postUser)
+router.post('/', validateUser, postUser)
 router.get('/list', getUserList)
 
 function postUser (req, res, next) {
 	const usersCol = db.getMongo().collection('users')
-	const user = req.body // userid, signature, authToken, mode (sigMode), typedData, hash, prefixed
+	const user = req.body // identity, signature, authToken, mode (sigMode), typedData, hash, prefixed
 	// Assuming user has properties:
 	// role (to distinguish advertisers/publishers),
 	// channels, withdrawn (so we can get hasInteracted)
