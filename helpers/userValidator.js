@@ -1,25 +1,18 @@
 const signModes = [0, 1, 2]
 const roles = ['publisher', 'advertiser']
+const addressRegex = /^0x[0-9A-Fa-f]{40}$/
+const signatureRegex = /^0x[0-9A-Fa-f]{130}$/
 
 function isIdentityOk (identity) {
-	if (typeof identity !== 'string' || identity.length !== 42 || identity.startsWith('0x')) {
-		return false
-	}
-	return true
+	return addressRegex.test(identity)
 }
 
 function isAddressOk (address) {
-	if (typeof address !== 'string' || address.length !== 42 || address.startsWith('0x')) {
-		return false
-	}
-	return true
+	return addressRegex.test(address)
 }
 
 function isSignatureOk (signature) {
-	if (typeof signature !== 'string' || signature.length !== 132 || signature.startsWith('0x')) {
-		return false
-	}
-	return true
+	return signatureRegex.test(signature)
 }
 
 function isAuthTokenOk (authToken) {
