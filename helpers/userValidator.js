@@ -74,7 +74,6 @@ function validateUser (req, res, next) {
 		isHashOk(user.hash),
 		// optional properties
 		user.hasOwnProperty('typedData') ? isTypedDataOk(user.typedData) : true,
-		user.hasOwnProperty('prefixed') ? isPrefixedOk(user.prefixed) : true,
 		user.hasOwnProperty('roles') ? isRoleOk(user.roles) : true,
 		user.hasOwnProperty('channel') ? isChannelOk(user.channel) : true,
 		user.hasOwnProperty('withdrawn') ? isWithdrawnOk(user.withdrawn) : true
