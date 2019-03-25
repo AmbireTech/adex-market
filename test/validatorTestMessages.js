@@ -1,7 +1,33 @@
-const nowDate = new Date().toISOString()
-const notNowDate = new Date(Date.now() - 1000).toISOString()
-const oldDate = new Date(Date.now() - 10000000).toISOString()
-const inTheFuture = new Date(Date.now() + 10000000).toISOString()
+const nowDate = Date.now().toString(16).padStart(64, 0)
+const notNowDate = (Date.now() - 1000).toString(16).padStart(64, 0)
+const oldDate = (Date.now() - 10000000).toString(16).padStart(64, 0)
+const inTheFuture = (Date.now() + 10000000).toString(16).padStart(64, 0)
+const ObjectId = require('mongodb').ObjectId
+const heartbeatMessageOldDate = {
+	_id: ObjectId('5c861dc5f0b12d358bcf1f1b'),
+	channelId: 'awesomeTestChannel',
+	from: 'awesomeFollower',
+	submittedBy: 'awesomeFollower',
+	msg: {
+		type: 'Heartbeat',
+		timestamp: oldDate,
+		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower',
+		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24'
+	}
+}
+
+const heartbeatMessageNowDate = {
+	_id: ObjectId('5c861dc5f0b12d358bcf1f1b'),
+	channelId: 'awesomeTestChannel',
+	from: 'awesomeFollower',
+	submittedBy: 'awesomeFollower',
+	msg: {
+		type: 'Heartbeat',
+		timestamp: nowDate,
+		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower',
+		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24'
+	}
+}
 
 // Empty messages
 const initializingMessages1 = [
@@ -9,42 +35,42 @@ const initializingMessages1 = [
 	[]
 ]
 const initializingMessages2 = [
-	[{ type: 'Heartbeat', timestamp: nowDate, signature: 'signature for test message' }],
+	[heartbeatMessageNowDate],
 	[]
 ]
 const initializingMessages3 = [
 	[],
-	[{ type: 'Heartbeat', timestamp: nowDate, signature: 'signature for test message' }]
+	[heartbeatMessageNowDate]
 ]
 
 // Not empty messages
 const notInitializingMessages = [
-	[{ type: 'Heartbeat', timestamp: nowDate, signature: 'signature for test message' }],
-	[{ type: 'Heartbeat', timestamp: nowDate, signature: 'signature for test message' }]
+	[heartbeatMessageNowDate],
+	[heartbeatMessageNowDate]
 ]
 
 // No recent heartbeat on both
 const offlineMessages1 = [
-	[{ type: 'Heartbeat', timestamp: oldDate, signature: 'signature for test message' }],
-	[{ type: 'Heartbeat', timestamp: oldDate, signature: 'signature for test message' }]
+	[heartbeatMessageOldDate],
+	[heartbeatMessageOldDate]
 ]
 
 // No recent heartbeat on second
 const offlineMessages2 = [
-	[{ type: 'Heartbeat', timestamp: nowDate, signature: 'signature for test message' }],
-	[{ type: 'Heartbeat', timestamp: oldDate, signature: 'signature for test message' }]
+	[heartbeatMessageNowDate],
+	[heartbeatMessageOldDate]
 ]
 
 // No recent heartbeat on first
 const offlineMessages3 = [
-	[{ type: 'Heartbeat', timestamp: oldDate, signature: 'signature for test message' }],
-	[{ type: 'Heartbeat', timestamp: nowDate, signature: 'signature for test message' }]
+	[heartbeatMessageOldDate],
+	[heartbeatMessageNowDate]
 ]
 
 // Recent heartbeat on both
 const notOfflineMessages = [
-	[{ type: 'Heartbeat', timestamp: nowDate, signature: 'signature for test message' }],
-	[{ type: 'Heartbeat', timestamp: nowDate, signature: 'signature for test message' }]
+	[heartbeatMessageNowDate],
+	[heartbeatMessageNowDate]
 ]
 
 // More than 50% of messages dont match
