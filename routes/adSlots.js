@@ -39,7 +39,8 @@ function getAdSlotById (req, res, next) {
 }
 
 function postAdSlot (req, res, next) {
-	const { type, fallbackMediaUrl, fallbackTargetUrl, tags, identity } = req.body
+	const { type, fallbackMediaUrl, fallbackTargetUrl, tags } = req.body
+	const identity = req.identity
 	const adSlotsCol = db.getMongo().collection('adSlots')
 	const adSlot = { type, fallbackTargetUrl, tags, fallbackMediaUrl, owner: identity }
 
