@@ -5,7 +5,7 @@ const ipfsProtocol = process.env.IPFSPROTOCOL || 'https'
 const ipfs = ipfsClient(ipfsHost, ipfsPort, { protocol: ipfsProtocol })
 
 function addFileToIpfs (file) {
-	return ipfs.files.add(file)
+	return ipfs.add(file)
 		.then(function (res) {
 			if (res[0]) {
 				return res[0].hash
