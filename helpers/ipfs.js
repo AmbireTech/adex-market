@@ -1,12 +1,11 @@
-const ipfsAPI = require('ipfs-api')
+const ipfsClient = require('ipfs-http-client')
 const ipfsHost = process.env.IPFSHOST || 'ipfs.adex.network'
 const ipfsPort = process.env.IPFSPORT || '8443'
 const ipfsProtocol = process.env.IPFSPROTOCOL || 'https'
-
-const ipfs = ipfsAPI(ipfsHost, ipfsPort, { protocol: ipfsProtocol })
+const ipfs = ipfsClient(ipfsHost, ipfsPort, { protocol: ipfsProtocol })
 
 function addFileToIpfs (file) {
-	return ipfs.files.add(file)
+	return ipfs.add(file)
 		.then(function (res) {
 			if (res[0]) {
 				return res[0].hash

@@ -29,8 +29,8 @@ function authUser (req, res, next) {
 					let sessionExpiryTime = Date.now() + cfg.sessionExpiryTime
 
 					// TODO change if needed when it is known how the result will look like
-					if (privileges > 0) {
-						redisClient.set('session:' + signature, JSON.stringify({ 'address': recoveredAddr, 'authToken': authToken, 'mode': mode, 'identity': identity, 'privileges': privileges }), (err, result) => {
+					if (privileges > 1) {
+						redisClient.set('session:' + signature, JSON.stringify({ 'address': recoveredAddr, 'authToken': authToken, 'mode': mode, 'identity': identity, 'privileges': res.privileges }), (err, result) => {
 							if (err != null) {
 								console.error('Error saving session data for user ' + recoveredAddr + ' :' + err)
 							} else {

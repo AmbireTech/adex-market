@@ -1,6 +1,20 @@
 [
   {
     "constant": true,
+    "inputs": [],
+    "name": "registryAddr",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
     "inputs": [
       {
         "name": "",
@@ -54,14 +68,6 @@
   {
     "inputs": [
       {
-        "name": "addr",
-        "type": "address"
-      },
-      {
-        "name": "privLevel",
-        "type": "uint8"
-      },
-      {
         "name": "feeTokenAddr",
         "type": "address"
       },
@@ -72,6 +78,18 @@
       {
         "name": "feeTokenAmount",
         "type": "uint256"
+      },
+      {
+        "name": "addrs",
+        "type": "address[]"
+      },
+      {
+        "name": "privLevels",
+        "type": "uint8[]"
+      },
+      {
+        "name": "regAddr",
+        "type": "address"
       }
     ],
     "payable": false,
