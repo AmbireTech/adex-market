@@ -1,10 +1,9 @@
 const express = require('express')
 const db = require('../db')
-const validateUser = require('../helpers/userValidator')
 
 const router = express.Router()
 
-router.post('/', validateUser, postUser)
+router.post('/', postUser)
 router.get('/list', getUserList)
 
 function postUser (req, res, next) {
