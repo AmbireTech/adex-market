@@ -228,7 +228,7 @@ tape('POST /media unauthorized', (t) => {
 	.catch(err => t.fail(err))
 })
 
-tape('POST on authorized routes', (t) => {
+tape('GET/POST on authorized routes', (t) => {
 	fetch(`${marketUrl}/auth`, {
 		method: 'POST',
 		headers: {
@@ -242,6 +242,43 @@ tape('POST on authorized routes', (t) => {
 
 		const form = new FormData()
 		form.append('media', fs.createReadStream(`${__dirname}/../resources/img.jpg`))
+
+		const getAdSlots = fetch(`${marketUrl}/adslots`, { headers: { 'x-user-signature': signature }, identity: '0x27e47D714fe59a13C008341Fc83588876b747c60' })
+		.then(res => res.json())
+		.then((res) => {
+			t.ok(Array.isArray(res), 'returns array')
+			t.equals(res.length, 1, 'returns right amount of slots')
+			t.ok(res[0].hasOwnProperty('type'), 'slot has property type')
+			t.ok(res[0].hasOwnProperty('fallbackMediaUrl'), 'slot has property fallbackMediaUrl')
+			t.ok(res[0].hasOwnProperty('fallbackTargetUrl'), 'slot has property fallbackTargetUrl')
+			t.ok(res[0].hasOwnProperty('tags'), 'slot has property tags')
+			t.ok(res[0].hasOwnProperty('owner'), 'slot has property owner')
+			t.ok(Array.isArray(res[0].tags), 'slot has tags')
+			t.equals(res[0].tags.length, 2, 'slot has right amount of tags')
+		})
+		.catch(err => t.fail(err))
+
+		const getAdUnits = fetch(`${marketUrl}/adunits`,
+		{
+			headers: {
+				'x-user-signature': signature
+			},
+			identity: '0x27e47D714fe59a13C008341Fc83588876b747c60'
+		})
+		.then(res => res.json())
+		.then((res) => {
+			t.ok(Array.isArray(res), 'returns array')
+			t.equals(res.length, 3, 'adunits are the right amount')
+			t.ok(res[0].hasOwnProperty('type'), 'adUnit has property type')
+			t.ok(res[0].hasOwnProperty('mediaUrl'), 'adUnit has property mediaUrl')
+			t.ok(res[0].hasOwnProperty('targetUrl'), 'adUnit has property targetUrl')
+			t.ok(res[0].hasOwnProperty('tags'), 'adUnit has property tags')
+			t.ok(res[0].hasOwnProperty('owner'), 'adUnit has property owner')
+			t.equals(res[0].owner, '0x27e47D714fe59a13C008341Fc83588876b747c60', 'unit has correct owner')
+			t.ok(Array.isArray(res[0].tags))
+			t.ok(res[0].tags.length, 'unit has tags')
+		})
+		.catch(err => t.fail(err))
 
 		const postMedia = fetch(`${marketUrl}/media`, {
 			method: 'POST',
@@ -332,27 +369,6 @@ tape('POST on authorized routes', (t) => {
 			t.equals(res.status, 403, 'broken adslots cant be submitted')
 		})
 
-		const getAdUnits = fetch(`${marketUrl}/adunits`,
-			{
-				headers: {
-					'x-user-signature': signature
-				},
-				identity: '0x27e47D714fe59a13C008341Fc83588876b747c60'
-			})
-			.then(res => res.json())
-			.then((res) => {
-				t.ok(Array.isArray(res), 'returns array')
-				t.equals(res.length, 4, 'adunits are the right amount') // 3 from test data + posted one
-				t.ok(res[0].hasOwnProperty('type'), 'adUnit has property type')
-				t.ok(res[0].hasOwnProperty('mediaUrl'), 'adUnit has property mediaUrl')
-				t.ok(res[0].hasOwnProperty('targetUrl'), 'adUnit has property targetUrl')
-				t.ok(res[0].hasOwnProperty('tags'), 'adUnit has property tags')
-				t.ok(res[0].hasOwnProperty('owner'), 'adUnit has property owner')
-				t.equals(res[0].owner, '0x27e47D714fe59a13C008341Fc83588876b747c60', 'unit has correct owner')
-				t.ok(Array.isArray(res[0].tags))
-				t.ok(res[0].tags.length, 'unit has tags')
-			})
-			.catch(err => t.fail(err))
 		// TODO retrieve ID of posted unit/slot so we can target it with the commented out routes
 		// const getAdUnitsById = fetch(`${marketUrl}/adunits/(...)`, { headers: { 'x-user-signature': signature } })
 		// 	.then(res => res.json())
@@ -362,21 +378,6 @@ tape('POST on authorized routes', (t) => {
 		// 		t.equals(res[0].mediaUrl, 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t', 'returns item with correct ipfs hash')
 		// 	})
 		// 	.catch(err => t.fail(err))
-
-		const getAdSlots = fetch(`${marketUrl}/adslots`, { headers: { 'x-user-signature': signature }, identity: '0x27e47D714fe59a13C008341Fc83588876b747c60' })
-			.then(res => res.json())
-			.then((res) => {
-				t.ok(Array.isArray(res), 'returns array')
-				t.equals(res.length, 2, 'returns right amount of slots') // 1 by default + posted one
-				t.ok(res[0].hasOwnProperty('type'), 'slot has property type')
-				t.ok(res[0].hasOwnProperty('fallbackMediaUrl'), 'slot has property fallbackMediaUrl')
-				t.ok(res[0].hasOwnProperty('fallbackTargetUrl'), 'slot has property fallbackTargetUrl')
-				t.ok(res[0].hasOwnProperty('tags'), 'slot has property tags')
-				t.ok(res[0].hasOwnProperty('owner'), 'slot has property owner')
-				t.ok(Array.isArray(res[0].tags), 'slot has tags')
-				t.equals(res[0].tags.length, 2, 'slot has right amount of tags')
-			})
-			.catch(err => t.fail(err))
 
 		// const getAdSlotsById = fetch(`${marketUrl}/adslots/(...)`, { headers: { 'x-user-signature': signature } })
 		// 	.then(res => res.json())
