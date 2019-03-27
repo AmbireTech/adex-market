@@ -9,17 +9,22 @@ const router = express.Router()
 
 router.post('/', authUser)
 
-function callToContract (identity) {
+// TODO: use ethers ans async
+function callToContract (identity, walletAddress) {
 	const identityContract = web3.eth.Contract(identityAbi, identity)
-	return identityContract.methods.privileges.call()
+	return identityContract.methods.privileges(walletAddress).call()
 }
 
 function authUser (req, res, next) {
-	const { identity, mode, signature, authToken, hash, typedData } = req.body
+	const { identity, mode, signature, authToken, hash, typedData, signerAddress } = req.body
 	return getAddrFromSignedMsg({ mode: mode, signature: signature, hash: hash, typedData: typedData, msg: authToken })
 		.then((recoveredAddr) => {
-			recoveredAddr = recoveredAddr.toLowerCase()
-			return callToContract(identity)
+			const walletAddress = recoveredAddr.toLowerCase()
+			if (walletAddress !== signerAddress.toLowerCase()) {
+				return res.status(400).send('Invalid signature')
+			}
+
+			return callToContract(identity, walletAddress)
 				.then((res) => {
 					let sessionExpiryTime = Date.now() + cfg.sessionExpiryTime
 
@@ -38,15 +43,14 @@ function authUser (req, res, next) {
 								})
 							}
 						})
+					} else {
+						return res.status(400).send('Invalid privileges')
 					}
-				})
-				.catch((err) => {
-					console.error('error making call to the contract', err)
 				})
 		})
 		.catch((err) => {
-			console.log('Error getting addr from signed msg', err)
-			return err
+			console.error('Error getting addr from signed msg', err)
+			return res.status(500).send('Server error')
 		})
 }
 
