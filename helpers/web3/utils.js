@@ -1,41 +1,31 @@
 const sigUtil = require('eth-sig-util')
 const ethereumjs = require('ethereumjs-util')
 const { toBuffer, ecrecover, pubToAddress } = ethereumjs
-const { web3, web3Utils } = require('./ADX')
+const { web3Utils } = require('./ADX')
+const { ethers } = require('./ethers')
 let { SIGN_TYPES } = require('adex-constants').exchange
 
-const getAddrFromPersonalSignedMsg = ({ signature, hash, msg, prefixed = false }) => {
-	return new Promise((resolve, reject) => {
-		// NOTE: When we use LEDGER we sign typed data and the 'hash' from it
-		// Currently we use personalMessahe hash for adview signature and it comes as msg
-		// TODO: make it consistent
-		const recoverFrom = hash || web3.eth.accounts.hashMessage(msg)
-		prefixed = !hash || prefixed // NOTE: TEMP - When signed from adex-view
-
-		let user
-		try {
-			user = web3.eth.accounts.recover(recoverFrom, signature, prefixed)
-			return resolve(user)
-		} catch (err) {
-			console.error('err with getting signature')
-			return reject(err)
-		}
-	})
+const getAddrFromPersonalSignedMsg = async ({ signature, hash }) => {
+	try {
+		const hashBytes = ethers.utils.arrayify(hash)
+		const recoveredAddress = ethers.utils.verifyMessage(hashBytes, signature)
+		return recoveredAddress
+	} catch (err) {
+		console.log('err with getting signature')
+		return err
+	}
 }
 
-const getAddrFromEipTypedSignedMsg = ({ signature, typedData }) => {
-	return new Promise((resolve, reject) => {
-		let user
-		try {
-			user = sigUtil.recoverTypedSignature({
-				data: typedData,
-				sig: signature
-			})
-			return resolve(user)
-		} catch (err) {
-			return reject(err)
-		}
-	})
+const getAddrFromEipTypedSignedMsg = async ({ signature, typedData }) => {
+	try {
+		const user = sigUtil.recoverTypedSignature({
+			data: typedData,
+			sig: signature
+		})
+		return user
+	} catch (err) {
+		return err
+	}
 }
 
 const getRsvFromSig = (sig) => {
@@ -48,21 +38,19 @@ const getRsvFromSig = (sig) => {
 	return { r: r, s: s, v: v }
 }
 
-const getAddrFromTrezorSignedMsg = ({ signature, hash }) => {
-	return new Promise((resolve, reject) => {
-		try {
-			let msg = web3Utils.soliditySha3('\x19Ethereum Signed Message:\n\x20', hash)
-			console.log('msg', msg)
-			let sig = getRsvFromSig(signature)
-			let pubKey = ecrecover(toBuffer(msg), sig.v, toBuffer(sig.r), toBuffer(sig.s))
-			let addr = pubToAddress(pubKey)
-			addr = '0x' + addr.toString('hex')
+const getAddrFromTrezorSignedMsg = async ({ signature, hash }) => {
+	try {
+		// TODO: use ethers
+		const msg = web3Utils.soliditySha3('\x19Ethereum Signed Message:\n\x20', hash)
+		console.log('msg', msg)
+		const sig = getRsvFromSig(signature)
+		const pubKey = ecrecover(toBuffer(msg), sig.v, toBuffer(sig.r), toBuffer(sig.s))
+		const addr = '0x' + pubToAddress(pubKey).toString('hex')
 
-			return resolve(addr)
-		} catch (err) {
-			return reject(err)
-		}
-	})
+		return addr
+	} catch (err) {
+		return err
+	}
 }
 
 // TODO Figure out what to do with typedData
