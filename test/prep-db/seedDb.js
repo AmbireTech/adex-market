@@ -1,4 +1,6 @@
 /* eslint-disable no-undef */
+const identityAddr = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
+
 const testData = {
 	campaign: {
 		_id: 'testCampaign1',
@@ -19,7 +21,7 @@ const testData = {
 		{ _id: 'awesomeFollower', id: 'awesomeFollower', url: 'http://localhost:8006', status: 'active', addr: '0x0000000000000000667265652036697839696e65' }
 	],
 	user: {
-		identity: '0x27e47D714fe59a13C008341Fc83588876b747c60',
+		identity: identityAddr,
 		address: '0x2aecf52abe359820c48986046959b4136afdfbe2',
 		signature: '0x71860f64f682392b891b9a32315979d48b45b32f351aa9e6719eb42bc1eddd0105fc65ab3aedc0d6a64d151427c64c6264c291ff2bbaab1aff801e32fde8fa861b',
 		mode: 1,
@@ -34,21 +36,21 @@ const testData = {
 			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 			targetUrl: 'https://google.com',
 			tags: [{ tag: 'games', score: 42 }, { tag: 'usa', score: 60 }],
-			owner: '0x27e47D714fe59a13C008341Fc83588876b747c60'
+			owner: identityAddr
 		},
 		{
 			type: 'legacy_160x600',
 			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb23',
 			targetUrl: 'https://google.com',
 			tags: [{ tag: 'movies', score: 90 }, { tag: 'captain-marvel', score: 0 }],
-			owner: '0x27e47D714fe59a13C008341Fc83588876b747c60'
+			owner: identityAddr
 		},
 		{
 			type: 'legacy_728x90',
 			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb24',
 			targetUrl: 'https://google.com',
 			tags: [{ tag: 'music', score: 70 }, { tag: 'rap', score: 100 }],
-			owner: '0x27e47D714fe59a13C008341Fc83588876b747c60'
+			owner: identityAddr
 		}
 	],
 	adSlot: {
@@ -56,7 +58,7 @@ const testData = {
 		fallbackMediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 		fallbackTargetUrl: 'https://google.com',
 		tags: [{ tag: 'games', score: 42 }, { tag: 'usa', score: 60 }],
-		owner: '0x27e47D714fe59a13C008341Fc83588876b747c60'
+		owner: identityAddr
 	}
 }
 

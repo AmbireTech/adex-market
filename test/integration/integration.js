@@ -6,13 +6,15 @@ const fs = require('fs')
 const testData = require('../prep-db/seedDb').testData
 const FormData = require('form-data')
 
+const identityAddr = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
+
 const addrRegex40 = /^0x[0-9A-Fa-f]{40}$/
 const addrRegex64 = /^0x[0-9A-Fa-f]{64}$/
 const addrRegex130 = /^0x[0-9A-Fa-f]{130}$/
 
 // TODO export those and other repetitive data into integrationTestsConstants module
 const mockAuthObj = {
-	identity: '0x27e47D714fe59a13C008341Fc83588876b747c60',
+	identity: identityAddr,
 	address: '0x2aecf52abe359820c48986046959b4136afdfbe2',
 	signature: '0x71860f64f682392b891b9a32315979d48b45b32f351aa9e6719eb42bc1eddd0105fc65ab3aedc0d6a64d151427c64c6264c291ff2bbaab1aff801e32fde8fa861b',
 	mode: 1,
@@ -36,7 +38,7 @@ const mockAdUnit = 	{
 	mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb25',
 	targetUrl: 'https://google.com',
 	tags: [{ tag: 'music', score: 70 }, { tag: 'rap', score: 100 }],
-	owner: '0x27e47D714fe59a13C008341Fc83588876b747c60'
+	owner: identityAddr
 }
 
 const brokenAdUnit = {
@@ -44,7 +46,7 @@ const brokenAdUnit = {
 	mediaUrl: 'ipsfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb25',
 	targetUrl: 'htttps://google.com',
 	tags: [{ tag: 'music', score: 70 }, { tag: 'rap', score: 100 }],
-	owner: '0x27e47D714fe59a13C008341Fc83588876b747c60'
+	owner: identityAddr
 }
 
 const mockAdSlot = 	{
@@ -52,7 +54,7 @@ const mockAdSlot = 	{
 	fallbackMediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 	fallbackTargetUrl: 'https://google.com',
 	tags: [{ tag: 'games', score: 42 }, { tag: 'usa', score: 60 }],
-	owner: '0x27e47D714fe59a13C008341Fc83588876b747c60'
+	owner: identityAddr
 }
 
 const brokenAdSlot = {
@@ -60,7 +62,7 @@ const brokenAdSlot = {
 	fallbackMediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 	fallbackTargetUrl: 'https://google.com',
 	tags: 'h4x0r',
-	owner: '0x27e47D714fe59a13C008341Fc83588876b747c60'
+	owner: identityAddr
 }
 
 tape('GET /campaigns', (t) => {
@@ -259,7 +261,7 @@ tape('GET/POST on authorized routes', (t) => {
 		const form = new FormData()
 		form.append('media', fs.createReadStream(`${__dirname}/../resources/img.jpg`))
 
-		const getAdSlots = fetch(`${marketUrl}/adslots`, { headers: { 'x-user-signature': signature }, identity: '0x27e47D714fe59a13C008341Fc83588876b747c60' })
+		const getAdSlots = fetch(`${marketUrl}/adslots`, { headers: { 'x-user-signature': signature }, identity: identityAddr })
 		.then(res => res.json())
 		.then((res) => {
 			t.ok(Array.isArray(res), 'returns array')
@@ -280,7 +282,7 @@ tape('GET/POST on authorized routes', (t) => {
 			headers: {
 				'x-user-signature': signature
 			},
-			identity: '0x27e47D714fe59a13C008341Fc83588876b747c60'
+			identity: identityAddr
 		})
 		.then(res => res.json())
 		.then((res) => {
@@ -292,7 +294,7 @@ tape('GET/POST on authorized routes', (t) => {
 			t.ok(res[0].hasOwnProperty('tags'), 'adUnit has property tags')
 			t.ok(res[0].hasOwnProperty('owner'), 'adUnit has property owner')
 			t.ok(addrRegex40.test(res[0].owner), 'Owner is a real address')
-			t.equals(res[0].owner, '0x27e47D714fe59a13C008341Fc83588876b747c60', 'unit has correct owner')
+			t.equals(res[0].owner, identityAddr, 'unit has correct owner')
 			t.ok(Array.isArray(res[0].tags))
 			t.ok(res[0].tags.length, 'unit has tags')
 		})
@@ -319,7 +321,7 @@ tape('GET/POST on authorized routes', (t) => {
 				'Content-type': 'application/json',
 				'x-user-signature': signature
 			},
-			identity: '0x27e47D714fe59a13C008341Fc83588876b747c60',
+			identity: identityAddr,
 			body: JSON.stringify(mockAdUnit)
 		})
 		.then((res) => {
@@ -328,7 +330,7 @@ tape('GET/POST on authorized routes', (t) => {
 			fetch(`${marketUrl}/adunits`,
 				{
 					headers: { 'x-user-signature': signature },
-					identity: '0x27e47D714fe59a13C008341Fc83588876b747c60'
+					identity: identityAddr
 				})
 				.then(res => res.json())
 				.then((res) => {
@@ -356,7 +358,7 @@ tape('GET/POST on authorized routes', (t) => {
 				'Content-type': 'application/json',
 				'x-user-signature': signature
 			},
-			identity: '0x27e47D714fe59a13C008341Fc83588876b747c60',
+			identity: identityAddr,
 			body: JSON.stringify(mockAdSlot)
 		})
 		.then((res) => {
@@ -365,7 +367,7 @@ tape('GET/POST on authorized routes', (t) => {
 			fetch(`${marketUrl}/adslots`,
 				{
 					headers: { 'x-user-signature': signature },
-					identity: '0x27e47D714fe59a13C008341Fc83588876b747c60'
+					identity: identityAddr
 				})
 				.then(res => res.json())
 				.then((res) => {
@@ -403,7 +405,7 @@ tape('GET/POST on authorized routes', (t) => {
 		// 		t.ok(Array.isArray(res), 'returns array')
 		// 		t.equals(res.length, 1, 'returns 1 slot by ID')
 		// 		t.equals(res[0].fallbackMediaUrl, 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t', 'slot address is correct')
-		// 		t.equals(res[0].owner, '0x27e47D714fe59a13C008341Fc83588876b747c60', 'owner is correct')
+		// 		t.equals(res[0].owner, identityAddr, 'owner is correct')
 		// 		t.end()
 		// 	})
 		// 	.catch(err => t.fail(err))
@@ -445,7 +447,7 @@ tape('POST /auth with correct data', (t) => {
 		t.equals(res.status, 'OK', 'Request was successful')
 		t.ok(addrRegex40.test(res.identity), 'Identity is a real identity')
 		t.ok(addrRegex130.test(res.signature), 'Signature is a real signature')
-		t.equals(res.identity, mockAuthObj.identity, 'returns correct identity')
+		t.equals(res.identity, identityAddr, 'returns correct identity')
 		t.equals(res.signature, mockAuthObj.signature, 'returns correct signature')
 		t.ok(res.hasOwnProperty('expiryTime'), 'returned object has expiry time')
 		t.equals(typeof res.expiryTime, 'number', 'expiry time is a number')
