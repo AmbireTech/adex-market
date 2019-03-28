@@ -248,7 +248,13 @@ tape('GET/POST on authorized routes', (t) => {
 	})
 	.then(res => res.json())
 	.then((authResult) => {
-		const { signature } = authResult
+		const { status, identity, signature, expiryTime } = authResult
+		t.equals(status, 'OK', 'authentication is successful')
+		t.equals(typeof identity, 'string', 'Identity is a string')
+		t.ok(addrRegex40.test(identity), 'Identity is a real identity')
+		t.equals(typeof signature, 'string', 'Signature is a string')
+		t.ok(addrRegex130.test(signature), 'Signature is a real signature')
+		t.equals(typeof expiryTime, 'number', 'Expiry time is a number')
 
 		const form = new FormData()
 		form.append('media', fs.createReadStream(`${__dirname}/../resources/img.jpg`))
@@ -265,6 +271,7 @@ tape('GET/POST on authorized routes', (t) => {
 			t.ok(res[0].hasOwnProperty('owner'), 'slot has property owner')
 			t.ok(Array.isArray(res[0].tags), 'slot has tags')
 			t.equals(res[0].tags.length, 2, 'slot has right amount of tags')
+			t.ok(addrRegex40.test(res[0].owner), 'Owner is a real address')
 		})
 		.catch(err => t.fail(err))
 
@@ -284,6 +291,7 @@ tape('GET/POST on authorized routes', (t) => {
 			t.ok(res[0].hasOwnProperty('targetUrl'), 'adUnit has property targetUrl')
 			t.ok(res[0].hasOwnProperty('tags'), 'adUnit has property tags')
 			t.ok(res[0].hasOwnProperty('owner'), 'adUnit has property owner')
+			t.ok(addrRegex40.test(res[0].owner), 'Owner is a real address')
 			t.equals(res[0].owner, '0x27e47D714fe59a13C008341Fc83588876b747c60', 'unit has correct owner')
 			t.ok(Array.isArray(res[0].tags))
 			t.ok(res[0].tags.length, 'unit has tags')
@@ -435,6 +443,8 @@ tape('POST /auth with correct data', (t) => {
 	.then(res => res.json())
 	.then((res) => {
 		t.equals(res.status, 'OK', 'Request was successful')
+		t.ok(addrRegex40.test(res.identity), 'Identity is a real identity')
+		t.ok(addrRegex130.test(res.signature), 'Signature is a real signature')
 		t.equals(res.identity, mockAuthObj.identity, 'returns correct identity')
 		t.equals(res.signature, mockAuthObj.signature, 'returns correct signature')
 		t.ok(res.hasOwnProperty('expiryTime'), 'returned object has expiry time')
