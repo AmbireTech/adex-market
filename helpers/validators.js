@@ -1,3 +1,5 @@
+const { celebrate, Joi, errors } = require('celebrate');
+
 // TODO: Move to constants or new helpers repo
 const types = ['legacy_250x250', 'legacy_468x60', 'legacy_336x280', 'legacy_728x90', 'legacy_120x600', 'legacy_160x600']
 
@@ -54,16 +56,16 @@ function adUnitValidator (req, res, next) {
 }
 
 function adSlotValidator (req, res, next) {
-	const { type, fallbackMediaUrl, fallbackTargetUrl, tags } = req.body
-	const isTypeOk = isTypeGood(type)
-	const isMediaUrlOk = isIpfsUrl(fallbackMediaUrl)
-	const isUrlOk = isUrl(fallbackTargetUrl)
-	const areTagsOk = validateTags(tags)
+	// const { type, fallbackMediaUrl, fallbackTargetUrl, tags } = req.body
+	// const isTypeOk = isTypeGood(type)
+	// const isMediaUrlOk = isIpfsUrl(fallbackMediaUrl)
+	// const isUrlOk = isUrl(fallbackTargetUrl)
+	// const areTagsOk = validateTags(tags)
 
-	if (isTypeOk && isUrlOk && areTagsOk && isMediaUrlOk) {
-		return next()
-	}
-	return res.status(403).send({ error: 'invalid data' })
+	// if (isTypeOk && isUrlOk && areTagsOk && isMediaUrlOk) {
+	// 	return next()
+	// }
+	// return res.status(403).send({ error: 'invalid data' })
 }
 
 module.exports = { adUnitValidator, adSlotValidator }

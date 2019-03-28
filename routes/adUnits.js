@@ -1,6 +1,7 @@
 const express = require('express')
 const db = require('../db')
 const { adUnitValidator } = require('../helpers/validators')
+const addDataToIpfs = require('../helpers/ipfs')
 
 const router = express.Router()
 
@@ -36,16 +37,25 @@ function getUnitById (req, res, next) {
 }
 
 function postUnit (req, res, next) {
-	const { type, mediaUrl, targetUrl, targeting, tags } = req.body
+	const { type, mediaUrl, mediaMime, targetUrl, targeting, tags, created, title, description, archived } = req.body
+	const identity = req.identity
+
+	const specForIpfs = JSON.stringify({ type, mediaUrl, mediaMime, targetUrl, targeting, tags, owner: identity, created })
 	const adUnitCol = db.getMongo().collection('adUnits')
-	const adUnit = { type, mediaUrl, targetUrl, targeting, tags, owner: req.identity }
-	return adUnitCol.insertOne(adUnit, (err, result) => {
-		if (err) {
-			console.error(new Error('error adding adUnit', err))
-			return res.status(418).send()
-		}
-		return res.status(200).send(adUnit)
-	})
+	const adUnit = { title, description, archived }
+	return addDataToIpfs(specForIpfs)
+		.then((dataHash) => {
+			adUnit['ipfs'] = dataHash
+			adUnit['modified'] = Date.now()
+
+			return adUnitCol.insertOne(adUnit, (err, result) => {
+				if (err) {
+					console.error(new Error('error adding adUnit', err))
+					return res.status(418).send()
+				}
+				return res.status(200).send(adUnit)
+			})
+		})
 }
 
 module.exports = router

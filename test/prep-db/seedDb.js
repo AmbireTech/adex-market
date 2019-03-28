@@ -22,7 +22,7 @@ const testData = {
 	],
 	user: {
 		identity: identityAddr,
-		address: '0x2aecf52abe359820c48986046959b4136afdfbe2',
+		signerAddress: '0x2aecf52abe359820c48986046959b4136afdfbe2',
 		signature: '0x71860f64f682392b891b9a32315979d48b45b32f351aa9e6719eb42bc1eddd0105fc65ab3aedc0d6a64d151427c64c6264c291ff2bbaab1aff801e32fde8fa861b',
 		mode: 1,
 		authToken: '7036680048500819',

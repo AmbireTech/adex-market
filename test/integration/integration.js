@@ -15,7 +15,7 @@ const addrRegex130 = /^0x[0-9A-Fa-f]{130}$/
 // TODO export those and other repetitive data into integrationTestsConstants module
 const mockAuthObj = {
 	identity: identityAddr,
-	address: '0x2aecf52abe359820c48986046959b4136afdfbe2',
+	signerAddress: '0x2aecf52abe359820c48986046959b4136afdfbe2',
 	signature: '0x71860f64f682392b891b9a32315979d48b45b32f351aa9e6719eb42bc1eddd0105fc65ab3aedc0d6a64d151427c64c6264c291ff2bbaab1aff801e32fde8fa861b',
 	mode: 1,
 	authToken: '7036680048500819',
@@ -25,7 +25,7 @@ const mockAuthObj = {
 
 const brokenAuthObj = {
 	identity: '0xa624dEe05d96A0b3E441d0ee3b25Cc5CC0b5b836',
-	address: '0x2aecf52abe359820c48986046959b4136afdfbe2',
+	signerAddress: '0x2aecf52abe359820c48986046959b4136afdfbe2',
 	signature: '0x71860f64f682392b891b9a32315979d48b45b32f351aa9e6719eb42bc1eddd0105fc65ab3aedc0d6a64d151427c64c6264c291ff2bbaab1aff801e32fde8fa861b',
 	mode: '1',
 	authToken: '7036680048500819',
@@ -164,7 +164,7 @@ tape('GET /user/list', (t) => {
 			t.ok(Array.isArray(res), 'returns array')
 			t.equals(res.length, 1, 'correct number of users')
 			t.ok(res[0].hasOwnProperty('identity'), 'user has identity address')
-			t.equals(res[0].address, '0x2aecf52abe359820c48986046959b4136afdfbe2', 'correct address')
+			t.equals(res[0].signerAddress, '0x2aecf52abe359820c48986046959b4136afdfbe2', 'correct address')
 			t.end()
 		})
 		.catch(err => t.fail(err))
@@ -219,7 +219,7 @@ tape('POST /users', (t) => {
 					t.ok(Array.isArray(res), 'returns array')
 					t.equals(res.length, 2, '2 users, the previous one + the recently added one')
 					t.ok(res.some(obj => obj.identity === testData.user.identity && obj.signature === testData.user.signature), 'the new object has been added')
-					t.ok(addrRegex40.test(res[0].address) && addrRegex40.test(res[1].address), 'Adress of users is real address')
+					t.ok(addrRegex40.test(res[0].signerAddress) && addrRegex40.test(res[1].signerAddress), 'Adress of users is real address')
 					t.ok(addrRegex40.test(res[0].identity) && addrRegex40.test(res[1].identity), 'Identity of users is real address')
 					t.ok(addrRegex130.test(res[0].signature) && addrRegex130.test(res[1].signature), 'Signature of users is real signature')
 					t.ok(addrRegex64.test(res[0].hash) && addrRegex64.test(res[1].hash), 'Hash of users is correct')
@@ -428,7 +428,7 @@ tape('POST /auth with bad data', (t) => {
 		body: JSON.stringify(brokenAuthObj)
 	})
 	.then((res) => {
-		t.equals(res.status, 400, 'Error with authenticating')
+		t.equals(res.status, 500, 'Error with authenticating')
 		t.end()
 	})
 	.catch(err => t.fail(err))
