@@ -7,7 +7,7 @@ let url
 if (process.env.NODE_ENV === 'production') {
 	url = `https://mainnet.infura.io/v3/${process.env.API_KEY}`
 } else {
-	url = `https://kovan.infura.io/v3/${process.env.API_KEY}`
+	url = `https://goerli.infura.io/v3/${process.env.API_KEY}`
 }
 
 let provider = new Web3.providers.HttpProvider(url)

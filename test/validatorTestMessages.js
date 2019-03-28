@@ -29,6 +29,45 @@ const heartbeatMessageNowDate = {
 	}
 }
 
+const heartbeatMessageNowDate2 = {
+	_id: ObjectId('5c861dc5f0b12d358bcf1f1b'),
+	channelId: 'awesomeTestChannel',
+	from: 'awesomeFollower',
+	submittedBy: 'awesomeFollower',
+	msg: {
+		type: 'Heartbeat',
+		timestamp: nowDate,
+		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 2',
+		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24'
+	}
+}
+
+const heartbeatMessageNowDate3 = {
+	_id: ObjectId('5c861dc5f0b12d358bcf1f1b'),
+	channelId: 'awesomeTestChannel',
+	from: 'awesomeFollower',
+	submittedBy: 'awesomeFollower',
+	msg: {
+		type: 'Heartbeat',
+		timestamp: nowDate,
+		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 3',
+		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24'
+	}
+}
+
+const heartbeatMessageNowDate4 = {
+	_id: ObjectId('5c861dc5f0b12d358bcf1f1b'),
+	channelId: 'awesomeTestChannel',
+	from: 'awesomeFollower',
+	submittedBy: 'awesomeFollower',
+	msg: {
+		type: 'Heartbeat',
+		timestamp: nowDate,
+		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 4',
+		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24'
+	}
+}
+
 // Empty messages
 const initializingMessages1 = [
 	[],
@@ -76,39 +115,40 @@ const notOfflineMessages = [
 // More than 50% of messages dont match
 const disconnectedMessages1 = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 2' }
+		heartbeatMessageNowDate,
+		heartbeatMessageNowDate2
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 5' },
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 6' }
+		heartbeatMessageNowDate3,
+		heartbeatMessageNowDate4
 	]
 ]
 
 // 50% of messages match
 const disconnectedMessages2 = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 2' }
+		heartbeatMessageNowDate,
+		heartbeatMessageNowDate2
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 6' }
+		heartbeatMessageNowDate,
+		heartbeatMessageNowDate3
 	]
 ]
 
 // Majority of messages match
 const notDisconnectedMessages = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 2' }
+		heartbeatMessageNowDate,
+		heartbeatMessageNowDate2
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 2' }
+		heartbeatMessageNowDate,
+		heartbeatMessageNowDate2
 	]
 ]
 
+// TODO: Fix when new implementation is done
 // Messages dont match due to different stateroot
 const disconnectedMessages3 = [
 	[
