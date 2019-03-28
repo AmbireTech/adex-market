@@ -8,6 +8,7 @@ let mongoClient = null
 function connect () {
 	return MongoClient.connect(url, { useNewUrlParser: true })
 		.then(function (client) {
+			console.log(`Great success - mongo connected to ${dbName}`)
 			mongoClient = client
 		})
 }
