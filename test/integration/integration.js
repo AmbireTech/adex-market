@@ -6,6 +6,10 @@ const fs = require('fs')
 const testData = require('../prep-db/seedDb').testData
 const FormData = require('form-data')
 
+const addrRegex40 = /^0x[0-9A-Fa-f]{40}$/
+const addrRegex64 = /^0x[0-9A-Fa-f]{64}$/
+const addrRegex130 = /^0x[0-9A-Fa-f]{130}$/
+
 // TODO export those and other repetitive data into integrationTestsConstants module
 const mockAuthObj = {
 	identity: '0x27e47D714fe59a13C008341Fc83588876b747c60',
@@ -116,6 +120,8 @@ tape('GET /validators', (t) => {
 			t.equals(typeof res[0].url, 'string', 'property url is of type string ')
 			t.equals(typeof res[0].status, 'string', 'property status is of type string ')
 			t.equals(typeof res[0].addr, 'string', 'property addr is of type string ')
+			t.ok(addrRegex40.test(res[0].addr), 'First validator address is a real address')
+			t.ok(addrRegex40.test(res[1].addr), 'Second validator address is a real address')
 			t.equals(res[0].status, 'active', 'first validator is loaded and active')
 			t.equals(res[1].status, 'active', 'second validator is loaded and active')
 			t.end()
@@ -211,6 +217,10 @@ tape('POST /users', (t) => {
 					t.ok(Array.isArray(res), 'returns array')
 					t.equals(res.length, 2, '2 users, the previous one + the recently added one')
 					t.ok(res.some(obj => obj.identity === testData.user.identity && obj.signature === testData.user.signature), 'the new object has been added')
+					t.ok(addrRegex40.test(res[0].address) && addrRegex40.test(res[1].address), 'Adress of users is real address')
+					t.ok(addrRegex40.test(res[0].identity) && addrRegex40.test(res[1].identity), 'Identity of users is real address')
+					t.ok(addrRegex130.test(res[0].signature) && addrRegex130.test(res[1].signature), 'Signature of users is real signature')
+					t.ok(addrRegex64.test(res[0].hash) && addrRegex64.test(res[1].hash), 'Hash of users is correct')
 					t.end()
 				})
 		})
