@@ -1,7 +1,6 @@
 const express = require('express')
 const db = require('../db')
 const { adSlotValidator } = require('../helpers/validators')
-const ObjectId = require('mongodb').ObjectId
 
 const router = express.Router()
 
