@@ -55,10 +55,17 @@ const testData = {
 	],
 	adSlot: {
 		type: 'legacy_250x250',
+		tags: [{ tag: 'games', score: 42 }, { tag: 'usa', score: 60 }],
+		owner: identityAddr,
+		created: Date.now(),
 		fallbackMediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 		fallbackTargetUrl: 'https://google.com',
-		tags: [{ tag: 'games', score: 42 }, { tag: 'usa', score: 60 }],
-		owner: identityAddr
+		fallbackMediaMime: 'image/jpeg',
+		ipfs: 'QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
+		title: 'Test slot 1',
+		description: 'Test slot for running integration tests',
+		archived: false,
+		modifiedOn: Date.now()
 	}
 }
 
