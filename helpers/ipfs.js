@@ -4,9 +4,9 @@ const ipfsPort = process.env.IPFSPORT || '8443'
 const ipfsProtocol = process.env.IPFSPROTOCOL || 'https'
 const ipfs = ipfsClient(ipfsHost, ipfsPort, { protocol: ipfsProtocol })
 
-function addFileToIpfs (file) {
-	return ipfs.add(file)
-		.then(function (res) {
+function addDataToIpfs (data) {
+	return ipfs.add(data)
+		.then((res) => {
 			if (res[0]) {
 				return res[0].hash
 			} else {
@@ -29,6 +29,4 @@ function addFileToIpfs (file) {
 		})
 }
 
-module.exports = {
-	addFileToIpfs: addFileToIpfs
-}
+module.exports = addDataToIpfs

@@ -1,6 +1,7 @@
 const express = require('express')
 const db = require('../db')
 const { adSlotValidator } = require('../helpers/validators')
+const addDataToIpfs = require('../helpers/ipfs')
 
 const router = express.Router()
 
@@ -37,18 +38,27 @@ function getAdSlotById (req, res, next) {
 }
 
 function postAdSlot (req, res, next) {
-	const { type, fallbackMediaUrl, fallbackTargetUrl, tags } = req.body
+	const { type, tags, created, title, description, fallbackMediaUrl, fallbackMediaMime, fallbackTargetUrl, archived } = req.body
 	const identity = req.identity
-	const adSlotsCol = db.getMongo().collection('adSlots')
-	const adSlot = { type, fallbackTargetUrl, tags, fallbackMediaUrl, owner: identity }
 
-	return adSlotsCol.insertOne(adSlot, (err, result) => {
-		if (err) {
-			console.error(new Error('Error adding adSlot', err))
-			return res.status(420).send()
-		}
-		return res.send(adSlot)
-	})
+	const specForIpfs = JSON.stringify({ type, tags, owner: identity, created })
+
+	const adSlotsCol = db.getMongo().collection('adSlots')
+	const adSlot = { title, description, fallbackMediaMime, fallbackMediaUrl, fallbackTargetUrl, archived }
+
+	return addDataToIpfs(specForIpfs)
+		.then((dataHash) => {
+			adSlot['ipfs'] = dataHash
+			adSlot['modified'] = Date.now()
+
+			return adSlotsCol.insertOne(adSlot, (err, result) => {
+				if (err) {
+					console.error(new Error('Error adding adSlot', err))
+					return res.status(420).send()
+				}
+				return res.send(adSlot)
+			})
+		})
 }
 
 module.exports = router

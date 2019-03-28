@@ -7,7 +7,7 @@ router.post('/', postMedia)
 
 function postMedia (req, res, next) {
 	const { media } = req.body
-	return ipfs.addFileToIpfs(media)
+	return ipfs.addDataToIpfs(media)
 		.then((hash) => {
 			return res.status(200).send({ ipfs: hash })
 		})
