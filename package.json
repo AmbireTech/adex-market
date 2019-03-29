@@ -17,6 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "adex-constants": "^1.0.10",
+    "bn.js": "^4.11.8",
     "body-parser": "^1.18.3",
     "dotenv": "^6.2.0",
     "eth-sig-util": "^2.1.1",
