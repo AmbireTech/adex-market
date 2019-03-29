@@ -27,3 +27,9 @@ For more information, see [adex-protocol](https://github.com/adexnetwork/adex-pr
 - ```REDIS_CERT```
 - ```REDIS_CA```
 - ```TEST_MARKET_URL``` - Used for integration tests, URL of the server instance used for the tests
+
+## How to run
+
+```
+npm start
+```

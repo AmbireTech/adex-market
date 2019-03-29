@@ -25,7 +25,7 @@ function getCampaigns (req, res, next) {
 	const campaignsCol = db.getMongo().collection('campaigns')
 
 	return campaignsCol
-		.find({ 'status': { $in: status } })
+		.find({ 'status.name': { $in: status } })
 		.skip(skip)
 		.limit(limit)
 		.toArray()
