@@ -1,9 +1,12 @@
 const express = require('express')
 const db = require('../db')
 
+const { celebrate } = require('celebrate')
+const schemas = require('../helpers/schemas')
+
 const router = express.Router()
 
-router.post('/', postUser)
+router.post('/', celebrate({ body: schemas.user }), postUser)
 router.get('/list', getUserList)
 
 function postUser (req, res, next) {

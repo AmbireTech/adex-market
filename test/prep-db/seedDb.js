@@ -34,23 +34,38 @@ const testData = {
 		{
 			type: 'legacy_250x250',
 			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
+			mediaMime: 'image/jpeg',
 			targetUrl: 'https://google.com',
+			targeting: [{ tag: 'games', score: 100 }],
+			created: Date.now(),
+			title: 'Test ad unit',
+			description: 'test ad unit for seeding db',
 			tags: [{ tag: 'games', score: 42 }, { tag: 'usa', score: 60 }],
 			owner: identityAddr
 		},
 		{
 			type: 'legacy_160x600',
-			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb23',
+			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
+			mediaMime: 'image/jpeg',
 			targetUrl: 'https://google.com',
-			tags: [{ tag: 'movies', score: 90 }, { tag: 'captain-marvel', score: 0 }],
+			created: Date.now(),
+			title: 'Test ad unit',
+			description: 'test ad unit for seeding db',
+			tags: [{ tag: 'movies', score: 42 }, { tag: 'usa', score: 60 }],
 			owner: identityAddr
 		},
 		{
 			type: 'legacy_728x90',
-			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb24',
+			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
+			mediaMime: 'image/jpeg',
 			targetUrl: 'https://google.com',
-			tags: [{ tag: 'music', score: 70 }, { tag: 'rap', score: 100 }],
-			owner: identityAddr
+			targeting: [{ tag: 'music', score: 100 }],
+			created: Date.now(),
+			title: 'Test ad unit',
+			description: 'test ad unit for seeding db',
+			tags: [{ tag: 'music', score: 42 }, { tag: 'rap', score: 60 }],
+			owner: identityAddr,
+			archived: true
 		}
 	],
 	adSlot: {
@@ -65,7 +80,7 @@ const testData = {
 		title: 'Test slot 1',
 		description: 'Test slot for running integration tests',
 		archived: false,
-		modifiedOn: Date.now()
+		modified: Date.now()
 	}
 }
 

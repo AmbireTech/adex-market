@@ -5,6 +5,7 @@ const ipfsProtocol = process.env.IPFSPROTOCOL || 'https'
 const ipfs = ipfsClient(ipfsHost, ipfsPort, { protocol: ipfsProtocol })
 
 function addDataToIpfs (data) {
+	// Buffer is moved to separate routes where it is necessary
 	return ipfs.add(data)
 		.then((res) => {
 			if (res[0]) {
@@ -24,7 +25,7 @@ function addDataToIpfs (data) {
 			}
 		})
 		.catch(function (err) {
-			console.error('fail', err)
+			console.error('IPFS error: ', err)
 			return Promise.reject(new Error(`IPFS Error: ${err}`))
 		})
 }
