@@ -78,15 +78,15 @@ function getStats (req, res, next) {
 					output.anonAdvertisers = getAnonAdvertisers(campaigns, users)
 
 					campaigns.map((c) => {
-						if (!output.campaignsByStatus[c.status]) {
-							output.campaignsByStatus[c.status] = 0
+						if (!output.campaignsByStatus[c.status.name]) {
+							output.campaignsByStatus[c.status.name] = 0
 						}
 						if (!output.totalSpentFundsByAssetType[c.depositAsset]) {
 							output.totalSpentFundsByAssetType[c.depositAsset] = 0
 						}
 
 						output.totalSpentFundsByAssetType[c.depositAsset] += c.depositAmount
-						output.campaignsByStatus[c.status]++
+						output.campaignsByStatus[c.status.name]++
 					})
 
 					res.send(output)

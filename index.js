@@ -61,11 +61,10 @@ db.connect()
 			console.log('Seeding DB for tests', process.env.DB_MONGO_NAME)
 			return seedDb(db.getMongo())
 		} else {
+			// Not yet necessary for integration tests
+			startStatusLoop()
 			return Promise.resolve()
 		}
-	})
-	.then((res) => {
-		startStatusLoop()
 	})
 	.then(() => {
 		app.listen(port, () => console.log(`Magic happens on ${port}`))
