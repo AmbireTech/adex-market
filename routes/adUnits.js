@@ -1,13 +1,15 @@
 const express = require('express')
 const db = require('../db')
-const { adUnitValidator } = require('../helpers/validators')
 const addDataToIpfs = require('../helpers/ipfs')
+
+const { celebrate } = require('celebrate')
+const schemas = require('../helpers/schemas')
 
 const router = express.Router()
 
 router.get('/', getUnits)
 router.get('/:id', getUnitById)
-router.post('/', adUnitValidator, postUnit)
+router.post('/', celebrate({ body: schemas.adUnit }), postUnit)
 
 function getUnits (req, res, next) {
 	const identity = req.identity
@@ -37,16 +39,15 @@ function getUnitById (req, res, next) {
 }
 
 function postUnit (req, res, next) {
-	const { type, mediaUrl, mediaMime, targetUrl, targeting, tags, created, title, description, archived } = req.body
+	const { type, mediaUrl, mediaMime, targetUrl, targeting, tags, created, title, description, archived = false, modified = Date.now() } = req.body
 	const identity = req.identity
 
-	const specForIpfs = JSON.stringify({ type, mediaUrl, mediaMime, targetUrl, targeting, tags, owner: identity, created })
+	const specForIpfs = { type, mediaUrl, mediaMime, targetUrl, targeting, tags, owner: identity, created }
 	const adUnitCol = db.getMongo().collection('adUnits')
-	const adUnit = { title, description, archived }
-	return addDataToIpfs(specForIpfs)
+	const adUnit = { type, mediaUrl, mediaMime, targetUrl, targeting, tags, owner: identity, created, title, description, archived, modified }
+	return addDataToIpfs(Buffer.from(JSON.stringify(specForIpfs)))
 		.then((dataHash) => {
 			adUnit['ipfs'] = dataHash
-			adUnit['modified'] = Date.now()
 
 			return adUnitCol.insertOne(adUnit, (err, result) => {
 				if (err) {

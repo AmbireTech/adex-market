@@ -1,13 +1,15 @@
 const express = require('express')
 const db = require('../db')
-const { adSlotValidator } = require('../helpers/validators')
 const addDataToIpfs = require('../helpers/ipfs')
+
+const { celebrate } = require('celebrate')
+const schemas = require('../helpers/schemas')
 
 const router = express.Router()
 
 router.get('/', getAdSlots)
 router.get('/:id', getAdSlotById)
-router.post('/', adSlotValidator, postAdSlot)
+router.post('/', celebrate({ body: schemas.adSlot }), postAdSlot)
 
 function getAdSlots (req, res, next) {
 	const identity = req.identity
@@ -38,18 +40,17 @@ function getAdSlotById (req, res, next) {
 }
 
 function postAdSlot (req, res, next) {
-	const { type, tags, created, title, description, fallbackMediaUrl, fallbackMediaMime, fallbackTargetUrl, archived } = req.body
+	const { type, tags, created, title, description, fallbackMediaUrl, fallbackMediaMime, fallbackTargetUrl, archived = false, modified = Date.now() } = req.body
 	const identity = req.identity
 
-	const specForIpfs = JSON.stringify({ type, tags, owner: identity, created })
+	const specForIpfs = { type, tags, owner: identity, created }
 
 	const adSlotsCol = db.getMongo().collection('adSlots')
-	const adSlot = { title, description, fallbackMediaMime, fallbackMediaUrl, fallbackTargetUrl, archived }
+	const adSlot = { type, tags, owner: identity, created, title, description, fallbackMediaMime, fallbackMediaUrl, fallbackTargetUrl, archived, modified }
 
-	return addDataToIpfs(specForIpfs)
+	return addDataToIpfs(Buffer.from(JSON.stringify(specForIpfs)))
 		.then((dataHash) => {
 			adSlot['ipfs'] = dataHash
-			adSlot['modified'] = Date.now()
 
 			return adSlotsCol.insertOne(adSlot, (err, result) => {
 				if (err) {

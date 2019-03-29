@@ -34,35 +34,51 @@ const brokenAuthObj = {
 }
 
 const mockAdUnit = 	{
-	type: 'legacy_728x90',
-	mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb25',
+	type: 'legacy_160x600',
+	mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
+	mediaMime: 'image/jpeg',
 	targetUrl: 'https://google.com',
-	tags: [{ tag: 'music', score: 70 }, { tag: 'rap', score: 100 }],
-	owner: identityAddr
+	created: Date.now(),
+	title: 'Test ad unit',
+	description: 'test ad unit for seeding db',
+	tags: [{ tag: 'movies', score: 42 }, { tag: 'usa', score: 60 }]
 }
 
 const brokenAdUnit = {
-	type: 'legacy_728x91',
-	mediaUrl: 'ipsfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb25',
-	targetUrl: 'htttps://google.com',
-	tags: [{ tag: 'music', score: 70 }, { tag: 'rap', score: 100 }],
-	owner: identityAddr
+	type: 'legacy_160x600',
+	mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2tt', // Extra character here
+	mediaMime: 'image/jpeg',
+	targetUrl: 'https://google.com',
+	created: Date.now(),
+	title: 'Test ad unit',
+	description: 'test ad unit for seeding db',
+	tags: [{ tag: 'movies', score: 42 }, { tag: 'usa', score: 60 }]
 }
 
 const mockAdSlot = 	{
-	type: 'legacy_728x90',
+	type: 'legacy_250x250',
+	tags: [{ tag: 'games', score: 42 }, { tag: 'usa', score: 60 }],
+	created: Date.now(),
 	fallbackMediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 	fallbackTargetUrl: 'https://google.com',
-	tags: [{ tag: 'games', score: 42 }, { tag: 'usa', score: 60 }],
-	owner: identityAddr
+	fallbackMediaMime: 'image/jpeg',
+	title: 'Test slot 1',
+	description: 'Test slot for running integration tests',
+	archived: false,
+	modified: Date.now()
 }
 
 const brokenAdSlot = {
 	type: 'legacy_251x250',
+	tags: [{ tag: 'games', score: 42 }, { tag: 'usa', score: 60 }],
+	created: Date.now(),
 	fallbackMediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 	fallbackTargetUrl: 'https://google.com',
-	tags: 'h4x0r',
-	owner: identityAddr
+	fallbackMediaMime: 'image/jpeg',
+	title: 'Test slot 1',
+	description: 'Test slot for running integration tests',
+	archived: false,
+	modified: Date.now()
 }
 
 tape('GET /campaigns', (t) => {
@@ -349,7 +365,7 @@ tape('GET/POST on authorized routes', (t) => {
 		})
 		.then((res) => {
 			t.comment('POST /adunits - bad data')
-			t.equals(res.status, 403, 'not allowed to submit broken data')
+			t.equals(res.status, 500, 'not allowed to submit broken data')
 		})
 
 		const postAdSlot = 	fetch(`${marketUrl}/adslots`, {
@@ -386,7 +402,7 @@ tape('GET/POST on authorized routes', (t) => {
 		})
 		.then((res) => {
 			t.comment('/POST adslots - bad data')
-			t.equals(res.status, 403, 'broken adslots cant be submitted')
+			t.equals(res.status, 500, 'broken adslots cant be submitted')
 		})
 
 		// TODO retrieve ID of posted unit/slot so we can target it with the commented out routes
