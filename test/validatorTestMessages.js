@@ -1,7 +1,7 @@
-const nowDate = new Date().toISOString()
-const notNowDate = new Date(Date.now() - 1000).toISOString()
-const oldDate = new Date(Date.now() - 10000000).toISOString()
-const inTheFuture = new Date(Date.now() + 10000000).toISOString()
+const nowDate = Math.floor(Date.now() / 1000)
+const notNowDate = Math.floor((Date.now() - 1000) / 1000)
+const oldDate = Math.floor((Date.now() - 10000000) / 1000)
+const inTheFuture = Math.floor((Date.now() + 10000000) / 1000)
 
 // Empty messages
 const initializingMessages1 = [
@@ -257,31 +257,18 @@ const readyMessages1 = [
 	]
 ]
 
-// recent heartbeat but newstate is emitted
+// one heartbeat not recent and new state emitted
 const notReadyMessages1 = [
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
-	],
-	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
-	]
-]
-
-// one heartbeat not recent and new state emitted
-const notReadyMessages2 = [
-	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
 	],
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: oldDate, signature: 'signature for test message 5' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
 	]
 ]
 
 // no newstate emitted but one heartbeat is not recent
-const notReadyMessages3 = [
+const notReadyMessages2 = [
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: oldDate, signature: 'signature for test message 1' }
 	],
@@ -291,7 +278,7 @@ const notReadyMessages3 = [
 ]
 
 // no heartbeat but newstate is emitted
-const notReadyMessages4 = [
+const notReadyMessages3 = [
 	[
 		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
 	],
@@ -516,7 +503,7 @@ module.exports = {
 	unhealthy: { first: unhealthyMessages },
 	notUnhealthy: { first: notUnhealthyMessages1, second: notUnhealthyMessages2, third: notUnhealthyMessages3 },
 	ready: { first: readyMessages1 },
-	notReady: { first: notReadyMessages1, second: notReadyMessages2, third: notReadyMessages3, fourth: notReadyMessages4 },
+	notReady: { first: notReadyMessages1, second: notReadyMessages2, third: notReadyMessages3 },
 	active: { first: activeMessages },
 	notActive: { first: notActiveMessages1, second: notActiveMessages2, third: notActiveMessages3, fourth: notActiveMessages4 },
 	exhausted: { first: exhausted1, second: exhausted2 },
