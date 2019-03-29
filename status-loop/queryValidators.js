@@ -19,10 +19,10 @@ function getStatus (messagesFromAll, campaign, balanceTree) {
 		return 'Invalid'
 	} else if (isUnhealthy(messagesFromAll)) {
 		return 'Unhealthy'
-	} else if (isReady(messagesFromAll)) {
-		return 'Ready'
 	} else if (isActive(messagesFromAll)) {
 		return 'Active'
+	} else if (isReady(messagesFromAll)) {
+		return 'Ready'
 	}
 	return 'No status detected'
 }
