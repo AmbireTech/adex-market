@@ -8,3 +8,10 @@ The market needs to track all on-chain OUTPACE channels and needs to constantly 
 Additional privacy can be achieved by having groups of publishers/advertisers run their own instances of the market - that way, campaigns will be visible only within their private group.
 
 For more information, see [adex-protocol](https://github.com/adexnetwork/adex-protocol)
+
+
+## How to run
+
+```
+npm start
+```
