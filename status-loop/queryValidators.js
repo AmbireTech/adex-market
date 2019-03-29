@@ -24,7 +24,7 @@ function getStatus (messagesFromAll, campaign, balanceTree) {
 	} else if (isReady(messagesFromAll)) {
 		return 'Ready'
 	}
-	return 'No status detected'
+	throw new Error('internal error: no status detected; should never happen')
 }
 
 function getValidatorMessagesOfCampaign (campaign) {
