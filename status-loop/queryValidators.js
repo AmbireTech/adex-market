@@ -19,43 +19,48 @@ function getStatus (messagesFromAll, campaign, balanceTree) {
 		return 'Invalid'
 	} else if (isUnhealthy(messagesFromAll)) {
 		return 'Unhealthy'
-	} else if (isReady(messagesFromAll)) {
-		return 'Ready'
 	} else if (isActive(messagesFromAll)) {
 		return 'Active'
+	} else if (isReady(messagesFromAll)) {
+		return 'Ready'
 	}
-	return 'No status detected'
+	throw new Error('internal error: no status detected; should never happen')
 }
 
 function getValidatorMessagesOfCampaign (campaign) {
 	const validators = campaign.spec.validators
 
-	const leaderPromise = getRequest(`${validators[0].url}/channel/${validators[0].id}/validator-messages`)
-	const followerPromise = getRequest(`${validators[1].url}/channel/${validators[1].id}/validator-messages`)
-	const treePromise = getRequest(`${validators[0].url}/channel/${campaign.id}/tree`)
+	const leaderPromise = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages`)
+	const followerPromise = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages`)
+	const treePromise = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Accounting`)
 
 	return Promise.all([leaderPromise, followerPromise, treePromise])
-		.then((result) => {
-			const messagesFromAll = [result[0].validatorMessages, result[1].validatorMessages]
-			const balanceTree = result[2].balances
+		.then(([leaderResp, followerResp, treeResp]) => {
+			const messagesFromAll = [
+				leaderResp.validatorMessages.map(x => x.msg),
+				followerResp.validatorMessages.map(x => x.msg)
+			]
+			const balanceTree = treeResp.validatorMessages[0] ? treeResp.validatorMessages[0].msg.balances : {}
 			return getStatus(messagesFromAll, campaign, balanceTree)
 		})
 }
 
-function queryValidators () {
-	db.getMongo().collection('campaigns')
-		.find()
-		.toArray()
-		.then((campaigns) => {
-			campaigns.map((c) => {
-				getValidatorMessagesOfCampaign(c)
-					.then((status) => {
-						const statusObj = { name: status, lastChecked: new Date().toISOString() }
-						return updateStatus(c, statusObj)
-							.then(() => console.log(`Status of campaign ${c._id} updated`))
-					})
-			})
-		})
+async function queryValidators () {
+	const campaignsCol = db.getMongo().collection('campaigns')
+
+	//const lists = await Promise.all(cfg.initialValidators.map(url => getRequest(`${url}/channel/list`)))
+	const { channels } = await getRequest(`${cfg.initialValidators[0]}/channel/list`)
+	await channels.map(c => campaignsCol.update({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
+
+	const campaigns = await campaignsCol.find().toArray()
+	await campaigns.map(c => getValidatorMessagesOfCampaign(c)
+		.then(status => {
+			const statusObj = { name: status, lastChecked: new Date().toISOString() }
+			console.log(c.id, status)
+			return updateStatus(c, statusObj)
+				.then(() => console.log(`Status of campaign ${c._id} updated`))
+		
+		}))
 }
 
 function startStatusLoop () {
