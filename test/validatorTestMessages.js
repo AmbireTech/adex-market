@@ -60,7 +60,7 @@ const disconnectedMessages1 = [
 ]
 
 // 50% of messages match
-const disconnectedMessages2 = [
+const notDisconnectedMessages1 = [
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 2' }
@@ -72,7 +72,7 @@ const disconnectedMessages2 = [
 ]
 
 // Majority of messages match
-const notDisconnectedMessages = [
+const notDisconnectedMessages2 = [
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 2' }
@@ -80,60 +80,6 @@ const notDisconnectedMessages = [
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 2' }
-	]
-]
-
-// Messages dont match due to different stateroot
-const disconnectedMessages3 = [
-	[
-		{ type: 'Heartbeat', stateRoot: '63chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 2' }
-	],
-	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 2' }
-	]
-]
-
-// Messaged dont match due to different date
-const disconnectedMessages4 = [
-	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 2' }
-	],
-	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: notNowDate, signature: 'signature for test message 5' },
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 6' }
-	]
-]
-
-// There are 0 heartbeat messages on first validator
-const disconnectedMessages5 = [
-	[
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
-	],
-	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
-	]
-]
-
-// There are 0 heartbeat messages on second validator
-const disconnectedMessages6 = [
-	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
-	],
-	[
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
-	]
-]
-
-// There are 0 heartbeat messages on both validators
-const disconnectedMessages7 = [
-	[
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
-	],
-	[
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
 	]
 ]
 
@@ -496,8 +442,8 @@ module.exports = {
 	notInitializing: { first: notInitializingMessages },
 	offline: { first: offlineMessages1, second: offlineMessages2, third: offlineMessages3 },
 	notOffline: { first: notOfflineMessages },
-	disconnected: { first: disconnectedMessages1, second: disconnectedMessages2, third: disconnectedMessages3, fourth: disconnectedMessages4, fifth: disconnectedMessages5, sixth: disconnectedMessages6, seventh: disconnectedMessages7 },
-	notDisconnected: { first: notDisconnectedMessages },
+	disconnected: { first: disconnectedMessages1 },
+	notDisconnected: { first: notDisconnectedMessages1, second: notDisconnectedMessages2 },
 	invalid: { first: invalidMessages },
 	notInvalid: { first: notInvalidMessages1, second: notInvalidMessages2, third: notInvalidMessages3, fourth: notInvalidMessages4 },
 	unhealthy: { first: unhealthyMessages },
