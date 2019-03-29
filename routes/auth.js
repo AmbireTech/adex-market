@@ -35,7 +35,7 @@ async function authUser (req, res, next) {
 		const privileges = (await checkWalletPrivileges(identity, walletAddress, true)) || 0
 
 		const sessionExpiryTime = Date.now() + cfg.sessionExpiryTime
-		if (privileges > 1) {
+		if (privileges > 0) {
 			redisClient.set('session:' + signature,
 				JSON.stringify({
 					'address': recoveredAddr,
