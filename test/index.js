@@ -49,10 +49,9 @@ tape('isUnhealthy()', function (t) {
 
 tape('isReady()', function (t) {
 	t.equals(isReady(vmt.ready.first), true, 'Recent Heartbeat messages but no NewState messages returns true')
-	t.equals(isReady(vmt.notReady.first), false, 'Recent Heartbeat messages but one message has emitted NewState returns false')
-	t.equals(isReady(vmt.notReady.second), false, 'One message has no recent Heartbeat and both messages have NewState returns false')
-	t.equals(isReady(vmt.notReady.third), false, 'No NewState but one message has no recent HeartBeat returns false')
-	t.equals(isReady(vmt.notReady.fourth), false, 'Recent NewState messages but no Heartbeats returns false')
+	t.equals(isReady(vmt.notReady.first), false, 'One message has no recent Heartbeat and both messages have NewState returns false')
+	t.equals(isReady(vmt.notReady.second), false, 'No NewState but one message has no recent HeartBeat returns false')
+	t.equals(isReady(vmt.notReady.third), false, 'Recent NewState messages but no Heartbeats returns false')
 	t.end()
 })
 
