@@ -259,21 +259,8 @@ const notActiveMessages1 = [
 	]
 ]
 
-// Working example but one NewState is not recent
-const notActiveMessages2 = [
-	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' }
-	],
-	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: oldDate, signature: 'signature for test message 1' },
-		{ type: 'ApproveState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1', isHealthy: true }
-	]
-]
-
 // Working example but one Heartbeat is not recent
-const notActiveMessages3 = [
+const notActiveMessages2 = [
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: oldDate, signature: 'signature for test message 1' },
 		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' }
@@ -286,7 +273,7 @@ const notActiveMessages3 = [
 ]
 
 // Working example but there's no approveState
-const notActiveMessages4 = [
+const notActiveMessages3 = [
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
 		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' }
@@ -451,7 +438,7 @@ module.exports = {
 	ready: { first: readyMessages1 },
 	notReady: { first: notReadyMessages1, second: notReadyMessages2, third: notReadyMessages3 },
 	active: { first: activeMessages },
-	notActive: { first: notActiveMessages1, second: notActiveMessages2, third: notActiveMessages3, fourth: notActiveMessages4 },
+	notActive: { first: notActiveMessages1, second: notActiveMessages2, third: notActiveMessages3 },
 	exhausted: { first: exhausted1, second: exhausted2 },
 	notExhausted: { first: notExhausted },
 	expired: { first: expiredCampaign },

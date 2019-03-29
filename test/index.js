@@ -53,9 +53,8 @@ tape('isReady()', function (t) {
 tape('isActive()', function (t) {
 	t.equals(isActive(vmt.active.first), true, 'there are recent NewState, ApproveState and Heartbeat\'s, and the ApproveState reports healthy returns true')
 	t.equals(isActive(vmt.notActive.first), false, 'recent NewState and Heartbeat but ApproveState reports unhealthy returns false')
-	t.equals(isActive(vmt.notActive.second), false, 'recent Heartbeat and ApproveState reports healthy but there is no recent NewState message returns false')
-	t.equals(isActive(vmt.notActive.third), false, 'recent Newstate and ApproveState reports healthy but no recent Heartbeat message returns false')
-	t.equals(isActive(vmt.notActive.fourth), false, 'recent NewState and Heartbeat but there is no ApproveState message returns false')
+	t.equals(isActive(vmt.notActive.second), false, 'recent Newstate and ApproveState reports healthy but no recent Heartbeat message returns false')
+	t.equals(isActive(vmt.notActive.third), false, 'recent NewState and Heartbeat but there is no ApproveState message returns false')
 	t.end()
 })
 
