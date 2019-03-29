@@ -42,20 +42,18 @@ function getValidatorMessagesOfCampaign (campaign) {
 		})
 }
 
-function queryValidators () {
-	db.getMongo().collection('campaigns')
+async function queryValidators () {
+	const campaigns = await db.getMongo().collection('campaigns')
 		.find()
 		.toArray()
-		.then((campaigns) => {
-			campaigns.map((c) => {
-				getValidatorMessagesOfCampaign(c)
-					.then((status) => {
-						const statusObj = { name: status, lastChecked: new Date().toISOString() }
-						return updateStatus(c, statusObj)
-							.then(() => console.log(`Status of campaign ${c._id} updated`))
-					})
-			})
-		})
+
+	await campaigns.map(c => getValidatorMessagesOfCampaign(c)
+		.then(status => {
+			const statusObj = { name: status, lastChecked: new Date().toISOString() }
+			return updateStatus(c, statusObj)
+				.then(() => console.log(`Status of campaign ${c._id} updated`))
+		
+		}))
 }
 
 function startStatusLoop () {
