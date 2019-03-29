@@ -1,18 +1,18 @@
 const redis = require('redis')
 const fs = require('fs')
 
-var dbPort = process.env.REDIS_PORT || 15900
-var dbHost = process.env.REDIS_HOST || 'redis-15900.c12.us-east-1-4.ec2.cloud.redislabs.com'
-var dbPassword = process.env.REDIS_PASSWD || 'Ohgh5ohzahvoox6ahleedieg'
-var dbUseSSL = process.env.REDIS_SSL || false
-var dbKeyFile = process.env.REDIS_KEY || ''
-var dbCertFile = process.env.REDIS_CERT || ''
-var dbCaFile = process.env.REDIS_CA || ''
-var encoding = 'ascii'
+const dbPort = process.env.REDIS_PORT || 15900
+const dbHost = process.env.REDIS_HOST || 'redis-15900.c12.us-east-1-4.ec2.cloud.redislabs.com'
+const dbPassword = process.env.REDIS_PASSWD
+const dbUseSSL = process.env.REDIS_SSL || false
+const dbKeyFile = process.env.REDIS_KEY || ''
+const dbCertFile = process.env.REDIS_CERT || ''
+const dbCaFile = process.env.REDIS_CA || ''
+const encoding = 'ascii'
 
-var redisClient = {}
+const redisClient = {}
 if (dbUseSSL) {
-	var ssl = {
+	const ssl = {
 		servername: dbHost,
 		port: dbPort,
 		key: fs.readFileSync(dbKeyFile, encoding),
