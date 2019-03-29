@@ -10,7 +10,7 @@ const dbCertFile = process.env.REDIS_CERT || ''
 const dbCaFile = process.env.REDIS_CA || ''
 const encoding = 'ascii'
 
-const redisClient = {}
+let redisClient = {}
 if (dbUseSSL) {
 	const ssl = {
 		servername: dbHost,
