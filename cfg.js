@@ -1,5 +1,5 @@
 module.exports = {
-	initialValidators: ['http://localhost:8005', 'http://localhost:8006'],
+	initialValidators: ['http://tom.adex.network', 'https//jerry.adex.network'],
 	discoverValidators: {
 		enabled: true
 	},
