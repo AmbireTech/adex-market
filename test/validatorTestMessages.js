@@ -207,11 +207,11 @@ const disconnectedMessages7 = [
 const invalidMessages = [
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' }
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
 	],
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' }
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
 	]
 ]
 
@@ -219,11 +219,11 @@ const invalidMessages = [
 const notInvalidMessages1 = [
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' }
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
 	],
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' },
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' },
 		{ type: 'ApproveState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1', isHealthy: true }
 	]
 ]
@@ -236,7 +236,7 @@ const notInvalidMessages2 = [
 	],
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' }
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
 	]
 ]
 
@@ -267,11 +267,11 @@ const notInvalidMessages4 = [
 const unhealthyMessages = [
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' }
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
 	],
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' },
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' },
 		{ type: 'ApproveState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1', isHealthy: false }
 	]
 ]
@@ -280,11 +280,11 @@ const unhealthyMessages = [
 const notUnhealthyMessages1 = [
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' }
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
 	],
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' },
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' },
 		{ type: 'ApproveState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1', isHealthy: true }
 	]
 ]
@@ -293,7 +293,7 @@ const notUnhealthyMessages1 = [
 const notUnhealthyMessages2 = [
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' }
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
 	],
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
@@ -370,11 +370,11 @@ const notReadyMessages4 = [
 const activeMessages = [
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' }
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
 	],
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' },
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' },
 		{ type: 'ApproveState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1', isHealthy: true }
 	]
 ]
@@ -383,11 +383,11 @@ const activeMessages = [
 const notActiveMessages1 = [
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' }
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
 	],
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' },
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' },
 		{ type: 'ApproveState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1', isHealthy: false }
 	]
 ]
@@ -396,7 +396,7 @@ const notActiveMessages1 = [
 const notActiveMessages2 = [
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' }
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
 	],
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
@@ -409,11 +409,11 @@ const notActiveMessages2 = [
 const notActiveMessages3 = [
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: oldDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' }
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
 	],
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' },
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' },
 		{ type: 'ApproveState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1', isHealthy: true }
 	]
 ]
@@ -422,11 +422,11 @@ const notActiveMessages3 = [
 const notActiveMessages4 = [
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' }
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
 	],
 	[
 		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1' }
+		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
 	]
 ]
 

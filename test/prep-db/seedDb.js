@@ -5,20 +5,20 @@ const testData = {
 	campaign: {
 		_id: 'testCampaign1',
 		id: 'testCampaign1',
-		status: 'Active',
+		status: { name: 'Active' },
 		depositAsset: 'DAI',
 		depositAmount: 1000,
 		validators: ['awesomeLeader', 'awesomeFollower'],
 		spec: {
 			validators: [
-				{ id: 'awesomeLeader', url: 'http://localhost:8005', fee: 100 },
-				{ id: 'awesomeFollower', url: 'http://localhost:8006', fee: 100 }
+				{ id: 'awesomeLeader', url: 'https://tom.adex.network', fee: 100 },
+				{ id: 'awesomeFollower', url: 'https://jerry.adex.network', fee: 100 }
 			]
 		}
 	},
 	validators: [
-		{ _id: 'awesomeLeader', id: 'awesomeLeader', url: 'http://localhost:8005', status: 'active', addr: '0x000000000000000078787874656e746163696f6e' },
-		{ _id: 'awesomeFollower', id: 'awesomeFollower', url: 'http://localhost:8006', status: 'active', addr: '0x0000000000000000667265652036697839696e65' }
+		{ _id: 'awesomeLeader', id: 'awesomeLeader', url: 'https://tom.adex.network', status: 'active', addr: '0x000000000000000078787874656e746163696f6e' },
+		{ _id: 'awesomeFollower', id: 'awesomeFollower', url: 'https://jerry.adex.network', status: 'active', addr: '0x0000000000000000667265652036697839696e65' }
 	],
 	user: {
 		identity: identityAddr,
