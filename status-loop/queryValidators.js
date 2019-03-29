@@ -36,7 +36,10 @@ function getValidatorMessagesOfCampaign (campaign) {
 
 	return Promise.all([leaderPromise, followerPromise, treePromise])
 		.then(([leaderResp, followerResp, treeResp]) => {
-			const messagesFromAll = [leaderResp.validatorMessages, followerResp.validatorMessages]
+			const messagesFromAll = [
+				leaderResp.validatorMessages.map(x => x.msg),
+				followerResp.validatorMessages.map(x => x.msg)
+			]
 			const balanceTree = treeResp.validatorMessages[0] ? treeResp.validatorMessages[0].msg.balances : {}
 			return getStatus(messagesFromAll, campaign, balanceTree)
 		})
@@ -53,6 +56,7 @@ async function queryValidators () {
 	await campaigns.map(c => getValidatorMessagesOfCampaign(c)
 		.then(status => {
 			const statusObj = { name: status, lastChecked: new Date().toISOString() }
+			console.log(c.id, status)
 			return updateStatus(c, statusObj)
 				.then(() => console.log(`Status of campaign ${c._id} updated`))
 		
