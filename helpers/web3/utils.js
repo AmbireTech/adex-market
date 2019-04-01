@@ -53,7 +53,6 @@ const getAddrFromTrezorSignedMsg = async ({ signature, hash }) => {
 	}
 }
 
-// TODO Figure out what to do with typedData
 const getAddrFromSignedMsg = ({ mode, signature, hash, typedData, msg }) => {
 	switch (mode) {
 	case SIGN_TYPES.EthPersonal.id:

@@ -10,7 +10,7 @@ const roles = ['advertiser', 'publisher']
 
 module.exports = {
 	adSlot: {
-		type: Joi.string().valid(types).required(),
+		type: Joi.string().valid(types).required(), // TODO add regex for the last case
 		tags: Joi.array().items({
 			tag: Joi.string().required(),
 			score: Joi.number().min(0).max(100).required()
@@ -25,7 +25,7 @@ module.exports = {
 		modified: Joi.date().timestamp().optional()
 	},
 	adUnit: {
-		type: Joi.string().valid(types).required(),
+		type: Joi.string().valid(types).required(), // TODO add regex for the last case
 		mediaUrl: Joi.string().length(53).regex(ipfsRegex).required(),
 		mediaMime: Joi.string().valid(mimeTypes).required(),
 		targetUrl: Joi.string().uri().required(),

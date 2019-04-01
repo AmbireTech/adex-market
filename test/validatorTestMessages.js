@@ -441,11 +441,11 @@ const exhausted1 = {
 			validators: [
 				{
 					id: 'awesomeLeader',
-					url: 'http://localhost:8005'
+					url: 'https://tom.adex.network'
 				},
 				{
 					id: 'awesomeFollower',
-					url: 'http://localhost:8006'
+					url: 'https://jerry.adex.network'
 				}
 			]
 		},
@@ -471,11 +471,11 @@ const exhausted2 = {
 			validators: [
 				{
 					id: 'awesomeLeader',
-					url: 'http://localhost:8005'
+					url: 'https://tom.adex.network'
 				},
 				{
 					id: 'awesomeFollower',
-					url: 'http://localhost:8006'
+					url: 'https://jerry.adex.network'
 				}
 			]
 		},
@@ -501,11 +501,11 @@ const notExhausted = {
 			validators: [
 				{
 					id: 'awesomeLeader',
-					url: 'http://localhost:8005'
+					url: 'https://tom.adex.network'
 				},
 				{
 					id: 'awesomeFollower',
-					url: 'http://localhost:8006'
+					url: 'https://jerry.adex.network'
 				}
 			]
 		},
@@ -531,11 +531,11 @@ const expiredCampaign = {
 		validators: [
 			{
 				id: 'awesomeLeader',
-				url: 'http://localhost:8005'
+				url: 'https://tom.adex.network'
 			},
 			{
 				id: 'awesomeFollower',
-				url: 'http://localhost:8006'
+				url: 'https://jerry.adex.network'
 			}
 		]
 	},
@@ -556,11 +556,11 @@ const notExpiredCampaign = {
 		validators: [
 			{
 				id: 'awesomeLeader',
-				url: 'http://localhost:8005'
+				url: 'https://tom.adex.network'
 			},
 			{
 				id: 'awesomeFollower',
-				url: 'http://localhost:8006'
+				url: 'https://jerry.adex.network'
 			}
 		]
 	},
