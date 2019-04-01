@@ -21,11 +21,6 @@ tape('isOffline()', function (t) {
 tape('isDisconnected()', function (t) {
 	t.equals(isDisconnected(vmt.disconnected.first), true, 'Majority of messages not matching returns true')
 	t.equals(isDisconnected(vmt.disconnected.second), true, '50% of messages not matching returns true')
-	t.equals(isDisconnected(vmt.disconnected.third), true, 'if stateroot is different returns true')
-	t.equals(isDisconnected(vmt.disconnected.fourth), true, 'if date is different returns true')
-	t.equals(isDisconnected(vmt.disconnected.fifth), true, 'No heartbeats on first validator returns true')
-	t.equals(isDisconnected(vmt.disconnected.sixth), true, 'No heartbeats on second validator returns true')
-	t.equals(isDisconnected(vmt.disconnected.seventh), true, 'No heartbeats on both validators returns true')
 	t.equals(isDisconnected(vmt.notDisconnected.first), false, 'more than 50% of messages matching returns false')
 	t.end()
 })
