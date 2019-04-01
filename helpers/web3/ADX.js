@@ -1,4 +1,3 @@
-// TODO: Clean up
 const Web3 = require('web3')
 const web3Utils = Web3.utils
 
