@@ -1,5 +1,4 @@
 const nowDate = Date.now().toString(16).padStart(64, 0)
-const notNowDate = (Date.now() - 1000).toString(16).padStart(64, 0)
 const oldDate = (Date.now() - 10000000).toString(16).padStart(64, 0)
 const inTheFuture = (Date.now() + 10000000).toString(16).padStart(64, 0)
 const ObjectId = require('mongodb').ObjectId
@@ -38,7 +37,7 @@ const heartbeatMessageNowDate2 = {
 		type: 'Heartbeat',
 		timestamp: nowDate,
 		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 2',
-		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24'
+		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec25'
 	}
 }
 
@@ -51,7 +50,7 @@ const heartbeatMessageNowDate3 = {
 		type: 'Heartbeat',
 		timestamp: nowDate,
 		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 3',
-		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24'
+		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec26'
 	}
 }
 
@@ -64,8 +63,30 @@ const heartbeatMessageNowDate4 = {
 		type: 'Heartbeat',
 		timestamp: nowDate,
 		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 4',
-		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24'
+		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec27'
 	}
+}
+
+const newStateMessage = {
+	type: 'NewState',
+	stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ',
+	signature: 'signature for test message 1'
+}
+
+const approveStateMessageHealthy = {
+	type: 'ApproveState',
+	stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ',
+	lastEvAggr: nowDate,
+	signature: 'signature for test message 1',
+	isHealthy: true
+}
+
+const approveStateMessageUnhealthy = {
+	type: 'ApproveState',
+	stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ',
+	lastEvAggr: nowDate,
+	signature: 'signature for test message 1',
+	isHealthy: false
 }
 
 // Empty messages
@@ -148,285 +169,225 @@ const notDisconnectedMessages = [
 	]
 ]
 
-// TODO: Fix when new implementation is done
-// Messages dont match due to different stateroot
-const disconnectedMessages3 = [
-	[
-		{ type: 'Heartbeat', stateRoot: '63chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 2' }
-	],
-	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 2' }
-	]
-]
-
-// Messaged dont match due to different date
-const disconnectedMessages4 = [
-	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 2' }
-	],
-	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: notNowDate, signature: 'signature for test message 5' },
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 6' }
-	]
-]
-
-// There are 0 heartbeat messages on first validator
-const disconnectedMessages5 = [
-	[
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
-	],
-	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
-	]
-]
-
-// There are 0 heartbeat messages on second validator
-const disconnectedMessages6 = [
-	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
-	],
-	[
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
-	]
-]
-
-// There are 0 heartbeat messages on both validators
-const disconnectedMessages7 = [
-	[
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
-	],
-	[
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
-	]
-]
-
 // Recent newstate but no approvestate
 const invalidMessages = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
+		heartbeatMessageNowDate,
+		newStateMessage
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
+		heartbeatMessageNowDate,
+		newStateMessage
 	]
 ]
 
 // Recent newstate and approvestate
 const notInvalidMessages1 = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
+		heartbeatMessageNowDate,
+		newStateMessage
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' },
-		{ type: 'ApproveState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1', isHealthy: true }
+		heartbeatMessageNowDate,
+		newStateMessage,
+		approveStateMessageHealthy
 	]
 ]
 
 // No approvestate but also no recent newstate
 const notInvalidMessages2 = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: oldDate, signature: 'signature for test message 1' }
+		heartbeatMessageNowDate
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
+		heartbeatMessageNowDate,
+		newStateMessage
 	]
 ]
 
 // Approvestate but no recent newstate
 const notInvalidMessages3 = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: oldDate, signature: 'signature for test message 1' }
+		heartbeatMessageNowDate
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: oldDate, signature: 'signature for test message 1' },
-		{ type: 'ApproveState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1', isHealthy: true }
+		heartbeatMessageNowDate,
+		approveStateMessageHealthy
 	]
 ]
 
 // 0 newstate messages and no approvestate
 const notInvalidMessages4 = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
+		heartbeatMessageNowDate
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
+		heartbeatMessageNowDate
 	]
 ]
 
 // Recent heartbeat and newstate but approvestate reports unhealthy
 const unhealthyMessages = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
+		heartbeatMessageNowDate,
+		newStateMessage
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' },
-		{ type: 'ApproveState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1', isHealthy: false }
+		heartbeatMessageNowDate,
+		newStateMessage,
+		approveStateMessageUnhealthy
 	]
 ]
 
 // Recent heartbeat and newstate and approvestate reports healthy
 const notUnhealthyMessages1 = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
+		heartbeatMessageNowDate,
+		newStateMessage
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' },
-		{ type: 'ApproveState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1', isHealthy: true }
+		heartbeatMessageNowDate,
+		newStateMessage,
+		approveStateMessageHealthy
 	]
 ]
 
 // No recent newstate but everything else is ok
 const notUnhealthyMessages2 = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
+		heartbeatMessageNowDate,
+		newStateMessage
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: oldDate, signature: 'signature for test message 1' },
-		{ type: 'ApproveState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1', isHealthy: false }
+		heartbeatMessageNowDate,
+		approveStateMessageUnhealthy
 	]
 ]
 
 // No newstate messages but everything else is ok
 const notUnhealthyMessages3 = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
+		heartbeatMessageNowDate
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'ApproveState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1', isHealthy: false }
+		heartbeatMessageNowDate,
+		approveStateMessageUnhealthy
 	]
 ]
 
 // recent heartbeat but newstate not emitted
 const readyMessages1 = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
+		heartbeatMessageNowDate
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
+		heartbeatMessageNowDate
 	]
 ]
 
 // recent heartbeat but newstate is emitted
 const notReadyMessages1 = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
+		heartbeatMessageNowDate,
+		newStateMessage
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
+		heartbeatMessageNowDate
 	]
 ]
 
 // one heartbeat not recent and new state emitted
 const notReadyMessages2 = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
+		heartbeatMessageNowDate,
+		newStateMessage
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: oldDate, signature: 'signature for test message 5' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
+		heartbeatMessageOldDate,
+		newStateMessage
 	]
 ]
 
 // no newstate emitted but one heartbeat is not recent
 const notReadyMessages3 = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: oldDate, signature: 'signature for test message 1' }
+		heartbeatMessageOldDate
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
+		heartbeatMessageNowDate
 	]
 ]
 
 // no heartbeat but newstate is emitted
 const notReadyMessages4 = [
 	[
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
+		newStateMessage
 	],
 	[
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' }
+		newStateMessage
 	]
 ]
 
 // A situation where it works
 const activeMessages = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
+		heartbeatMessageNowDate,
+		newStateMessage
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' },
-		{ type: 'ApproveState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1', isHealthy: true }
+		heartbeatMessageNowDate,
+		newStateMessage,
+		approveStateMessageHealthy
 	]
 ]
 
 // Working example but we switch isHealthy to false
 const notActiveMessages1 = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
+		heartbeatMessageNowDate,
+		newStateMessage
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' },
-		{ type: 'ApproveState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1', isHealthy: false }
+		heartbeatMessageNowDate,
+		newStateMessage,
+		approveStateMessageHealthy
 	]
 ]
 
 // Working example but one NewState is not recent
 const notActiveMessages2 = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
+		heartbeatMessageNowDate,
+		newStateMessage
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: oldDate, signature: 'signature for test message 1' },
-		{ type: 'ApproveState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1', isHealthy: true }
+		heartbeatMessageNowDate,
+		approveStateMessageHealthy
 	]
 ]
 
 // Working example but one Heartbeat is not recent
 const notActiveMessages3 = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: oldDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
+		heartbeatMessageOldDate,
+		newStateMessage
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' },
-		{ type: 'ApproveState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', lastEvAggr: nowDate, signature: 'signature for test message 1', isHealthy: true }
+		heartbeatMessageNowDate,
+		newStateMessage,
+		approveStateMessageHealthy
 	]
 ]
 
 // Working example but there's no approveState
 const notActiveMessages4 = [
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
+		heartbeatMessageNowDate,
+		newStateMessage
 	],
 	[
-		{ type: 'Heartbeat', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', timestamp: nowDate, signature: 'signature for test message 1' },
-		{ type: 'NewState', stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ', signature: 'signature for test message 1' }
+		heartbeatMessageNowDate,
+		newStateMessage
 	]
 ]
 
@@ -575,7 +536,7 @@ module.exports = {
 	notInitializing: { first: notInitializingMessages },
 	offline: { first: offlineMessages1, second: offlineMessages2, third: offlineMessages3 },
 	notOffline: { first: notOfflineMessages },
-	disconnected: { first: disconnectedMessages1, second: disconnectedMessages2, third: disconnectedMessages3, fourth: disconnectedMessages4, fifth: disconnectedMessages5, sixth: disconnectedMessages6, seventh: disconnectedMessages7 },
+	disconnected: { first: disconnectedMessages1, second: disconnectedMessages2 },
 	notDisconnected: { first: notDisconnectedMessages },
 	invalid: { first: invalidMessages },
 	notInvalid: { first: notInvalidMessages1, second: notInvalidMessages2, third: notInvalidMessages3, fourth: notInvalidMessages4 },
