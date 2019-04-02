@@ -5,7 +5,7 @@ const mimeTypes = ['image/jpeg', 'image/png']
 const addressRegex = /^0x[0-9A-Fa-f]{40}$/
 const signatureRegex = /^0x[0-9A-Fa-f]{130}$/
 const hashRegex = /^0x[0-9A-Fa-f]{64}$/
-const typeRegex = /^iab_flex_?/
+const typeRegex = /^iab_flex_.{1,}/
 const validModes = [0, 1, 2]
 const roles = ['advertiser', 'publisher']
 
