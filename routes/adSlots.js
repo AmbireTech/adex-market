@@ -9,7 +9,7 @@ const router = express.Router()
 
 router.get('/', getAdSlots)
 router.get('/:id', getAdSlotById)
-router.post('/', celebrate({ body: schemas.adSlot }), postAdSlot)
+router.post('/', celebrate({ body: schemas.adSlotPost }), postAdSlot)
 
 function getAdSlots (req, res, next) {
 	const identity = req.identity
@@ -40,7 +40,7 @@ function getAdSlotById (req, res, next) {
 }
 
 function postAdSlot (req, res, next) {
-	const { type, tags, created, title, description, fallbackMediaUrl, fallbackMediaMime, fallbackTargetUrl, archived = false, modified = Date.now() } = req.body
+	const { type, tags, created, title, description, fallbackMediaUrl, fallbackMediaMime, fallbackTargetUrl, archived = false, modified = null } = req.body
 	const identity = req.identity
 
 	const specForIpfs = { type, tags, owner: identity, created }
