@@ -38,7 +38,6 @@ tape('isUnhealthy()', function (t) {
 	t.equals(isUnhealthy(vmt.unhealthy.first), true, 'Recent NewState and approveState but approveState reports unhealthy returns true')
 	t.equals(isUnhealthy(vmt.notUnhealthy.first), false, 'Recent NewState and approveState and approveState reports healthy returns false')
 	t.equals(isUnhealthy(vmt.notUnhealthy.second), false, 'No recent Heartbeat returns false')
-	t.equals(isUnhealthy(vmt.notUnhealthy.third), false, 'No recent NewState returns false')
 	t.end()
 })
 
