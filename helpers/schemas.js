@@ -5,12 +5,13 @@ const mimeTypes = ['image/jpeg', 'image/png']
 const addressRegex = /^0x[0-9A-Fa-f]{40}$/
 const signatureRegex = /^0x[0-9A-Fa-f]{130}$/
 const hashRegex = /^0x[0-9A-Fa-f]{64}$/
+const typeRegex = /^iab_flex_?/
 const validModes = [0, 1, 2]
 const roles = ['advertiser', 'publisher']
 
 module.exports = {
-	adSlot: {
-		type: Joi.string().valid(types).required(), // TODO add regex for the last case
+	adSlotPost: {
+		type: Joi.string().regex(typeRegex).allow(types).required(),
 		tags: Joi.array().items({
 			tag: Joi.string().required(),
 			score: Joi.number().min(0).max(100).required()
@@ -22,10 +23,10 @@ module.exports = {
 		fallbackMediaMime: Joi.string().valid(mimeTypes).required(),
 		fallbackTargetUrl: Joi.string().uri().required(),
 		archived: Joi.bool().optional(),
-		modified: Joi.date().timestamp().optional()
+		modified: Joi.allow(null)
 	},
-	adUnit: {
-		type: Joi.string().valid(types).required(), // TODO add regex for the last case
+	adUnitPost: {
+		type: Joi.string().regex(typeRegex).allow(types).required(),
 		mediaUrl: Joi.string().length(53).regex(ipfsRegex).required(),
 		mediaMime: Joi.string().valid(mimeTypes).required(),
 		targetUrl: Joi.string().uri().required(),
@@ -41,7 +42,7 @@ module.exports = {
 		title: Joi.string().max(120).required(),
 		description: Joi.string().max(300).required(),
 		archived: Joi.bool().optional(),
-		modified: Joi.date().timestamp().optional()
+		modified: Joi.allow(null)
 	},
 	user: {
 		identity: Joi.string().regex(addressRegex).required(),
