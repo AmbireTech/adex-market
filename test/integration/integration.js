@@ -341,18 +341,28 @@ tape('GET/POST on authorized routes', (t) => {
 			identity: identityAddr,
 			body: JSON.stringify(mockAdUnit)
 		})
-		.then((res) => {
+		.then(res => {
 			t.comment('POST /adunits tests')
 			t.equals(res.status, 200, 'adunit submitted successfully')
+			return res.json()
+		})
+		.then((res) => {
 			fetch(`${marketUrl}/adunits`,
 				{
 					headers: { 'x-user-signature': signature },
 					identity: identityAddr
 				})
-				.then(res => res.json())
-				.then((res) => {
-					t.ok(Array.isArray(res), 'an array is returned')
-					t.equals(res.length, 4, 'new element is added') // 3 from test data + new one
+				.then(getRes => getRes.json())
+				.then((getRes) => {
+					t.ok(Array.isArray(getRes), 'an array with slots is returned')
+					t.equals(getRes.length, 4, 'new element is added') // 3 from test data + new one
+				})
+			fetch(`${marketUrl}/adunits/${res.ipfs}`, { headers: { 'x-user-signature': signature } })
+				.then(getRes => getRes.json())
+				.then((getRes) => {
+					t.ok(Array.isArray(getRes), 'returns array')
+					t.equals(getRes.length, 1, 'Only 1 ad unit is retrieved with get')
+					t.equals(getRes[0].ipfs, res.ipfs, 'returns item with correct ipfs hash')
 				})
 		})
 
@@ -378,18 +388,29 @@ tape('GET/POST on authorized routes', (t) => {
 			identity: identityAddr,
 			body: JSON.stringify(mockAdSlot)
 		})
-		.then((res) => {
+		.then(res => {
 			t.comment('POST /adslots')
-			t.equals(res.status, 200, 'submitted successfully')
+			t.equals(res.status, 200, 'adslot submitted successfully')
+			return res.json()
+		})
+		.then((res) => {
 			fetch(`${marketUrl}/adslots`,
 				{
 					headers: { 'x-user-signature': signature },
 					identity: identityAddr
 				})
-				.then(res => res.json())
-				.then((res) => {
-					t.ok(Array.isArray(res), 'an array is returned')
-					t.equals(res.length, 2, 'new element is added')
+				.then(getRes => getRes.json())
+				.then((getRes) => {
+					t.ok(Array.isArray(getRes), 'an array is returned')
+					t.equals(getRes.length, 2, 'new element is added')
+				})
+			fetch(`${marketUrl}/adslots/${res.ipfs}`, { headers: { 'x-user-signature': signature } })
+				.then(getRes => getRes.json())
+				.then((getRes) => {
+					t.ok(Array.isArray(getRes), 'returns array')
+					t.equals(getRes.length, 1, 'returns 1 slot by ID')
+					t.equals(getRes[0].ipfs, res.ipfs, 'slot ipfs hash is correct')
+					t.equals(getRes[0].owner, identityAddr, 'owner is correct')
 				})
 		})
 
@@ -405,27 +426,6 @@ tape('GET/POST on authorized routes', (t) => {
 			t.comment('/POST adslots - bad data')
 			t.equals(res.status, 500, 'broken adslots cant be submitted')
 		})
-
-		// TODO retrieve ID of posted unit/slot so we can target it with the commented out routes
-		// const getAdUnitsById = fetch(`${marketUrl}/adunits/(...)`, { headers: { 'x-user-signature': signature } })
-		// 	.then(res => res.json())
-		// 	.then((res) => {
-		// 		t.ok(Array.isArray(res), 'returns array')
-		// 		t.equals(res.length, 1, 'Only 1 ad unit is retrieved with get')
-		// 		t.equals(res[0].mediaUrl, 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t', 'returns item with correct ipfs hash')
-		// 	})
-		// 	.catch(err => t.fail(err))
-
-		// const getAdSlotsById = fetch(`${marketUrl}/adslots/(...)`, { headers: { 'x-user-signature': signature } })
-		// 	.then(res => res.json())
-		// 	.then((res) => {
-		// 		t.ok(Array.isArray(res), 'returns array')
-		// 		t.equals(res.length, 1, 'returns 1 slot by ID')
-		// 		t.equals(res[0].fallbackMediaUrl, 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t', 'slot address is correct')
-		// 		t.equals(res[0].owner, identityAddr, 'owner is correct')
-		// 		t.end()
-		// 	})
-		// 	.catch(err => t.fail(err))
 
 		Promise.all([postMedia, postAdUnit, postBadAdUnit, postAdSlot, postBadAdSlot, getAdUnits, getAdSlots])
 			.then(() => {
@@ -451,6 +451,7 @@ tape('POST /auth with bad data', (t) => {
 	.catch(err => t.fail(err))
 })
 
+// TODO test with all modes
 tape('POST /auth with correct data', (t) => {
 	fetch(`${marketUrl}/auth`, {
 		method: 'POST',
@@ -472,8 +473,6 @@ tape('POST /auth with correct data', (t) => {
 	})
 	.catch(err => t.fail(err))
 })
-// TODO test with all modes when fixed
-
 tape('POST /adunits unauthenticated', (t) => {
 	const adUnit = testData.adUnits[0]
 
