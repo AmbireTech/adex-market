@@ -30,9 +30,9 @@ function getUnits (req, res, next) {
 function getUnitById (req, res, next) {
 	const identity = req.identity
 	const adUnitCol = db.getMongo().collection('adUnits')
-	const id = req.params['id']
+	const ipfs = req.params['id']
 	return adUnitCol
-		.findOne({ _id: id, owner: identity })
+		.findOne({ ipfs, owner: identity })
 		.then((result) => {
 			res.send([result])
 		})

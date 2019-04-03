@@ -29,11 +29,11 @@ function getAdSlots (req, res, next) {
 
 function getAdSlotById (req, res, next) {
 	const identity = req.identity
-	const id = req.params['id']
+	const ipfs = req.params['id']
 	const adSlotsCol = db.getMongo().collection('adSlots')
 
 	return adSlotsCol
-		.findOne({ _id: id, owner: identity })
+		.findOne({ ipfs, owner: identity })
 		.then((result) => {
 			res.send([result])
 		})
