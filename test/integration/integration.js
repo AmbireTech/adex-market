@@ -363,6 +363,28 @@ tape('GET/POST on authorized routes', (t) => {
 					t.ok(Array.isArray(getRes), 'returns array')
 					t.equals(getRes.length, 1, 'Only 1 ad unit is retrieved with get')
 					t.equals(getRes[0].ipfs, res.ipfs, 'returns item with correct ipfs hash')
+					fetch(`${marketUrl}/adunits/${res.ipfs}`, {
+						method: 'PUT',
+						headers: {
+							'Content-type': 'application/json',
+							'x-user-signature': signature
+						},
+						identity: identityAddr,
+						body: JSON.stringify({
+							archived: true,
+							modified: Date.now()
+						})
+					})
+						.then((putRes) => {
+							t.comment('PUT /adunits/:id tests')
+							t.equals(putRes.status, 200, 'AdUnit edited successfully')
+							return putRes.json()
+						})
+						.then((putRes) => {
+							t.equals(putRes.ipfs, res.ipfs, 'Returned unit is the same')
+							t.equals(putRes.archived, true, 'Test unit archived successfully')
+							t.ok(putRes.modified, 'Modified is not null anymore')
+						})
 				})
 		})
 
@@ -411,6 +433,28 @@ tape('GET/POST on authorized routes', (t) => {
 					t.equals(getRes.length, 1, 'returns 1 slot by ID')
 					t.equals(getRes[0].ipfs, res.ipfs, 'slot ipfs hash is correct')
 					t.equals(getRes[0].owner, identityAddr, 'owner is correct')
+					fetch(`${marketUrl}/adslots/${res.ipfs}`, {
+						method: 'PUT',
+						headers: {
+							'Content-type': 'application/json',
+							'x-user-signature': signature
+						},
+						identity: identityAddr,
+						body: JSON.stringify({
+							archived: true,
+							modified: Date.now()
+						})
+					})
+						.then((putRes) => {
+							t.comment('PUT /adslots/:id tests')
+							t.equals(putRes.status, 200, 'AdSlot edited successfully')
+							return putRes.json()
+						})
+						.then((putRes) => {
+							t.equals(putRes.ipfs, res.ipfs, 'Returned slot is the same')
+							t.equals(putRes.archived, true, 'Test slot archived successfully')
+							t.ok(putRes.modified, 'Modified is not null anymore')
+						})
 				})
 		})
 
