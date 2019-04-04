@@ -4,14 +4,16 @@ const addDataToIpfs = require('../helpers/ipfs')
 
 const { celebrate } = require('celebrate')
 const schemas = require('../helpers/schemas')
+// const schemas = require('adex-models').schemas
 
 const router = express.Router()
 
-router.get('/', getUnits)
-router.get('/:id', getUnitById)
-router.post('/', celebrate({ body: schemas.adUnitPost }), postUnit)
+router.get('/', getAdUnits)
+router.get('/:id', getAdUnitById)
+router.post('/', celebrate({ body: schemas.adUnitPost }), postAdUnit)
+router.put('/:id', celebrate({ body: schemas.adUnitPut }) ,putAdUnit)
 
-function getUnits (req, res, next) {
+function getAdUnits (req, res) {
 	const identity = req.identity
 	const limit = +req.query.limit || 100
 	const skip = +req.query.skip || 0
@@ -27,7 +29,7 @@ function getUnits (req, res, next) {
 		})
 }
 
-function getUnitById (req, res, next) {
+function getAdUnitById (req, res) {
 	const identity = req.identity
 	const adUnitCol = db.getMongo().collection('adUnits')
 	const ipfs = req.params['id']
@@ -38,7 +40,7 @@ function getUnitById (req, res, next) {
 		})
 }
 
-function postUnit (req, res, next) {
+function postAdUnit (req, res) {
 	const { type, mediaUrl, mediaMime, targetUrl, targeting, tags, created, title, description, archived = false, modified = null } = req.body
 	const identity = req.identity
 
@@ -56,6 +58,26 @@ function postUnit (req, res, next) {
 				}
 				return res.status(200).send(adUnit)
 			})
+		})
+}
+
+function putAdUnit (req, res) {
+	const { title, description, archived, modified } = req.body
+	const adUnitCol = db.getMongo().collection('adUnits')
+	const ipfs = req.params.id
+
+	return adUnitCol
+		.findOneAndUpdate({ ipfs }, { '$set': {
+			title: title,
+			description: description,
+			archived: archived,
+			modified: modified
+		} }, (err, result) => {
+			if (err) {
+				console.error(err)
+				return res.status(418).send()
+			}
+			return res.status(200).send(result)
 		})
 }
 

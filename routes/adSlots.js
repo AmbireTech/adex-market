@@ -9,9 +9,10 @@ const router = express.Router()
 
 router.get('/', getAdSlots)
 router.get('/:id', getAdSlotById)
+router.put('/:id', celebrate({ body: schemas.adSlotPut }), putAdSlot)
 router.post('/', celebrate({ body: schemas.adSlotPost }), postAdSlot)
 
-function getAdSlots (req, res, next) {
+function getAdSlots (req, res) {
 	const identity = req.identity
 	const limit = +req.query.limit || 100
 	const skip = +req.query.skip || 0
@@ -27,7 +28,7 @@ function getAdSlots (req, res, next) {
 		})
 }
 
-function getAdSlotById (req, res, next) {
+function getAdSlotById (req, res) {
 	const identity = req.identity
 	const ipfs = req.params['id']
 	const adSlotsCol = db.getMongo().collection('adSlots')
@@ -39,7 +40,7 @@ function getAdSlotById (req, res, next) {
 		})
 }
 
-function postAdSlot (req, res, next) {
+function postAdSlot (req, res) {
 	const { type, tags, created, title, description, fallbackMediaUrl, fallbackMediaMime, fallbackTargetUrl, archived = false, modified = null } = req.body
 	const identity = req.identity
 
@@ -60,6 +61,32 @@ function postAdSlot (req, res, next) {
 				return res.send(adSlot)
 			})
 		})
+}
+
+function putAdSlot (req, res) {
+	const { title, description, fallbackMediaUrl, fallbackMediaMime, fallbackTargetUrl, archived, modified } = req.body
+	const adUnitCol = db.getMongo().collection('adUnits')
+	const ipfs = req.params.id
+
+	return adUnitCol
+		.findOneAndUpdate(
+			{ ipfs },
+			{ '$set': {
+				title,
+				description,
+				archived,
+				fallbackMediaUrl,
+				fallbackMediaMime,
+				fallbackTargetUrl,
+				modified
+			} },
+			(err, result) => {
+				if (err) {
+					console.error(err)
+					return res.status(418).send()
+				}
+				return res.send(result)
+			})
 }
 
 module.exports = router
