@@ -371,6 +371,8 @@ tape('GET/POST on authorized routes', (t) => {
 						},
 						identity: identityAddr,
 						body: JSON.stringify({
+							title: 'Test slot 1',
+							description: 'Test description for test slot 1',
 							archived: true,
 							modified: Date.now()
 						})
@@ -381,9 +383,10 @@ tape('GET/POST on authorized routes', (t) => {
 							return putRes.json()
 						})
 						.then((putRes) => {
-							t.equals(putRes.ipfs, res.ipfs, 'Returned unit is the same')
-							t.equals(putRes.archived, true, 'Test unit archived successfully')
-							t.ok(putRes.modified, 'Modified is not null anymore')
+							const updated = putRes.value
+							t.equals(updated.ipfs, res.ipfs, 'Returned unit is the same')
+							t.equals(updated.archived, true, 'Test unit archived successfully')
+							t.ok(updated.modified, 'Modified is not null anymore')
 						})
 				})
 		})
@@ -441,6 +444,11 @@ tape('GET/POST on authorized routes', (t) => {
 						},
 						identity: identityAddr,
 						body: JSON.stringify({
+							title: res.title,
+							description: res.description,
+							fallbackMediaUrl: res.fallbackMediaUrl,
+							fallbackMediaMime: res.fallbackMediaMime,
+							fallbackTargetUrl: res.fallbackTargetUrl,
 							archived: true,
 							modified: Date.now()
 						})
@@ -451,9 +459,10 @@ tape('GET/POST on authorized routes', (t) => {
 							return putRes.json()
 						})
 						.then((putRes) => {
-							t.equals(putRes.ipfs, res.ipfs, 'Returned slot is the same')
-							t.equals(putRes.archived, true, 'Test slot archived successfully')
-							t.ok(putRes.modified, 'Modified is not null anymore')
+							const updated = putRes.value
+							t.equals(updated.ipfs, res.ipfs, 'Returned slot is the same')
+							t.equals(updated.archived, true, 'Test slot archived successfully')
+							t.ok(updated.modified, 'Modified is not null anymore')
 						})
 				})
 		})
