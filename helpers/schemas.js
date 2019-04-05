@@ -55,10 +55,10 @@ module.exports = {
 		modified: Joi.allow(null)
 	},
 	adUnitPut: {
-		type: Joi.string().regex(typeRegex).allow(types).required(),
+		title: Joi.string().max(120).required(),
 		description: Joi.string().max(300).required(),
 		archived: Joi.bool().required(),
-		modified: Joi.date().timestamp()
+		modified: Joi.date().timestamp().required()
 	},
 	user: {
 		identity: Joi.string().regex(addressRegex).required(),

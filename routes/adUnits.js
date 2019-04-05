@@ -72,7 +72,7 @@ function putAdUnit (req, res) {
 			description: description,
 			archived: archived,
 			modified: modified
-		} }, (err, result) => {
+		} }, { returnOriginal: false }, (err, result) => {
 			if (err) {
 				console.error(err)
 				return res.status(418).send()

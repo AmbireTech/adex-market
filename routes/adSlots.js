@@ -43,7 +43,7 @@ function getAdSlotById (req, res) {
 function postAdSlot (req, res) {
 	const { type, tags, created, title, description, fallbackMediaUrl, fallbackMediaMime, fallbackTargetUrl, archived = false, modified = null } = req.body
 	const identity = req.identity
-
+	console.log('is this called')
 	const specForIpfs = { type, tags, owner: identity, created }
 
 	const adSlotsCol = db.getMongo().collection('adSlots')
@@ -65,10 +65,9 @@ function postAdSlot (req, res) {
 
 function putAdSlot (req, res) {
 	const { title, description, fallbackMediaUrl, fallbackMediaMime, fallbackTargetUrl, archived, modified } = req.body
-	const adUnitCol = db.getMongo().collection('adUnits')
+	const adSlotsCol = db.getMongo().collection('adSlots')
 	const ipfs = req.params.id
-
-	return adUnitCol
+	return adSlotsCol
 		.findOneAndUpdate(
 			{ ipfs },
 			{ '$set': {
@@ -79,13 +78,12 @@ function putAdSlot (req, res) {
 				fallbackMediaMime,
 				fallbackTargetUrl,
 				modified
-			} },
+			} }, { returnOriginal: false },
 			(err, result) => {
 				if (err) {
-					console.error(err)
 					return res.status(418).send()
 				}
-				return res.send(result)
+				return res.status(200).send(result)
 			})
 }
 
