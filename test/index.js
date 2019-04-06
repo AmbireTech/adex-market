@@ -21,9 +21,9 @@ tape('isOffline()', function (t) {
 })
 
 tape('isDisconnected()', function (t) {
-	t.equals(isDisconnected(vmt.disconnected.first), true, 'Majority of messages not matching')
-	t.equals(isDisconnected(vmt.notDisconnected.first), false, '50% of messages match')
-	t.equals(isDisconnected(vmt.notDisconnected.second), false, 'more than 50% of messages match')
+	t.equals(isDisconnected(vmt.disconnected.first), true, 'Majority of messages not matching returns true')
+	t.equals(isDisconnected(vmt.disconnected.second), true, '50% of messages not matching returns true')
+	t.equals(isDisconnected(vmt.notDisconnected.first), false, 'more than 50% of messages matching returns false')
 	t.end()
 })
 
