@@ -3,7 +3,7 @@ const db = require('../db')
 const addDataToIpfs = require('../helpers/ipfs')
 
 const { celebrate } = require('celebrate')
-const schemas = require('../helpers/schemas')
+const { schemas } = require('adex-models')
 
 const router = express.Router()
 
@@ -70,15 +70,17 @@ function putAdSlot (req, res) {
 	return adSlotsCol
 		.findOneAndUpdate(
 			{ ipfs },
-			{ '$set': {
-				title,
-				description,
-				archived,
-				fallbackMediaUrl,
-				fallbackMediaMime,
-				fallbackTargetUrl,
-				modified
-			} }, { returnOriginal: false },
+			{
+				'$set': {
+					title,
+					description,
+					archived,
+					fallbackMediaUrl,
+					fallbackMediaMime,
+					fallbackTargetUrl,
+					modified
+				}
+			}, { returnOriginal: false },
 			(err, result) => {
 				if (err) {
 					return res.status(418).send()
