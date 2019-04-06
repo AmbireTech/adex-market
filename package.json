@@ -17,7 +17,6 @@
   "author": "Smart Code OOD",
   "license": "MIT",
   "dependencies": {
-    "adex-constants": "^1.0.10",
     "adex-models": "git+https://git@github.com/AdExBlockchain/adex-models.git#2414f568043e479096bae8f6fa1975e06b1e040e",
     "bn.js": "^4.11.8",
     "body-parser": "^1.18.3",

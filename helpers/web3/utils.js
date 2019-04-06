@@ -3,7 +3,7 @@ const ethereumjs = require('ethereumjs-util')
 const { toBuffer, ecrecover, pubToAddress } = ethereumjs
 const { web3Utils } = require('./ADX')
 const { ethers } = require('./ethers')
-let { SIGN_TYPES } = require('adex-constants').exchange
+let { SignatureModes } = require('adex-models').constants
 
 const getAddrFromPersonalSignedMsg = async ({ signature, hash }) => {
 	try {
@@ -55,13 +55,13 @@ const getAddrFromTrezorSignedMsg = async ({ signature, hash }) => {
 
 const getAddrFromSignedMsg = ({ mode, signature, hash, typedData, msg }) => {
 	switch (mode) {
-	case SIGN_TYPES.EthPersonal.id:
+	case SignatureModes.GETH:
 		// Ledger
 		return getAddrFromPersonalSignedMsg({ signature: signature, hash: hash, msg: msg })
-	case SIGN_TYPES.Eip.id:
+	case SignatureModes.EIP712:
 		// Metamask
 		return getAddrFromEipTypedSignedMsg({ signature: signature, typedData: typedData })
-	case SIGN_TYPES.Trezor.id:
+	case SignatureModes.TREZOR:
 		// Trezor
 		// return getAddrFromPersonalSignedMsg({ signature: signature, hash: hash, msg: msg })
 		return getAddrFromTrezorSignedMsg({ signature: signature, hash: hash })

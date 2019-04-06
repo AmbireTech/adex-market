@@ -2,7 +2,7 @@ const express = require('express')
 const db = require('../db')
 
 const { celebrate } = require('celebrate')
-const schemas = require('../helpers/schemas')
+const { schemas } = require('adex-models')
 
 const router = express.Router()
 

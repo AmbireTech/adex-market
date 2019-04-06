@@ -3,15 +3,14 @@ const db = require('../db')
 const addDataToIpfs = require('../helpers/ipfs')
 
 const { celebrate } = require('celebrate')
-const schemas = require('../helpers/schemas')
-// const schemas = require('adex-models').schemas
+const { schemas } = require('adex-models')
 
 const router = express.Router()
 
 router.get('/', getAdUnits)
 router.get('/:id', getAdUnitById)
 router.post('/', celebrate({ body: schemas.adUnitPost }), postAdUnit)
-router.put('/:id', celebrate({ body: schemas.adUnitPut }) ,putAdUnit)
+router.put('/:id', celebrate({ body: schemas.adUnitPut }), putAdUnit)
 
 function getAdUnits (req, res) {
 	const identity = req.identity
@@ -67,18 +66,25 @@ function putAdUnit (req, res) {
 	const ipfs = req.params.id
 
 	return adUnitCol
-		.findOneAndUpdate({ ipfs }, { '$set': {
-			title: title,
-			description: description,
-			archived: archived,
-			modified: modified
-		} }, { returnOriginal: false }, (err, result) => {
+		.findOneAndUpdate({ ipfs }, {
+			'$set': {
+				title: title,
+				description: description,
+				archived: archived,
+				modified: modified
+			}
+		}, { returnOriginal: false }, (err, result) => {
 			if (err) {
 				console.error(err)
 				return res.status(418).send()
 			}
 			return res.status(200).send(result)
 		})
+}
+
+function addUnitToCampaign (req, res) {
+	const identity = req.identity
+	const ipfs = req.params['id']
 }
 
 module.exports = router
