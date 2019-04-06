@@ -37,6 +37,35 @@ function getStatus (messagesFromAll, campaign, balanceTree) {
 	throw new Error('internal error: no status detected; should never happen')
 }
 
+/*
+// NOTE: currently working in master
+function getValidatorMessagesOfCampaign (campaign) {
+	const validators = campaign.spec.validators
+
+	const mapMsgs = ({ validatorMessages }) => validatorMessages.map(x => x.msg)
+	const mergeMsgs = ([a, b]) => a.concat(b)
+	// ensure we also get the latest NewState/ApproveState
+	const leaderPromise = Promise.all([
+		getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages`).then(mapMsgs),
+		getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/NewState?limit=1`).then(mapMsgs)
+	]).then(mergeMsgs)
+	const followerPromise = Promise.all([
+		getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages`).then(mapMsgs),
+		getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/${validators[1].id}/ApproveState?limit=1`).then(mapMsgs)
+	]).then(mergeMsgs)
+	const treePromise = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Accounting`)
+
+	return Promise.all([leaderPromise, followerPromise, treePromise])
+		.then(([fromLeader, fromFollower, treeResp]) => {
+			const messagesFromAll = [fromLeader, fromFollower]
+			const balanceTree = treeResp.validatorMessages[0] ? treeResp.validatorMessages[0].msg.balances : {}
+			return getStatus(messagesFromAll, campaign, balanceTree)
+		})
+}
+*/
+
+// NOTE: Latest from Simo - need to check which one is ok
+// tom and jerry in this requests does not look correct
 function getValidatorMessagesOfCampaign (campaign) {
 	const validators = campaign.spec.validators
 

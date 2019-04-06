@@ -2,6 +2,8 @@ const tape = require('tape')
 const { isInitializing, isOffline, isDisconnected, isInvalid, isUnhealthy, isReady, isActive, isExhausted, isExpired } = require('../lib/getStatus')
 const vmt = require('./validatorTestMessages')
 
+console.log('korrrr')
+
 tape('isInitializing()', function (t) {
 	t.equals(isInitializing(vmt.initializing.first), true, 'two empty message arrays return true')
 	t.equals(isInitializing(vmt.initializing.second), true, 'firt message array empty return true')
@@ -19,9 +21,9 @@ tape('isOffline()', function (t) {
 })
 
 tape('isDisconnected()', function (t) {
-	t.equals(isDisconnected(vmt.disconnected.first), true, 'Majority of messages not matching returns true')
-	t.equals(isDisconnected(vmt.disconnected.second), true, '50% of messages not matching returns true')
-	t.equals(isDisconnected(vmt.notDisconnected.first), false, 'more than 50% of messages matching returns false')
+	t.equals(isDisconnected(vmt.disconnected.first), true, 'Majority of messages not matching')
+	t.equals(isDisconnected(vmt.notDisconnected.first), false, '50% of messages match')
+	t.equals(isDisconnected(vmt.notDisconnected.second), false, 'more than 50% of messages match')
 	t.end()
 })
 
@@ -43,19 +45,17 @@ tape('isUnhealthy()', function (t) {
 
 tape('isReady()', function (t) {
 	t.equals(isReady(vmt.ready.first), true, 'Recent Heartbeat messages but no NewState messages returns true')
-	t.equals(isReady(vmt.notReady.first), false, 'Recent Heartbeat messages but one message has emitted NewState returns false')
-	t.equals(isReady(vmt.notReady.second), false, 'One message has no recent Heartbeat and both messages have NewState returns false')
-	t.equals(isReady(vmt.notReady.third), false, 'No NewState but one message has no recent HeartBeat returns false')
-	t.equals(isReady(vmt.notReady.fourth), false, 'Recent NewState messages but no Heartbeats returns false')
+	t.equals(isReady(vmt.notReady.first), false, 'One message has no recent Heartbeat and both messages have NewState returns false')
+	t.equals(isReady(vmt.notReady.second), false, 'No NewState but one message has no recent HeartBeat returns false')
+	t.equals(isReady(vmt.notReady.third), false, 'Recent NewState messages but no Heartbeats returns false')
 	t.end()
 })
 
 tape('isActive()', function (t) {
 	t.equals(isActive(vmt.active.first), true, 'there are recent NewState, ApproveState and Heartbeat\'s, and the ApproveState reports healthy returns true')
 	t.equals(isActive(vmt.notActive.first), false, 'recent NewState and Heartbeat but ApproveState reports unhealthy returns false')
-	t.equals(isActive(vmt.notActive.second), false, 'recent Heartbeat and ApproveState reports healthy but there is no recent NewState message returns false')
-	t.equals(isActive(vmt.notActive.third), false, 'recent Newstate and ApproveState reports healthy but no recent Heartbeat message returns false')
-	t.equals(isActive(vmt.notActive.fourth), false, 'recent NewState and Heartbeat but there is no ApproveState message returns false')
+	t.equals(isActive(vmt.notActive.second), false, 'recent Newstate and ApproveState reports healthy but no recent Heartbeat message returns false')
+	t.equals(isActive(vmt.notActive.third), false, 'recent NewState and Heartbeat but there is no ApproveState message returns false')
 	t.end()
 })
 
