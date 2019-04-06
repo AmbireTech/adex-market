@@ -1,7 +1,8 @@
-const nowDate = Date.now().toString(16).padStart(64, 0)
-const oldDate = (Date.now() - 10000000).toString(16).padStart(64, 0)
-const oldDateNoHex = Date.now() / 1000 - 10000000
-const inTheFuture = Date.now() / 1000 + 10000000
+
+const nowDate = (Math.floor(Date.now() / 1000)).toString(16).padStart(64, 0)
+const oldDate = (Math.floor((Date.now() - 10000000) / 1000)).toString(16).padStart(64, 0)
+const oldDateNoHex = Math.floor((Date.now() - 10000000) / 1000)
+const inTheFuture = Math.floor((Date.now() + 10000000) / 1000)
 const heartbeatMessageOldDate = {
 	type: 'Heartbeat',
 	timestamp: oldDate,
@@ -138,7 +139,15 @@ const disconnectedMessages2 = {
 }
 
 // Majority of messages match
-const notDisconnectedMessages = {
+const notDisconnectedMessages1 = {
+	leaderHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
+	followerHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
+	newStateLeader: [],
+	approveStateFollower: []
+}
+
+// Majority of messages match
+const notDisconnectedMessages2 = {
 	leaderHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
 	followerHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
 	newStateLeader: [],
@@ -241,6 +250,7 @@ const notReadyMessages3 = {
 	approveStateFollower: []
 }
 
+/*
 // no heartbeat but newstate is emitted
 const notReadyMessages4 = {
 	leaderHeartbeat: [],
@@ -248,6 +258,7 @@ const notReadyMessages4 = {
 	newStateLeader: [newStateMessage],
 	approveStateFollower: []
 }
+*/
 
 // A situation where it works
 const activeMessages = {
@@ -281,6 +292,7 @@ const notActiveMessages3 = {
 	approveStateFollower: [approveStateMessageHealthy]
 }
 
+/*
 // Working example but there's no approveState
 const notActiveMessages4 = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
@@ -288,6 +300,7 @@ const notActiveMessages4 = {
 	newStateLeader: [newStateMessage],
 	approveStateFollower: []
 }
+*/
 
 // Total balances is more than depositAmount
 const exhausted1 = {
@@ -435,15 +448,15 @@ module.exports = {
 	offline: { first: offlineMessages1, second: offlineMessages2, third: offlineMessages3 },
 	notOffline: { first: notOfflineMessages },
 	disconnected: { first: disconnectedMessages1, second: disconnectedMessages2 },
-	notDisconnected: { first: notDisconnectedMessages },
+	notDisconnected: { first: notDisconnectedMessages1, second: notDisconnectedMessages2 },
 	invalid: { first: invalidMessages },
 	notInvalid: { first: notInvalidMessages1, second: notInvalidMessages2, third: notInvalidMessages3, fourth: notInvalidMessages4 },
 	unhealthy: { first: unhealthyMessages },
 	notUnhealthy: { first: notUnhealthyMessages1, second: notUnhealthyMessages2 },
 	ready: { first: readyMessages1 },
-	notReady: { first: notReadyMessages1, second: notReadyMessages2, third: notReadyMessages3, fourth: notReadyMessages4 },
+	notReady: { first: notReadyMessages1, second: notReadyMessages2, third: notReadyMessages3 },
 	active: { first: activeMessages },
-	notActive: { first: notActiveMessages1, second: notActiveMessages2, third: notActiveMessages3, fourth: notActiveMessages4 },
+	notActive: { first: notActiveMessages1, second: notActiveMessages2, third: notActiveMessages3 },
 	exhausted: { first: exhausted1, second: exhausted2 },
 	notExhausted: { first: notExhausted },
 	expired: { first: expiredCampaign },
