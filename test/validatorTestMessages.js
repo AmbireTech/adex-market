@@ -1,6 +1,6 @@
 
-const nowDate = (Math.floor(Date.now() / 1000)).toString(16).padStart(64, 0)
-const oldDate = (Math.floor((Date.now() - 10000000) / 1000)).toString(16).padStart(64, 0)
+const nowDate = (Math.floor(Date.now() / 1000))
+const oldDate = (Math.floor((Date.now() - 10000000) / 1000))
 const oldDateNoHex = Math.floor((Date.now() - 10000000) / 1000)
 const inTheFuture = Math.floor((Date.now() + 10000000) / 1000)
 const heartbeatMessageOldDate = {
@@ -140,14 +140,6 @@ const disconnectedMessages2 = {
 
 // Majority of messages match
 const notDisconnectedMessages1 = {
-	leaderHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
-	followerHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
-	newStateLeader: [],
-	approveStateFollower: []
-}
-
-// Majority of messages match
-const notDisconnectedMessages2 = {
 	leaderHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
 	followerHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
 	newStateLeader: [],
@@ -448,7 +440,7 @@ module.exports = {
 	offline: { first: offlineMessages1, second: offlineMessages2, third: offlineMessages3 },
 	notOffline: { first: notOfflineMessages },
 	disconnected: { first: disconnectedMessages1, second: disconnectedMessages2 },
-	notDisconnected: { first: notDisconnectedMessages1, second: notDisconnectedMessages2 },
+	notDisconnected: { first: notDisconnectedMessages1 },
 	invalid: { first: invalidMessages },
 	notInvalid: { first: notInvalidMessages1, second: notInvalidMessages2, third: notInvalidMessages3, fourth: notInvalidMessages4 },
 	unhealthy: { first: unhealthyMessages },
