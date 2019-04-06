@@ -69,10 +69,10 @@ function getValidatorMessagesOfCampaign (campaign) {
 function getValidatorMessagesOfCampaign (campaign) {
 	const validators = campaign.spec.validators
 
-	const leaderHeartbeat = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/tom/Heartbeat?limit=3`)
-	const followerHeartbeat = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/jerry/Heartbeat?limit=3`)
-	const newState = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/tom/NewState?limit=1`)
-	const approveState = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/jerry/Approvestate?limit=1`)
+	const leaderHeartbeat = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/Heartbeat?limit=3`)
+	const followerHeartbeat = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/Heartbeat?limit=3`)
+	const newState = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/NewState?limit=1`)
+	const approveState = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/Approvestate?limit=1`)
 	const treePromise = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Accounting`)
 
 	return Promise.all([leaderHeartbeat, followerHeartbeat, newState, approveState, treePromise])
