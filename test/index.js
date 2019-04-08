@@ -2,8 +2,6 @@ const tape = require('tape')
 const { isInitializing, isOffline, isDisconnected, isInvalid, isUnhealthy, isReady, isActive, isExhausted, isExpired } = require('../lib/getStatus')
 const vmt = require('./validatorTestMessages')
 
-console.log('korrrr')
-
 tape('isInitializing()', function (t) {
 	t.equals(isInitializing(vmt.initializing.first), true, 'two empty message arrays return true')
 	t.equals(isInitializing(vmt.initializing.second), true, 'firt message array empty return true')
