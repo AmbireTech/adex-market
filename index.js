@@ -2,8 +2,6 @@ require('dotenv').config()
 const express = require('express')
 const headerParser = require('header-parser')
 const bodyParser = require('body-parser')
-const formData = require('express-form-data')
-const os = require('os')
 const startStatusLoop = require('./status-loop/queryValidators')
 
 const signatureCheck = require('./helpers/signatureCheck')
@@ -24,15 +22,6 @@ const app = express()
 const db = require('./db')
 const port = process.env.PORT || 3012
 
-const options = {
-	uploadDir: os.tmpdir(),
-	autoClean: true
-}
-
-app.use(formData.parse(options))
-app.use(formData.format())
-app.use(formData.stream())
-app.use(formData.union())
 app.use(headerParser)
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
