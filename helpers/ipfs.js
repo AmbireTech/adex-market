@@ -4,30 +4,26 @@ const ipfsPort = process.env.IPFSPORT || '8443'
 const ipfsProtocol = process.env.IPFSPROTOCOL || 'https'
 const ipfs = ipfsClient(ipfsHost, ipfsPort, { protocol: ipfsProtocol })
 
-function addDataToIpfs (data) {
+async function addDataToIpfs (data) {
 	// Buffer is moved to separate routes where it is necessary
-	return ipfs.add(data)
-		.then((res) => {
-			if (res[0]) {
-				return res[0].hash
-			} else {
-				throw new Error('Error adding data to ipfs')
-			}
-		})
-		.then((hash) => {
-			return ipfs.pin.add(hash)
-		})
-		.then((res) => {
-			if (res[0]) {
-				return res[0].hash
-			} else {
-				throw new Error('Error pin data to ipfs')
-			}
-		})
-		.catch(function (err) {
-			console.error('IPFS error: ', err)
-			return Promise.reject(new Error(`IPFS Error: ${err}`))
-		})
+
+	try {
+		const res = (await ipfs.add(data))[0]
+
+		if (!res) {
+			throw new Error('Error adding data to ipfs')
+		}
+
+		const pinned = (await ipfs.pin.add(res.hash))[0]
+
+		if (!pinned) {
+			throw new Error('Error pin data to ipfs')
+		}
+
+		return pinned.hash
+	} catch (err) {
+		throw new Error(`IPFS Error: ${err}`)
+	}
 }
 
 module.exports = addDataToIpfs

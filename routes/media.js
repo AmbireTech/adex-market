@@ -1,19 +1,21 @@
 const express = require('express')
+const multer = require('multer')
 const addDataToIpfs = require('../helpers/ipfs')
 
+const storage = multer.memoryStorage()
+const upload = multer({ storage: storage })
 const router = express.Router()
 
-router.post('/', postMedia)
+router.post('/', upload.single('media'), postMedia)
 
-function postMedia (req, res, next) {
-	const { media } = req.body
-	return addDataToIpfs(media)
+async function postMedia (req, res, next) {
+	return addDataToIpfs(req.file.buffer)
 		.then((hash) => {
-			return res.status(200).send({ ipfs: hash })
+			return res.json({ ipfs: hash })
 		})
 		.catch((err) => {
-			console.error('error posting media', err)
-			return res.status(401)
+			console.error(err)
+			return res.status(500).send(err)
 		})
 }
 
