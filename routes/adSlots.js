@@ -24,7 +24,10 @@ function getAdSlots (req, res) {
 		.limit(limit)
 		.toArray()
 		.then((result) => {
-			res.send(result)
+			return res.send(result)
+		})
+		.catch((err) => {
+			return res.status(500).send(err)
 		})
 }
 
@@ -36,8 +39,12 @@ function getAdSlotById (req, res) {
 	return adSlotsCol
 		.findOne({ ipfs, owner: identity })
 		.then((result) => {
-			res.send([result])
+			if (!result) {
+				return res.status(404).send('Ad Slot not found') // TODO? replace with code to add to translations
+			}
+			return res.send([result])
 		})
+		.catch(err => res.status(500).send(err))
 }
 
 function postAdSlot (req, res) {
@@ -56,7 +63,7 @@ function postAdSlot (req, res) {
 			return adSlotsCol.insertOne(adSlot, (err, result) => {
 				if (err) {
 					console.error(new Error('Error adding adSlot', err))
-					return res.status(420).send()
+					return res.status(500).send(err)
 				}
 				return res.send(adSlot)
 			})
@@ -83,7 +90,7 @@ function putAdSlot (req, res) {
 			}, { returnOriginal: false },
 			(err, result) => {
 				if (err) {
-					return res.status(418).send()
+					return res.status(500).send(err)
 				}
 				return res.status(200).send(result)
 			})
