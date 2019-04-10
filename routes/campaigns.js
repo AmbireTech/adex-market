@@ -30,7 +30,10 @@ function getCampaigns (req, res, next) {
 		.limit(limit)
 		.toArray()
 		.then((result) => {
-			res.send(result)
+			return res.send(result)
+		})
+		.catch((err) => {
+			return res.status(500).send(err)
 		})
 }
 
@@ -43,7 +46,7 @@ function getCampaignInfo (req, res, next) {
 		.toArray()
 		.then((result) => {
 			if (!result[0]) {
-				res.send([{}])
+				return res.send([{}])
 			}
 			const validators = result[0].spec.validators
 			const leaderBalanceTree = getBalanceTree(validators[0].url, id)
@@ -51,8 +54,11 @@ function getCampaignInfo (req, res, next) {
 
 			Promise.all([leaderBalanceTree, followerBalanceTree])
 				.then((trees) => {
-					res.send([{ leaderBalanceTree: trees[0], followerBalanceTree: trees[1] }])
+					return res.send([{ leaderBalanceTree: trees[0], followerBalanceTree: trees[1] }])
 				})
+		})
+		.catch((err) => {
+			return res.status(500).send(err)
 		})
 }
 
