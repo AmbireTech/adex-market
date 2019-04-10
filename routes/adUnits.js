@@ -53,7 +53,7 @@ function postAdUnit (req, res) {
 			return adUnitCol.insertOne(adUnit, (err, result) => {
 				if (err) {
 					console.error(new Error('error adding adUnit', err))
-					return res.status(418).send()
+					return res.status(500).send(err)
 				}
 				return res.status(200).send(adUnit)
 			})
@@ -76,7 +76,7 @@ function putAdUnit (req, res) {
 		}, { returnOriginal: false }, (err, result) => {
 			if (err) {
 				console.error(err)
-				return res.status(418).send()
+				return res.status(500).send(err)
 			}
 			return res.status(200).send(result)
 		})
