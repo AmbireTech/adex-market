@@ -89,7 +89,10 @@ function getStats (req, res, next) {
 						output.campaignsByStatus[c.status.name]++
 					})
 
-					res.send(output)
+					return res.send(output)
+				})
+				.catch((err) => {
+					return res.status(500).send(err)
 				})
 		})
 }
