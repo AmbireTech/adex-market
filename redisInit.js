@@ -24,7 +24,7 @@ if (dbUseSSL) {
 	redisClient = redis.createClient(dbPort, dbHost)
 }
 
-redisClient.auth(dbPassword, function (err) {
+if (dbPassword) redisClient.auth(dbPassword, function (err) {
 	if (err) throw err
 })
 
