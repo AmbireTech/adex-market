@@ -12,7 +12,6 @@ const addrRegex40 = /^0x[0-9A-Fa-f]{40}$/
 const addrRegex64 = /^0x[0-9A-Fa-f]{64}$/
 const addrRegex130 = /^0x[0-9A-Fa-f]{130}$/
 
-// TODO export those and other repetitive data into integrationTestsConstants module
 const mockAuthObj = {
 	identity: identityAddr,
 	signerAddress: '0x2aecf52abe359820c48986046959b4136afdfbe2',

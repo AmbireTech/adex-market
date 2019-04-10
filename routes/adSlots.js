@@ -56,7 +56,7 @@ function postAdSlot (req, res) {
 			return adSlotsCol.insertOne(adSlot, (err, result) => {
 				if (err) {
 					console.error(new Error('Error adding adSlot', err))
-					return res.status(420).send()
+					return res.status(500).send(err)
 				}
 				return res.send(adSlot)
 			})
@@ -83,7 +83,7 @@ function putAdSlot (req, res) {
 			}, { returnOriginal: false },
 			(err, result) => {
 				if (err) {
-					return res.status(418).send()
+					return res.status(500).send(err)
 				}
 				return res.status(200).send(result)
 			})
