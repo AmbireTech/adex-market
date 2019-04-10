@@ -40,7 +40,10 @@ function getUserList (req, res, next) {
 		.find(query)
 		.toArray()
 		.then((result) => {
-			res.send(result)
+			return res.send(result)
+		})
+		.catch((err) => {
+			return res.status(500).send(err)
 		})
 }
 

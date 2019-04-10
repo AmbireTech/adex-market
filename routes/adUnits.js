@@ -24,7 +24,10 @@ function getAdUnits (req, res) {
 		.limit(limit)
 		.toArray()
 		.then((result) => {
-			res.send(result)
+			return res.send(result)
+		})
+		.catch((err) => {
+			return res.status(500).send(err)
 		})
 }
 
@@ -35,7 +38,13 @@ function getAdUnitById (req, res) {
 	return adUnitCol
 		.findOne({ ipfs, owner: identity })
 		.then((result) => {
-			res.send([result])
+			if (!result) {
+				return res.status(404).send('Ad Unit not found')
+			}
+			return res.send([result])
+		})
+		.catch((err) => {
+			return res.status(500).send(err)
 		})
 }
 
