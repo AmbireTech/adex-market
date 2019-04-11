@@ -10,14 +10,13 @@ const router = express.Router()
 
 router.post('/', authUser)
 
-async function checkWalletPrivileges (identity, walletAddr, allowPending) {
+async function checkWalletPrivileges (identity, walletAddr) {
 	try {
 		const contract = new ethers.Contract(identity, identityAbi, provider)
 		const privileges = await contract.privileges(walletAddr)
 		return privileges
 	} catch (err) {
-		console.error('err', err)
-		const privileges = await getWalletPrivileges(identity, walletAddr, allowPending)
+		const privileges = await getWalletPrivileges(identity, walletAddr)
 		return privileges
 	}
 }
@@ -26,16 +25,16 @@ async function authUser (req, res, next) {
 	try {
 		const { identity, mode, signature, authToken, hash, typedData, signerAddress, prefixed = true } = req.body
 		const recoveredAddr = await getAddrFromSignedMsg({ mode, signature, hash, typedData, msg: authToken, prefixed })
-		const walletAddress = recoveredAddr.toLowerCase()
+		const walletAddress = recoveredAddr
 
-		if (walletAddress !== signerAddress.toLowerCase()) {
+		if (walletAddress !== signerAddress) {
 			return res.status(400).send('Invalid signature')
 		}
 
-		const privileges = (await checkWalletPrivileges(identity, walletAddress, true)) || 0
+		const privileges = (await checkWalletPrivileges(identity, recoveredAddr, true)) || 0
 
 		const sessionExpiryTime = Date.now() + cfg.sessionExpiryTime
-		if (privileges > 0) {
+		if (privileges) {
 			redisClient.set('session:' + signature,
 				JSON.stringify({
 					'address': recoveredAddr,
