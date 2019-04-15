@@ -1,10 +1,12 @@
 const express = require('express')
 const db = require('../db')
 const getRequest = require('../helpers/getRequest')
+const signatureCheck = require('../helpers/signatureCheck')
 
 const router = express.Router()
 
 router.get('/', getCampaigns)
+router.get('/by-owner', signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
 
 function getBalanceTree (validatorUrl, channelId) {
@@ -21,10 +23,9 @@ function getCampaigns (req, res, next) {
 	const limit = +req.query.limit || 100
 	const skip = +req.query.skip || 0
 	const status = req.query.status ? req.query.status.split(',') : ['Active', 'Ready']
-
 	const campaignsCol = db.getMongo().collection('campaigns')
 
-	return campaignsCol
+	campaignsCol
 		.find({ 'status.name': { $in: status } })
 		.skip(skip)
 		.limit(limit)
@@ -37,11 +38,26 @@ function getCampaigns (req, res, next) {
 		})
 }
 
+function getCampaignsByOwner (req, res, next) {
+	const identity = req.identity
+	const campaignsCol = db.getMongo().collection('campaigns')
+
+	campaignsCol
+		.find({ 'creator': identity })
+		.toArray()
+		.then(result => {
+			return res.json(result)
+		})
+		.catch((err) => {
+			return res.status(500).send(err)
+		})
+}
+
 function getCampaignInfo (req, res, next) {
 	const id = req.params.id
 	const campaignsCol = db.getMongo().collection('campaigns')
 
-	return campaignsCol
+	campaignsCol
 		.find({ '_id': id })
 		.toArray()
 		.then((result) => {
