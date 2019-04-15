@@ -1,3 +1,4 @@
+const BN = require('bn.js')
 const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const cfg = require('../cfg')
@@ -88,6 +89,29 @@ function getValidatorMessagesOfCampaign (campaign) {
 		})
 }
 
+async function getDistributedFunds (campaign) {
+	const validators = campaign.spec.validators
+
+	const tree = await getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Accounting`)
+	const balanceTree = tree.validatorMessages[0] ? tree.validatorMessages[0].msg.balances : {}
+	const totalBalances = Object.values(balanceTree).reduce((total, val) => total.add(new BN(val)), new BN(0))
+	const depositAmount = new BN(campaign.depositAmount)
+	const distributedFundsRatio = totalBalances.div(depositAmount) // Not sure if correct, always returns either <BN: 0> or <BN: 1>
+	return +distributedFundsRatio.toString(10)
+}
+
+async function getLastHeartbeats (campaign) {
+	const heartbeats = await campaign.spec.validators.map(async (v) => {
+		const msgForV = await getRequest(`${v.url}/channel/${campaign.id}/validator-messages?limit=10`)
+		return msgForV
+	})
+
+	return Promise.all(heartbeats)
+		.then((hbs) => {
+			return hbs.map(h => h.validatorMessages[0].msg.timestamp)
+		})
+}
+
 async function queryValidators () {
 	const campaignsCol = db.getMongo().collection('campaigns')
 
@@ -97,9 +121,10 @@ async function queryValidators () {
 
 	const campaigns = await campaignsCol.find().toArray()
 	await campaigns.map(c => getValidatorMessagesOfCampaign(c)
-		.then(status => {
+		.then(async (status) => {
 			const statusObj = { name: status, lastChecked: new Date().toISOString() }
-			console.log(c.id, status)
+			statusObj['fundsDistributedRatio'] = await getDistributedFunds(c)
+			statusObj['lastHeartbeats'] = await getLastHeartbeats(c)
 			return updateStatus(c, statusObj)
 				.then(() => console.log(`Status of campaign ${c._id} updated`))
 		}))
