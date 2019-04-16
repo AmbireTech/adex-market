@@ -96,7 +96,8 @@ async function getDistributedFunds (campaign) {
 	const balanceTree = tree.validatorMessages[0] ? tree.validatorMessages[0].msg.balances : {}
 	const totalBalances = Object.values(balanceTree).reduce((total, val) => total.add(new BN(val)), new BN(0))
 	const depositAmount = new BN(campaign.depositAmount)
-	const distributedFundsRatio = totalBalances.div(depositAmount) // Not sure if correct, always returns either <BN: 0> or <BN: 1>
+	const distributedFundsRatio = totalBalances.mul(new BN(1000)).div(depositAmount) // in promiles
+
 	return +distributedFundsRatio.toString(10)
 }
 
