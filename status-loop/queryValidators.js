@@ -69,9 +69,8 @@ function getValidatorMessagesOfCampaign (campaign) {
 function getValidatorMessagesOfCampaign (campaign) {
 	const validators = campaign.spec.validators
 
-	// @TODO should get the last 5 heartbeats from everyone's sentry, regardless of the ID
-	const leaderHeartbeat = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Heartbeat?limit=3`)
-	const followerHeartbeat = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/${validators[1].id}/Heartbeat?limit=3`)
+	const leaderHeartbeat = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages?limit=10`)
+	const followerHeartbeat = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages?limit=10`)
 	const newState = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/NewState?limit=1`)
 	const approveState = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/${validators[1].id}/ApproveState?limit=1`)
 	const treePromise = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Accounting`)
@@ -79,8 +78,8 @@ function getValidatorMessagesOfCampaign (campaign) {
 	return Promise.all([leaderHeartbeat, followerHeartbeat, newState, approveState, treePromise])
 		.then(([leaderHbResp, followerHbResp, newStateResp, approveStateResp, treeResp]) => {
 			const messagesFromAll = {
-				leaderHeartbeat: leaderHbResp.validatorMessages.map(x => x.msg),
-				followerHeartbeat: followerHbResp.validatorMessages.map(x => x.msg),
+				leaderHeartbeat: leaderHbResp.validatorMessages.map(x => x.msg).filter(x => x.type === 'Heartbeat'),
+				followerHeartbeat: followerHbResp.validatorMessages.map(x => x.msg).filter(x => x.type === 'Heartbeat'),
 				newStateLeader: newStateResp.validatorMessages.map(x => x.msg),
 				approveStateFollower: approveStateResp.validatorMessages.map(x => x.msg)
 			}
