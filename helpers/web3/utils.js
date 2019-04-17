@@ -11,7 +11,7 @@ const getAddrFromPersonalSignedMsg = async ({ signature, hash }) => {
 		const recoveredAddress = ethers.utils.verifyMessage(hashBytes, signature)
 		return recoveredAddress
 	} catch (err) {
-		console.log('err with getting signature')
+		console.error('err with getting signature')
 		return err
 	}
 }

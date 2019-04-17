@@ -50,7 +50,6 @@ function getAdSlotById (req, res) {
 function postAdSlot (req, res) {
 	const { type, tags, created, title, description, fallbackMediaUrl, fallbackMediaMime, fallbackTargetUrl, archived = false, modified = null } = req.body
 	const identity = req.identity
-	console.log('is this called')
 	const specForIpfs = { type, tags, owner: identity, created }
 
 	const adSlotsCol = db.getMongo().collection('adSlots')
