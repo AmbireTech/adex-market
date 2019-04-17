@@ -173,7 +173,7 @@ tape('GET /validators?addr=addr', (t) => {
 		.catch(err => t.fail(err))
 })
 
-tape('GET /user/list', (t) => {
+tape('GET /users/list', (t) => {
 	fetch(`${marketUrl}/users/list`)
 		.then(res => res.json())
 		.then((res) => {

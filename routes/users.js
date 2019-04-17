@@ -24,10 +24,9 @@ function postUser (req, res, next) {
 function getUserList (req, res, next) {
 	const usersCol = db.getMongo().collection('users')
 	const hasInteracted = req.query.hasInteracted
-
 	let query = {}
 
-	if (hasInteracted) {
+	if (hasInteracted === 'true') {
 		query = {
 			$or: [
 				{ 'channels': { $exists: true, $ne: null } },
