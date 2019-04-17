@@ -45,7 +45,7 @@ async function authUser (req, res, next) {
 				}),
 				(err, result) => {
 					if (err != null) {
-						console.log('Error saving session data for user ' + recoveredAddr + ' :' + err)
+						console.error('Error saving session data for user ' + recoveredAddr + ' :' + err)
 						return res.status(500).send('Db write error')
 					} else {
 						redisClient.expire('session:' + signature, sessionExpiryTime, () => { })
