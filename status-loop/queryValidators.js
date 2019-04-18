@@ -1,4 +1,6 @@
 const BN = require('bn.js')
+const Uniprice = require('uniprice')
+const provider = require('../helpers/web3/ethers').provider
 const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const cfg = require('../cfg')
@@ -113,6 +115,15 @@ async function getLastHeartbeats (campaign) {
 		})
 }
 
+async function getEstimateInUsd (campaign) {
+	const uniprice = new Uniprice(provider)
+	const exchangeAddr = await uniprice.factory.getExchange(campaign.depositAsset)
+	const swap = uniprice.setExchange('TO-USD', exchangeAddr)
+	const price = await swap.getPrice()
+	uniprice.dropExchange('TO-USD')
+	return price
+}
+
 async function queryValidators () {
 	const campaignsCol = db.getMongo().collection('campaigns')
 
@@ -126,6 +137,10 @@ async function queryValidators () {
 			const statusObj = { name: status, lastChecked: new Date().toISOString() }
 			statusObj['fundsDistributedRatio'] = await getDistributedFunds(c)
 			statusObj['lastHeartbeats'] = await getLastHeartbeats(c)
+			// statusObj['UsdEstimate'] = await getEstimateInUsd(c) // Crashes
+
+			console.log(statusObj)
+
 			return updateStatus(c, statusObj)
 				.then(() => console.log(`Status of campaign ${c._id} updated`))
 		}))
