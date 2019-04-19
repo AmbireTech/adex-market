@@ -94,9 +94,4 @@ function putAdUnit (req, res) {
 		})
 }
 
-function addUnitToCampaign (req, res) {
-	const identity = req.identity
-	const ipfs = req.params['id']
-}
-
 module.exports = router
