@@ -116,10 +116,14 @@ async function getLastHeartbeats (campaign) {
 }
 
 async function getEstimateInUsd (campaign) {
-	const uniprice = new Uniprice(provider)
+	const factoryAddress = process.env.FACTORY_ADDR || null // will call default
+	const daiExchangeAddress = process.env.DAI_EXCHANGE_ADDR || null
+
+	const uniprice = new Uniprice(provider, factoryAddress, daiExchangeAddress)
 	const exchangeAddr = await uniprice.factory.getExchange(campaign.depositAsset)
 	const swap = uniprice.setExchange('TO-USD', exchangeAddr)
 	const price = await swap.getPrice()
+
 	uniprice.dropExchange('TO-USD')
 	return price
 }
