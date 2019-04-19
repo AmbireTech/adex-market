@@ -19,7 +19,10 @@ function getAdSlots (req, res) {
 	const adSlotsCol = db.getMongo().collection('adSlots')
 
 	return adSlotsCol
-		.find({ owner: identity })
+		.find(
+			{ owner: identity },
+			{ projection: { _id: 0 } }
+		)
 		.skip(skip)
 		.limit(limit)
 		.toArray()
@@ -37,7 +40,10 @@ function getAdSlotById (req, res) {
 	const adSlotsCol = db.getMongo().collection('adSlots')
 
 	return adSlotsCol
-		.findOne({ ipfs, owner: identity })
+		.findOne(
+			{ ipfs, owner: identity },
+			{ projection: { _id: 0 } }
+		)
 		.then((result) => {
 			if (!result) {
 				return res.status(404).send('Ad Slot not found') // TODO? replace with code to add to translations

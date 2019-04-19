@@ -142,7 +142,7 @@ async function queryValidators () {
 	const campaigns = await campaignsCol.find().toArray()
 	await campaigns.map(c => getValidatorMessagesOfCampaign(c)
 		.then(async (status) => {
-			const statusObj = { name: status, lastChecked: new Date().toISOString() }
+			const statusObj = { name: status, lastChecked: Date.now() }
 			statusObj['fundsDistributedRatio'] = await getDistributedFunds(c)
 			statusObj['lastHeartbeats'] = await getLastHeartbeats(c)
 			const usdEstimate = await getEstimateInUsd(c)
