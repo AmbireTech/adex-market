@@ -98,7 +98,7 @@ async function queryValidators () {
 	const campaigns = await campaignsCol.find().toArray()
 	await campaigns.map(c => getValidatorMessagesOfCampaign(c)
 		.then(status => {
-			const statusObj = { name: status, lastChecked: new Date().toISOString() }
+			const statusObj = { name: status, lastChecked: Date.now() }
 			console.log(c.id, status)
 			return updateStatus(c, statusObj)
 				.then(() => console.log(`Status of campaign ${c._id} updated`))
