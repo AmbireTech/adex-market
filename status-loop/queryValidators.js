@@ -124,7 +124,7 @@ async function getEstimateInUsd (campaign) {
 	const swap = uniprice.setExchange('TO-USD', exchangeAddr)
 	let price
 	try {
-		price = await swap.getPrice() // throws contract not deployed error
+		price = await swap.getPrice() // might throw contract not deployed error
 	} catch (err) {
 		return null
 	}
