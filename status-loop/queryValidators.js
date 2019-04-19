@@ -143,8 +143,6 @@ async function queryValidators () {
 			statusObj['lastHeartbeats'] = await getLastHeartbeats(c)
 			// statusObj['UsdEstimate'] = await getEstimateInUsd(c) // Crashes
 
-			console.log(statusObj)
-
 			return updateStatus(c, statusObj)
 				.then(() => console.log(`Status of campaign ${c._id} updated`))
 		}))
