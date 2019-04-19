@@ -19,7 +19,9 @@ function getAdUnits (req, res) {
 	const adUnitCol = db.getMongo().collection('adUnits')
 
 	return adUnitCol
-		.find({ owner: identity })
+		.find({ owner: identity },
+			{ projection: { _id: 0 } }
+		)
 		.skip(skip)
 		.limit(limit)
 		.toArray()
@@ -36,7 +38,8 @@ function getAdUnitById (req, res) {
 	const adUnitCol = db.getMongo().collection('adUnits')
 	const ipfs = req.params['id']
 	return adUnitCol
-		.findOne({ ipfs, owner: identity })
+		.findOne({ ipfs, owner: identity },
+			{ projection: { _id: 0 } })
 		.then((result) => {
 			if (!result) {
 				return res.status(404).send('Ad Unit not found')
