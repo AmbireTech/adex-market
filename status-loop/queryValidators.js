@@ -122,9 +122,13 @@ async function getEstimateInUsd (campaign) {
 	const uniprice = new Uniprice(provider, factoryAddress, daiExchangeAddress)
 	const exchangeAddr = await uniprice.factory.getExchange(campaign.depositAsset)
 	const swap = uniprice.setExchange('TO-USD', exchangeAddr)
-	const price = await swap.getPrice()
-
-	uniprice.dropExchange('TO-USD')
+	let price
+	try {
+		price = await swap.getPrice() // throws contract not deployed error
+	} catch (err) {
+		return null
+	}
+	price = new BN(campaign.depositAmount, 10).muln(price).toString(10)
 	return price
 }
 
@@ -141,8 +145,10 @@ async function queryValidators () {
 			const statusObj = { name: status, lastChecked: new Date().toISOString() }
 			statusObj['fundsDistributedRatio'] = await getDistributedFunds(c)
 			statusObj['lastHeartbeats'] = await getLastHeartbeats(c)
-			// statusObj['UsdEstimate'] = await getEstimateInUsd(c) // Crashes
-
+			const usdEstimate = await getEstimateInUsd(c)
+			if (usdEstimate) {
+				statusObj['usdEstimate'] = usdEstimate
+			}
 			return updateStatus(c, statusObj)
 				.then(() => console.log(`Status of campaign ${c._id} updated`))
 		}))
