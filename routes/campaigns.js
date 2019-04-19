@@ -26,7 +26,10 @@ function getCampaigns (req, res, next) {
 	const campaignsCol = db.getMongo().collection('campaigns')
 
 	campaignsCol
-		.find({ 'status.name': { $in: status } })
+		.find(
+			{ 'status.name': { $in: status } },
+			{ projection: { _id: 0 } }
+		)
 		.skip(skip)
 		.limit(limit)
 		.toArray()
@@ -43,7 +46,10 @@ function getCampaignsByOwner (req, res, next) {
 	const campaignsCol = db.getMongo().collection('campaigns')
 
 	campaignsCol
-		.find({ 'creator': identity })
+		.find(
+			{ 'creator': identity },
+			{ projection: { _id: 0 } }
+		)
 		.toArray()
 		.then(result => {
 			return res.json(result)
@@ -58,7 +64,9 @@ function getCampaignInfo (req, res, next) {
 	const campaignsCol = db.getMongo().collection('campaigns')
 
 	campaignsCol
-		.find({ '_id': id })
+		.find({ '_id': id },
+			{ projection: { _id: 0 } }
+		)
 		.toArray()
 		.then((result) => {
 			if (!result[0]) {
