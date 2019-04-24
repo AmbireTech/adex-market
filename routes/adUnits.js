@@ -29,6 +29,7 @@ function getAdUnits (req, res) {
 			return res.send(result)
 		})
 		.catch((err) => {
+			console.error('Error getting ad units', err)
 			return res.status(500).send(err)
 		})
 }
@@ -47,6 +48,7 @@ function getAdUnitById (req, res) {
 			return res.send([result])
 		})
 		.catch((err) => {
+			console.error('Error getting ad unit by id', err)
 			return res.status(500).send(err)
 		})
 }
@@ -87,7 +89,7 @@ function putAdUnit (req, res) {
 			}
 		}, { returnOriginal: false }, (err, result) => {
 			if (err) {
-				console.error(err)
+				console.error('Error updating ad unit', err)
 				return res.status(500).send(err)
 			}
 			return res.status(200).send(result)

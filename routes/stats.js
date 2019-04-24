@@ -92,6 +92,7 @@ function getStats (req, res, next) {
 					return res.send(output)
 				})
 				.catch((err) => {
+					console.error('Error getting stats', err)
 					return res.status(500).send(err)
 				})
 		})
