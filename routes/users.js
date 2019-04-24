@@ -43,6 +43,7 @@ function getUserList (req, res, next) {
 			return res.send(result)
 		})
 		.catch((err) => {
+			console.error('Error getting user list', err)
 			return res.status(500).send(err)
 		})
 }

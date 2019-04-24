@@ -30,6 +30,7 @@ function getAdSlots (req, res) {
 			return res.send(result)
 		})
 		.catch((err) => {
+			console.error('Error getting ad slots', err)
 			return res.status(500).send(err)
 		})
 }
@@ -50,13 +51,15 @@ function getAdSlotById (req, res) {
 			}
 			return res.send([result])
 		})
-		.catch(err => res.status(500).send(err))
+		.catch(err => {
+			console.error('Error getting slot by id', err)
+			res.status(500).send(err)
+		})
 }
 
 function postAdSlot (req, res) {
 	const { type, tags, created, title, description, fallbackMediaUrl, fallbackMediaMime, fallbackTargetUrl, archived = false, modified = null } = req.body
 	const identity = req.identity
-	console.log('is this called')
 	const specForIpfs = { type, tags, owner: identity, created }
 
 	const adSlotsCol = db.getMongo().collection('adSlots')
@@ -68,7 +71,7 @@ function postAdSlot (req, res) {
 
 			return adSlotsCol.insertOne(adSlot, (err, result) => {
 				if (err) {
-					console.error(new Error('Error adding adSlot', err))
+					console.error('Error adding adSlot', err)
 					return res.status(500).send(err)
 				}
 				return res.send(adSlot)
@@ -96,6 +99,7 @@ function putAdSlot (req, res) {
 			}, { returnOriginal: false },
 			(err, result) => {
 				if (err) {
+					console.error('Error updating slot', err)
 					return res.status(500).send(err)
 				}
 				return res.status(200).send(result)
