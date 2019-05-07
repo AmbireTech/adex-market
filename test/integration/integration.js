@@ -7,6 +7,7 @@ const testData = require('../prep-db/seedDb').testData
 const FormData = require('form-data')
 
 const identityAddr = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
+const signerAddr = `0x2aecF52ABe359820c48986046959B4136AfDfbe2`
 
 const addrRegex40 = /^0x[0-9A-Fa-f]{40}$/
 const addrRegex64 = /^0x[0-9A-Fa-f]{64}$/
@@ -14,7 +15,7 @@ const addrRegex130 = /^0x[0-9A-Fa-f]{130}$/
 
 const mockAuthObj = {
 	identity: identityAddr,
-	signerAddress: '0x2aecf52abe359820c48986046959b4136afdfbe2',
+	signerAddress: signerAddr,
 	signature: '0x71860f64f682392b891b9a32315979d48b45b32f351aa9e6719eb42bc1eddd0105fc65ab3aedc0d6a64d151427c64c6264c291ff2bbaab1aff801e32fde8fa861b',
 	mode: 2,
 	authToken: '7036680048500819',
@@ -24,7 +25,7 @@ const mockAuthObj = {
 
 const brokenAuthObj = {
 	identity: '0xa624dEe05d96A0b3E441d0ee3b25Cc5CC0b5b836',
-	signerAddress: '0x2aecf52abe359820c48986046959b4136afdfbe2',
+	signerAddress: signerAddr,
 	signature: '0x71860f64f682392b891b9a32315979d48b45b32f351aa9e6719eb42bc1eddd0105fc65ab3aedc0d6a64d151427c64c6264c291ff2bbaab1aff801e32fde8fa861b',
 	mode: '1',
 	authToken: '7036680048500819',
@@ -277,7 +278,7 @@ tape('GET/POST on authorized routes', (t) => {
 		const form = new FormData()
 		form.append('media', fs.createReadStream(`${__dirname}/../resources/img.jpg`))
 
-		const getAdSlots = fetch(`${marketUrl}/adslots`, { headers: { 'x-user-signature': signature }, identity: identityAddr })
+		const getAdSlots = fetch(`${marketUrl}/slots`, { headers: { 'x-user-signature': signature }, identity: identityAddr })
 		.then(res => res.json())
 		.then((res) => {
 			t.ok(Array.isArray(res), 'returns array')
@@ -293,7 +294,7 @@ tape('GET/POST on authorized routes', (t) => {
 		})
 		.catch(err => t.fail(err))
 
-		const getAdUnits = fetch(`${marketUrl}/adunits`,
+		const getAdUnits = fetch(`${marketUrl}/units`,
 		{
 			headers: {
 				'x-user-signature': signature
@@ -331,7 +332,7 @@ tape('GET/POST on authorized routes', (t) => {
 			t.equals(typeof res.ipfs, 'string', 'IPFS is a string')
 		})
 
-		const postAdUnit = 	fetch(`${marketUrl}/adunits`, {
+		const postAdUnit = 	fetch(`${marketUrl}/units`, {
 			method: 'POST',
 			headers: {
 				'Content-type': 'application/json',
@@ -341,12 +342,12 @@ tape('GET/POST on authorized routes', (t) => {
 			body: JSON.stringify(mockAdUnit)
 		})
 		.then(res => {
-			t.comment('POST /adunits tests')
+			t.comment('POST /units tests')
 			t.equals(res.status, 200, 'adunit submitted successfully')
 			return res.json()
 		})
 		.then((res) => {
-			fetch(`${marketUrl}/adunits`,
+			fetch(`${marketUrl}/units`,
 				{
 					headers: { 'x-user-signature': signature },
 					identity: identityAddr
@@ -356,13 +357,13 @@ tape('GET/POST on authorized routes', (t) => {
 					t.ok(Array.isArray(getRes), 'an array with slots is returned')
 					t.equals(getRes.length, 4, 'new element is added') // 3 from test data + new one
 				})
-			fetch(`${marketUrl}/adunits/${res.ipfs}`, { headers: { 'x-user-signature': signature } })
+			fetch(`${marketUrl}/units/${res.ipfs}`, { headers: { 'x-user-signature': signature } })
 				.then(getRes => getRes.json())
 				.then((getRes) => {
 					t.ok(Array.isArray(getRes), 'returns array')
 					t.equals(getRes.length, 1, 'Only 1 ad unit is retrieved with get')
 					t.equals(getRes[0].ipfs, res.ipfs, 'returns item with correct ipfs hash')
-					fetch(`${marketUrl}/adunits/${res.ipfs}`, {
+					fetch(`${marketUrl}/units/${res.ipfs}`, {
 						method: 'PUT',
 						headers: {
 							'Content-type': 'application/json',
@@ -377,7 +378,7 @@ tape('GET/POST on authorized routes', (t) => {
 						})
 					})
 						.then((putRes) => {
-							t.comment('PUT /adunits/:id tests')
+							t.comment('PUT /units/:id tests')
 							t.equals(putRes.status, 200, 'AdUnit edited successfully')
 							return putRes.json()
 						})
@@ -390,7 +391,7 @@ tape('GET/POST on authorized routes', (t) => {
 				})
 		})
 
-		const postBadAdUnit = fetch(`${marketUrl}/adunits`, {
+		const postBadAdUnit = fetch(`${marketUrl}/units`, {
 			method: 'POST',
 			headers: {
 				'Content-type': 'application/json',
@@ -399,11 +400,11 @@ tape('GET/POST on authorized routes', (t) => {
 			body: JSON.stringify(brokenAdUnit)
 		})
 		.then((res) => {
-			t.comment('POST /adunits - bad data')
+			t.comment('POST /units - bad data')
 			t.equals(res.status, 500, 'not allowed to submit broken data')
 		})
 
-		const postAdSlot = 	fetch(`${marketUrl}/adslots`, {
+		const postAdSlot = 	fetch(`${marketUrl}/slots`, {
 			method: 'POST',
 			headers: {
 				'Content-type': 'application/json',
@@ -413,12 +414,12 @@ tape('GET/POST on authorized routes', (t) => {
 			body: JSON.stringify(mockAdSlot)
 		})
 		.then(res => {
-			t.comment('POST /adslots')
-			t.equals(res.status, 200, 'adslot submitted successfully')
+			t.comment('POST /slots')
+			t.equals(res.status, 200, 'ad slot submitted successfully')
 			return res.json()
 		})
 		.then((res) => {
-			fetch(`${marketUrl}/adslots`,
+			fetch(`${marketUrl}/slots`,
 				{
 					headers: { 'x-user-signature': signature },
 					identity: identityAddr
@@ -428,14 +429,14 @@ tape('GET/POST on authorized routes', (t) => {
 					t.ok(Array.isArray(getRes), 'an array is returned')
 					t.equals(getRes.length, 2, 'new element is added')
 				})
-			fetch(`${marketUrl}/adslots/${res.ipfs}`, { headers: { 'x-user-signature': signature } })
+			fetch(`${marketUrl}/slots/${res.ipfs}`, { headers: { 'x-user-signature': signature } })
 				.then(getRes => getRes.json())
 				.then((getRes) => {
 					t.ok(Array.isArray(getRes), 'returns array')
 					t.equals(getRes.length, 1, 'returns 1 slot by ID')
 					t.equals(getRes[0].ipfs, res.ipfs, 'slot ipfs hash is correct')
 					t.equals(getRes[0].owner, identityAddr, 'owner is correct')
-					fetch(`${marketUrl}/adslots/${res.ipfs}`, {
+					fetch(`${marketUrl}/slots/${res.ipfs}`, {
 						method: 'PUT',
 						headers: {
 							'Content-type': 'application/json',
@@ -453,7 +454,7 @@ tape('GET/POST on authorized routes', (t) => {
 						})
 					})
 						.then((putRes) => {
-							t.comment('PUT /adslots/:id tests')
+							t.comment('PUT /slots/:id tests')
 							t.equals(putRes.status, 200, 'AdSlot edited successfully')
 							return putRes.json()
 						})
@@ -465,8 +466,9 @@ tape('GET/POST on authorized routes', (t) => {
 						})
 				})
 		})
+		.catch((err) => console.error(err))
 
-		const postBadAdSlot = fetch(`${marketUrl}/adslots`, {
+		const postBadAdSlot = fetch(`${marketUrl}/units`, {
 			method: 'POST',
 			headers: {
 				'Content-type': 'application/json',
@@ -525,10 +527,10 @@ tape('POST /auth with correct data', (t) => {
 	})
 	.catch(err => t.fail(err))
 })
-tape('POST /adunits unauthenticated', (t) => {
+tape('POST /units unauthenticated', (t) => {
 	const adUnit = testData.adUnits[0]
 
-	fetch(`${marketUrl}/adunits`, {
+	fetch(`${marketUrl}/units`, {
 		method: 'POST',
 		headers: {
 			'Content-type': 'application/json'
@@ -542,10 +544,10 @@ tape('POST /adunits unauthenticated', (t) => {
 	.catch(err => t.fail(err))
 })
 
-tape('POST /adslots unauthenticated', (t) => {
+tape('POST /units unauthenticated', (t) => {
 	const adSlot = testData.adSlot
 
-	fetch(`${marketUrl}/adslots`, {
+	fetch(`${marketUrl}/units`, {
 		method: 'POST',
 		headers: {
 			'Content-type': 'application/json'
