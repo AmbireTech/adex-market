@@ -8,6 +8,7 @@ const FormData = require('form-data')
 
 const identityAddr = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
 const signerAddr = `0x2aecF52ABe359820c48986046959B4136AfDfbe2`
+const earnerAddr = '0xd6e371526cdaeE04cd8AF225D42e37Bc14688D9E'
 
 const addrRegex40 = /^0x[0-9A-Fa-f]{40}$/
 const addrRegex64 = /^0x[0-9A-Fa-f]{64}$/
@@ -93,6 +94,7 @@ tape('GET /campaigns', (t) => {
 			t.ok(res[0].hasOwnProperty('depositAmount'), 'campaign has property depositAmount')
 			t.ok(res[0].hasOwnProperty('validators'), 'campaign has property validators')
 			t.ok(res[0].hasOwnProperty('spec'), 'campaign has property spec')
+			t.ok(res[0].hasOwnProperty('lastApproved'))
 			t.equals(typeof res[0].id, 'string', 'property id is of type string')
 			t.equals(typeof res[0].status, 'object', 'property status is of type string')
 			t.ok(res[0].status.hasOwnProperty('name'), 'campaign status has name property')
@@ -257,7 +259,7 @@ tape('POST /media unauthorized', (t) => {
 	.catch(err => t.fail(err))
 })
 
-tape('GET/POST on authorized routes', (t) => {
+tape('===== Authorized routes =====', (t) => {
 	fetch(`${marketUrl}/auth`, {
 		method: 'POST',
 		headers: {
@@ -481,7 +483,24 @@ tape('GET/POST on authorized routes', (t) => {
 			t.equals(res.status, 500, 'broken adslots cant be submitted')
 		})
 
-		Promise.all([postMedia, postAdUnit, postBadAdUnit, postAdSlot, postBadAdSlot, getAdUnits, getAdSlots])
+		const getEarnerBalances = fetch(`${marketUrl}/campaigns/by-earner/${earnerAddr}`,
+		{
+			headers: {
+				'x-user-signature': signature
+			}
+		})
+		.then((res) => {
+			t.comment('GET /campaigns/by-earner/:id')
+			t.equals(res.status, 200, 'Balances retrieved successfully')
+			return res.json()
+		})
+		.then((res) => {
+			const balanceObj = res[0]
+			t.ok(balanceObj.hasOwnProperty(earnerAddr), 'retrieved balances contain the user object')
+			t.equals(typeof balanceObj[earnerAddr], 'number', 'balance is a number')
+		})
+
+		Promise.all([postMedia, postAdUnit, postBadAdUnit, postAdSlot, postBadAdSlot, getAdUnits, getAdSlots, getEarnerBalances])
 			.then(() => {
 				t.end()
 			})
