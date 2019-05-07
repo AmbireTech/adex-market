@@ -39,7 +39,7 @@ function getStatus (messagesFromAll, campaign, balanceTree) {
 
 /*
 // NOTE: currently working in master
-function getValidatorMessagesOfCampaign (campaign) {
+function getStatusOfCampaign (campaign) {
 	const validators = campaign.spec.validators
 
 	const mapMsgs = ({ validatorMessages }) => validatorMessages.map(x => x.msg)
@@ -66,7 +66,7 @@ function getValidatorMessagesOfCampaign (campaign) {
 
 // NOTE: Latest from Simo - need to check which one is ok
 // tom and jerry in this requests does not look correct
-function getValidatorMessagesOfCampaign (campaign) {
+function getStatusOfCampaign (campaign) {
 	const validators = campaign.spec.validators
 
 	const leaderHeartbeat = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages?limit=10`)
@@ -96,9 +96,9 @@ async function queryValidators () {
 	await channels.map(c => campaignsCol.update({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
 
 	const campaigns = await campaignsCol.find().toArray()
-	await campaigns.map(c => getValidatorMessagesOfCampaign(c)
+	await campaigns.map(c => getStatusOfCampaign(c)
 		.then(status => {
-			const statusObj = { name: status, lastChecked: new Date().toISOString() }
+			const statusObj = { name: status, lastChecked: Date.now() }
 			console.log(c.id, status)
 			return updateStatus(c, statusObj)
 				.then(() => console.log(`Status of campaign ${c._id} updated`))

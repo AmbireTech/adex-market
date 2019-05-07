@@ -19,7 +19,9 @@ function getAdUnits (req, res) {
 	const adUnitCol = db.getMongo().collection('adUnits')
 
 	return adUnitCol
-		.find({ owner: identity })
+		.find({ owner: identity },
+			{ projection: { _id: 0 } }
+		)
 		.skip(skip)
 		.limit(limit)
 		.toArray()
@@ -27,6 +29,7 @@ function getAdUnits (req, res) {
 			return res.send(result)
 		})
 		.catch((err) => {
+			console.error('Error getting ad units', err)
 			return res.status(500).send(err)
 		})
 }
@@ -36,7 +39,8 @@ function getAdUnitById (req, res) {
 	const adUnitCol = db.getMongo().collection('adUnits')
 	const ipfs = req.params['id']
 	return adUnitCol
-		.findOne({ ipfs, owner: identity })
+		.findOne({ ipfs, owner: identity },
+			{ projection: { _id: 0 } })
 		.then((result) => {
 			if (!result) {
 				return res.status(404).send('Ad Unit not found')
@@ -44,6 +48,7 @@ function getAdUnitById (req, res) {
 			return res.send([result])
 		})
 		.catch((err) => {
+			console.error('Error getting ad unit by id', err)
 			return res.status(500).send(err)
 		})
 }
@@ -84,16 +89,11 @@ function putAdUnit (req, res) {
 			}
 		}, { returnOriginal: false }, (err, result) => {
 			if (err) {
-				console.error(err)
+				console.error('Error updating ad unit', err)
 				return res.status(500).send(err)
 			}
 			return res.status(200).send(result)
 		})
-}
-
-function addUnitToCampaign (req, res) {
-	const identity = req.identity
-	const ipfs = req.params['id']
 }
 
 module.exports = router
