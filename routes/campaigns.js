@@ -9,7 +9,7 @@ const router = express.Router()
 router.get('/', getCampaigns)
 router.get('/by-owner', signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
-router.get('/by-earner/:addr', getCampaignsByEarner)
+router.get('/by-earner/:addr', signatureCheck, getCampaignsByEarner)
 
 function getBalanceTree (validatorUrl, channelId) {
 	return getRequest(`${validatorUrl}/channel/${channelId}/tree`)
