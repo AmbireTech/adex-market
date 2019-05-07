@@ -90,7 +90,7 @@ function getStatusOfCampaign (campaign) {
 }
 
 async function getLastApproved (campaign) {
-	const { lastApproved } = await getBalances(campaign.spec.validators[0], campaign.id)
+	const { lastApproved } = await getBalances(campaign.spec.validators[0].url, campaign.id)
 	return lastApproved
 }
 
@@ -117,7 +117,7 @@ async function queryValidators () {
 					{ $set: { lastApproved } }
 				)
 			})
-		return Promise.all(getStatus, lastAppr)
+		return Promise.all([getStatus, lastAppr])
 	})
 }
 
