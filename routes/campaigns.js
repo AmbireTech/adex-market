@@ -105,14 +105,15 @@ function getCampaignsByEarner (req, res) {
 	const earnerAddr = req.params.addr
 	const campaignsCol = db.getMongo().collection('campaigns')
 
-	return campaignsCol.find()
-		.then((campaigns) => {
-			const balances = campaigns.map((c) => getBalances(c.spec.validators[0], c.id))
-
-			Promise.all(balances)
-				.then((res) => {
-					console.log(res)
-				})
+	return campaignsCol
+		.find(
+			{ 'lastApproved.newState.msg.balances': { '$exists': true } },
+			{ projection: { '_id': 0, 'lastApproved': 1 } })
+		.toArray()
+		.then((appr) => {
+			const balances = appr.map(r => r.lastApproved.newState.msg.balances)
+			const result = balances.filter(b => b.hasOwnProperty(earnerAddr))
+			return res.send(result)
 		})
 }
 
