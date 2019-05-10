@@ -2,25 +2,17 @@ const express = require('express')
 const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const signatureCheck = require('../helpers/signatureCheck')
+const getBalances = require('../helpers/getBalances')
 
 const router = express.Router()
 
 router.get('/', getCampaigns)
 router.get('/by-owner', signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
+router.get('/by-earner/:addr', signatureCheck, getCampaignsByEarner)
 
 function getBalanceTree (validatorUrl, channelId) {
 	return getRequest(`${validatorUrl}/channel/${channelId}/tree`)
-		.then((res) => {
-			return res
-		})
-		.catch((err) => {
-			return err
-		})
-}
-
-function getBalances (validatorUrl, channelId) {
-	return getRequest(`${validatorUrl}/channel/${channelId}/last-approved`)
 		.then((res) => {
 			return res
 		})
@@ -68,7 +60,6 @@ async function getCampaignsByOwner (req, res, next) {
 			const validators = c.spec.validators
 			const leaderBalanceTree = getBalances(validators[0].url, c.id)
 			const followerBalanceTree = getBalances(validators[1].url, c.id)
-
 			const [leaderBalances, followerBalances] = await Promise.all([leaderBalanceTree, followerBalanceTree])
 			return { ...c, leaderBalances, followerBalances }
 		})
@@ -107,6 +98,22 @@ function getCampaignInfo (req, res, next) {
 		.catch((err) => {
 			console.error('Error getting campaign info', err)
 			return res.status(500).send(err)
+		})
+}
+
+function getCampaignsByEarner (req, res) {
+	const earnerAddr = req.params.addr
+	const campaignsCol = db.getMongo().collection('campaigns')
+
+	return campaignsCol
+		.find(
+			{ 'lastApproved.newState.msg.balances': { '$exists': true } },
+			{ projection: { '_id': 0, 'lastApproved': 1 } })
+		.toArray()
+		.then((appr) => {
+			const balances = appr.map(r => r.lastApproved.newState.msg.balances)
+			const result = balances.filter(b => b.hasOwnProperty(earnerAddr))
+			return res.send(result)
 		})
 }
 

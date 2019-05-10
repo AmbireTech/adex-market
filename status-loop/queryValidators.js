@@ -2,6 +2,7 @@ const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const cfg = require('../cfg')
 const updateStatus = require('./updateStatus')
+const getBalances = require('../helpers/getBalances')
 const {
 	isInitializing,
 	isOffline,
@@ -88,6 +89,11 @@ function getStatusOfCampaign (campaign) {
 		})
 }
 
+async function getLastApproved (campaign) {
+	const { lastApproved } = await getBalances(campaign.spec.validators[0].url, campaign.id)
+	return lastApproved
+}
+
 async function queryValidators () {
 	const campaignsCol = db.getMongo().collection('campaigns')
 
@@ -96,13 +102,23 @@ async function queryValidators () {
 	await channels.map(c => campaignsCol.update({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
 
 	const campaigns = await campaignsCol.find().toArray()
-	await campaigns.map(c => getStatusOfCampaign(c)
-		.then(status => {
-			const statusObj = { name: status, lastChecked: Date.now() }
-			console.log(c.id, status)
-			return updateStatus(c, statusObj)
-				.then(() => console.log(`Status of campaign ${c._id} updated`))
-		}))
+	await campaigns.map(c => {
+		const getStatus = getStatusOfCampaign(c)
+			.then((status) => {
+				const statusObj = { name: status, lastChecked: Date.now() }
+				return updateStatus(c, statusObj)
+					.then(() => console.log(`Status of campaign ${c.id} updated to ${status}`))
+			})
+		// Maybe move this into a separate function as this one is starting to get messy
+		const lastAppr = getLastApproved(c)
+			.then((lastApproved) => {
+				campaignsCol.update(
+					{ _id: c._id },
+					{ $set: { lastApproved } }
+				)
+			})
+		return Promise.all([getStatus, lastAppr])
+	})
 }
 
 function startStatusLoop () {

@@ -63,7 +63,6 @@ function postAdUnit (req, res) {
 	return addDataToIpfs(Buffer.from(JSON.stringify(specForIpfs)))
 		.then((dataHash) => {
 			adUnit['ipfs'] = dataHash
-
 			return adUnitCol.insertOne(adUnit, (err, result) => {
 				if (err) {
 					console.error(new Error('error adding adUnit', err))
