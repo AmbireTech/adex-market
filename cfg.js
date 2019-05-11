@@ -1,5 +1,5 @@
 module.exports = {
-	initialValidators: ['https://tom.adex.network', 'https://jerry.adex.network'],
+	initialValidators: ['https://itchy.adex.network', 'https://scratchy.adex.network'],
 	discoverValidators: {
 		enabled: true
 	},
