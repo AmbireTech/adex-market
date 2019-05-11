@@ -33,3 +33,11 @@ For more information, see [adex-protocol](https://github.com/adexnetwork/adex-pr
 ```
 npm start
 ```
+
+
+## Build a Docker image
+
+```
+docker build . --tag=adexnetwork/market
+docker push adexnetwork/market
+```
