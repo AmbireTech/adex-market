@@ -20,7 +20,10 @@ const seedDb = require('./test/prep-db/seedDb').seedDb
 
 const app = express()
 const db = require('./db')
+const cfg = require('./cfg')
 const port = process.env.PORT || 3012
+
+console.log(`Initial validators:`, cfg.initialValidators)
 
 app.use(headerParser)
 app.use(bodyParser.urlencoded({ extended: false }))
