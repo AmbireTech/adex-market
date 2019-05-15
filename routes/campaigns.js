@@ -44,6 +44,7 @@ function getCampaigns (req, res, next) {
 		.limit(limit)
 		.toArray()
 		.then((result) => {
+			res.set('Cache-Control', 'public, max-age=60')
 			return res.send(result)
 		})
 		.catch((err) => {
