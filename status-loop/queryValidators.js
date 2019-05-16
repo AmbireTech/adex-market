@@ -69,8 +69,8 @@ function getStatusOfCampaign (campaign) {
 function getStatusOfCampaign (campaign) {
 	const validators = campaign.spec.validators
 
-	const leaderHeartbeat = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages?limit=10`)
-	const followerHeartbeat = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages?limit=10`)
+	const leaderHeartbeat = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages?limit=15`)
+	const followerHeartbeat = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages?limit=15`)
 	const lastApproved = getRequest(`${validators[0].url}/channel/${campaign.id}/last-approved`)
 	const treePromise = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Accounting`)
 
