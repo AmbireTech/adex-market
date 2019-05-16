@@ -71,17 +71,16 @@ function getStatusOfCampaign (campaign) {
 
 	const leaderHeartbeat = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages?limit=10`)
 	const followerHeartbeat = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages?limit=10`)
-	const newState = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/NewState?limit=1`)
-	const approveState = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/${validators[1].id}/ApproveState?limit=1`)
+	const lastApproved = getRequest(`${validators[0].url}/channel/${campaign.id}/last-approved`)
 	const treePromise = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Accounting`)
 
-	return Promise.all([leaderHeartbeat, followerHeartbeat, newState, approveState, treePromise])
-		.then(([leaderHbResp, followerHbResp, newStateResp, approveStateResp, treeResp]) => {
+	return Promise.all([leaderHeartbeat, followerHeartbeat, lastApproved, treePromise])
+		.then(([leaderHbResp, followerHbResp, lastApprovedResp, treeResp]) => {
 			const messagesFromAll = {
 				leaderHeartbeat: leaderHbResp.validatorMessages.map(x => x.msg).filter(x => x.type === 'Heartbeat'),
 				followerHeartbeat: followerHbResp.validatorMessages.map(x => x.msg).filter(x => x.type === 'Heartbeat'),
-				newStateLeader: newStateResp.validatorMessages.map(x => x.msg),
-				approveStateFollower: approveStateResp.validatorMessages.map(x => x.msg)
+				newStateLeader: [lastApprovedResp.lastApproved.newState.msg],
+				approveStateFollower: [lastApprovedResp.lastApproved.approveState.msg]
 			}
 			const balanceTree = treeResp.validatorMessages[0] ? treeResp.validatorMessages[0].msg.balances : {}
 			return getStatus(messagesFromAll, campaign, balanceTree)
