@@ -93,7 +93,7 @@ const notInitializingMessages = {
 // No recent heartbeat on both
 const offlineMessages1 = {
 	leaderHeartbeat: [heartbeatMessageOldDate],
-	followerHeartbeat: [heartbeatMessageOldDate],
+	followerFromLeader: [heartbeatMessageOldDate],
 	newStateLeader: [],
 	approveStateFollower: []
 }
@@ -101,7 +101,7 @@ const offlineMessages1 = {
 // No recent heartbeat on second
 const offlineMessages2 = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
-	followerHeartbeat: [heartbeatMessageOldDate],
+	followerFromLeader: [heartbeatMessageOldDate],
 	newStateLeader: [],
 	approveStateFollower: []
 }
@@ -109,7 +109,7 @@ const offlineMessages2 = {
 // No recent heartbeat on first
 const offlineMessages3 = {
 	leaderHeartbeat: [heartbeatMessageOldDate],
-	followerHeartbeat: [heartbeatMessageNowDate],
+	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: []
 }
@@ -117,31 +117,31 @@ const offlineMessages3 = {
 // Recent heartbeat on both
 const notOfflineMessages = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
-	followerHeartbeat: [heartbeatMessageNowDate],
+	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: []
 }
 
 // More than 50% of messages dont match
 const disconnectedMessages1 = {
-	leaderHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
-	followerHeartbeat: [heartbeatMessageNowDate3, heartbeatMessageNowDate4],
+	followerHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
+	followerFromFollower: [heartbeatMessageNowDate3, heartbeatMessageNowDate4],
 	newStateLeader: [],
 	approveStateFollower: []
 }
 
 // 50% of messages match
 const disconnectedMessages2 = {
-	leaderHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
-	followerHeartbeat: [heartbeatMessageNowDate3, heartbeatMessageNowDate4],
+	followerHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
+	followerFromFollower: [heartbeatMessageNowDate3, heartbeatMessageNowDate4],
 	newStateLeader: [],
 	approveStateFollower: []
 }
 
 // Majority of messages match
 const notDisconnectedMessages1 = {
-	leaderHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
 	followerHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
+	followerFromFollower: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
 	newStateLeader: [],
 	approveStateFollower: []
 }
