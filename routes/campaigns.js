@@ -11,19 +11,6 @@ router.get('/:id', getCampaignInfo)
 
 function getBalanceTree (validatorUrl, channelId) {
 	return getRequest(`${validatorUrl}/channel/${channelId}/tree`)
-		.then((res) => {
-			return res
-		})
-		.catch((err) => {
-			return err
-		})
-}
-
-function getBalances (validatorUrl, channelId) {
-	return getRequest(`${validatorUrl}/channel/${channelId}/last-approved`)
-		.then((res) => {
-			return res
-		})
 		.catch((err) => {
 			return err
 		})
@@ -65,18 +52,7 @@ async function getCampaignsByOwner (req, res, next) {
 			)
 			.toArray() || []
 
-		const infos = campaigns.map(async (c) => {
-			const validators = c.spec.validators
-			const leaderBalanceTree = getBalances(validators[0].url, c.id)
-			const followerBalanceTree = getBalances(validators[1].url, c.id)
-
-			const [leaderBalances, followerBalances] = await Promise.all([leaderBalanceTree, followerBalanceTree])
-			return { ...c, leaderBalances, followerBalances }
-		})
-
-		const result = await Promise.all(infos)
-
-		return res.json(result)
+		return res.json(campaigns)
 	} catch (err) {
 		console.error('Error getting campaign by owner', err)
 		return res.status(500).send(err)

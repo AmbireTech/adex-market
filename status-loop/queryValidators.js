@@ -69,25 +69,25 @@ function getStatusOfCampaign (campaign) {
 function getStatusOfCampaign (campaign) {
 	const validators = campaign.spec.validators
 
-	const leaderFromLeaderHb = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Heartbeat?limit=10`)
-	const leaderFromFollowerHb = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Heartbeat?limit=10`)
-	const followerFromLeaderHb = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[1].id}/Heartbeat?limit=10`)
-	const followerFromFollowerHb = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/${validators[1].id}/Heartbeat?limit=10`)
+	const leaderHb = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Heartbeat?limit=15`)
+	const followerHb = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Heartbeat?limit=15`)
+	const followerHbFromLeader = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[1].id}/Heartbeat?limit=15`)
+	const followerHbFromFollower = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/${validators[1].id}/Heartbeat?limit=15`)
 	const lastApproved = getRequest(`${validators[0].url}/channel/${campaign.id}/last-approved`)
 	const treePromise = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Accounting`)
 
-	return Promise.all([leaderFromLeaderHb, leaderFromFollowerHb, followerFromLeaderHb, followerFromFollowerHb, lastApproved, treePromise])
-		.then(([leaderFromLeader, leaderFromFollower, followerFromLeader, followerFromFollower, lastApprovedResp, treeResp]) => {
+	return Promise.all([leaderHb, followerHb, followerHbFromLeader, followerHbFromFollower, lastApproved, treePromise])
+		.then(([leaderHeartbeat, followerHeartbeat, followerFromLeader, followerFromFollower, lastApprovedResp, treeResp]) => {
+			console.log(lastApprovedResp)
 			const messagesFromAll = {
-				leaderFromLeader,
-				leaderFromFollower,
+				leaderHeartbeat,
+				followerHeartbeat,
 				followerFromLeader,
 				followerFromFollower,
 				newStateLeader: [lastApprovedResp.lastApproved.newState.msg],
 				approveStateFollower: [lastApprovedResp.lastApproved.approveState.msg]
 			}
 			const balanceTree = treeResp.validatorMessages[0] ? treeResp.validatorMessages[0].msg.balances : {}
-			console.log(messagesFromAll)
 			return getStatus(messagesFromAll, campaign, balanceTree)
 		})
 }
