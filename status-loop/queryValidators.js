@@ -78,7 +78,6 @@ function getStatusOfCampaign (campaign) {
 
 	return Promise.all([leaderHb, followerHb, followerHbFromLeader, followerHbFromFollower, lastApproved, treePromise])
 		.then(([leaderHeartbeat, followerHeartbeat, followerFromLeader, followerFromFollower, lastApprovedResp, treeResp]) => {
-			console.log(lastApprovedResp)
 			const messagesFromAll = {
 				leaderHeartbeat,
 				followerHeartbeat,
