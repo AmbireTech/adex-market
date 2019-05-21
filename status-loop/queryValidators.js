@@ -90,7 +90,10 @@ function getStatusOfCampaign (campaign) {
 				approveStateFollower: lastApproved ? [lastApproved.approveState.msg] : []
 			}
 			const balanceTree = treeResp.validatorMessages[0] ? treeResp.validatorMessages[0].msg.balances : {}
-			return getStatus(messagesFromAll, campaign, balanceTree)
+			return {
+				status: getStatus(messagesFromAll, campaign, balanceTree),
+				lastHeartbeats: leaderHeartbeat.concat(followerHeartbeat)
+			}
 		})
 }
 
@@ -104,18 +107,6 @@ async function getDistributedFunds (campaign) {
 	const distributedFundsRatio = totalBalances.muln(1000).div(depositAmount) // in promiles
 
 	return +distributedFundsRatio.toString(10)
-}
-
-async function getLastHeartbeats (campaign) {
-	const heartbeats = await campaign.spec.validators.map(async (v) => {
-		const msgForV = await getRequest(`${v.url}/channel/${campaign.id}/validator-messages?limit=10`)
-		return msgForV
-	})
-
-	return Promise.all(heartbeats)
-		.then((hbs) => {
-			return hbs.map(h => h.validatorMessages[0].msg.timestamp)
-		})
 }
 
 async function getEstimateInUsd (campaign) {
@@ -145,10 +136,10 @@ async function queryValidators () {
 	const campaigns = await campaignsCol.find().toArray()
 
 	await campaigns.map(c => getStatusOfCampaign(c)
-		.then(async status => {
+		.then(async ({ status, lastHeartbeats }) => {
 			const statusObj = { name: status, lastChecked: Date.now() }
 			statusObj['fundsDistributedRatio'] = await getDistributedFunds(c)
-			statusObj['lastHeartbeats'] = await getLastHeartbeats(c)
+			statusObj['lastHeartbeats'] = lastHeartbeats.map(h => h.timestamp)
 			const usdEstimate = await getEstimateInUsd(c)
 			if (usdEstimate) {
 				statusObj['usdEstimate'] = usdEstimate
