@@ -84,8 +84,8 @@ function getStatusOfCampaign (campaign) {
 		.then(([leaderHbResp, followerHbResp, lastApprovedResp, treeResp]) => {
 			const lastApproved = lastApprovedResp.lastApproved
 			const messagesFromAll = {
-				leaderHeartbeat: leaderHbResp.validatorMessages.map(x => x.msg).filter(x => x.type === 'Heartbeat'),
-				followerHeartbeat: followerHbResp.validatorMessages.map(x => x.msg).filter(x => x.type === 'Heartbeat'),
+				leaderHeartbeat: leaderHbResp.validatorMessages.map(x => x.msg),
+				followerHeartbeat: followerHbResp.validatorMessages.map(x => x.msg),
 				newStateLeader: lastApproved ? [lastApproved.newState.msg] : [],
 				approveStateFollower: lastApproved ? [lastApproved.approveState.msg] : []
 			}
