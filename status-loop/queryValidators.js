@@ -77,14 +77,15 @@ function getStatusOfCampaign (campaign) {
 	const treePromise = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Accounting`)
 
 	return Promise.all([leaderHb, followerHb, followerHbFromLeader, followerHbFromFollower, lastApproved, treePromise])
-		.then(([leaderHeartbeat, followerHeartbeat, followerFromLeader, followerFromFollower, lastApprovedResp, treeResp]) => {
+		.then(([leaderHbResp, followerHbResp, followerHbFromLeaderResp, followerHbFromFollowerResp, lastApprovedResp, treeResp]) => {
+			const lastApproved = lastApprovedResp.lastApproved
 			const messagesFromAll = {
-				leaderHeartbeat,
-				followerHeartbeat,
-				followerFromLeader,
-				followerFromFollower,
-				newStateLeader: [lastApprovedResp.lastApproved.newState.msg],
-				approveStateFollower: [lastApprovedResp.lastApproved.approveState.msg]
+				leaderHeartbeat: leaderHbResp.validatorMessages,
+				followerHeartbeat: followerHbResp.validatorMessages,
+				followerFromLeader: followerHbFromLeaderResp.validatorMessages,
+				followerFromFollower: followerHbFromFollowerResp.validatorMessages,
+				newStateLeader: lastApproved ? [lastApproved.newState.msg] : [],
+				approveStateFollower: lastApproved ? [lastApproved.approveState.msg] : []
 			}
 			const balanceTree = treeResp.validatorMessages[0] ? treeResp.validatorMessages[0].msg.balances : {}
 			return getStatus(messagesFromAll, campaign, balanceTree)
