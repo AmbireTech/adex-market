@@ -11,12 +11,15 @@ const {
 	isReady,
 	isActive,
 	isExhausted,
-	isExpired
+	isExpired,
+	isWithdraw
 } = require('../lib/getStatus')
 
 function getStatus (messagesFromAll, campaign, balanceTree) {
 	if (isExpired(campaign)) {
 		return 'Expired'
+	} else if (isWithdraw(campaign)) {
+		return 'Withdraw'
 	} else if (isExhausted(campaign, balanceTree)) {
 		return 'Exhausted'
 	} else if (isInitializing(messagesFromAll)) {
