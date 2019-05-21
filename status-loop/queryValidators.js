@@ -14,12 +14,15 @@ const {
 	isReady,
 	isActive,
 	isExhausted,
-	isExpired
+	isExpired,
+	isWithdraw
 } = require('../lib/getStatus')
 
 function getStatus (messagesFromAll, campaign, balanceTree) {
 	if (isExpired(campaign)) {
 		return 'Expired'
+	} else if (isWithdraw(campaign)) {
+		return 'Withdraw'
 	} else if (isExhausted(campaign, balanceTree)) {
 		return 'Exhausted'
 	} else if (isInitializing(messagesFromAll)) {
@@ -42,7 +45,7 @@ function getStatus (messagesFromAll, campaign, balanceTree) {
 
 /*
 // NOTE: currently working in master
-function getValidatorMessagesOfCampaign (campaign) {
+function getStatusOfCampaign (campaign) {
 	const validators = campaign.spec.validators
 
 	const mapMsgs = ({ validatorMessages }) => validatorMessages.map(x => x.msg)
@@ -69,22 +72,22 @@ function getValidatorMessagesOfCampaign (campaign) {
 
 // NOTE: Latest from Simo - need to check which one is ok
 // tom and jerry in this requests does not look correct
-function getValidatorMessagesOfCampaign (campaign) {
+function getStatusOfCampaign (campaign) {
 	const validators = campaign.spec.validators
 
-	const leaderHeartbeat = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages?limit=10`)
-	const followerHeartbeat = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages?limit=10`)
-	const newState = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/NewState?limit=1`)
-	const approveState = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/${validators[1].id}/ApproveState?limit=1`)
+	const leaderHeartbeat = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Heartbeat?limit=15`)
+	const followerHeartbeat = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Heartbeat?limit=15`)
+	const lastApproved = getRequest(`${validators[0].url}/channel/${campaign.id}/last-approved`)
 	const treePromise = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Accounting`)
 
-	return Promise.all([leaderHeartbeat, followerHeartbeat, newState, approveState, treePromise])
-		.then(([leaderHbResp, followerHbResp, newStateResp, approveStateResp, treeResp]) => {
+	return Promise.all([leaderHeartbeat, followerHeartbeat, lastApproved, treePromise])
+		.then(([leaderHbResp, followerHbResp, lastApprovedResp, treeResp]) => {
+			const lastApproved = lastApprovedResp.lastApproved
 			const messagesFromAll = {
 				leaderHeartbeat: leaderHbResp.validatorMessages.map(x => x.msg).filter(x => x.type === 'Heartbeat'),
 				followerHeartbeat: followerHbResp.validatorMessages.map(x => x.msg).filter(x => x.type === 'Heartbeat'),
-				newStateLeader: newStateResp.validatorMessages.map(x => x.msg),
-				approveStateFollower: approveStateResp.validatorMessages.map(x => x.msg)
+				newStateLeader: lastApproved ? [lastApproved.newState.msg] : [],
+				approveStateFollower: lastApproved ? [lastApproved.approveState.msg] : []
 			}
 			const balanceTree = treeResp.validatorMessages[0] ? treeResp.validatorMessages[0].msg.balances : {}
 			return getStatus(messagesFromAll, campaign, balanceTree)
@@ -140,8 +143,9 @@ async function queryValidators () {
 	await channels.map(c => campaignsCol.update({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
 
 	const campaigns = await campaignsCol.find().toArray()
-	await campaigns.map(c => getValidatorMessagesOfCampaign(c)
-		.then(async (status) => {
+
+	await campaigns.map(c => getStatusOfCampaign(c)
+		.then(async status => {
 			const statusObj = { name: status, lastChecked: Date.now() }
 			statusObj['fundsDistributedRatio'] = await getDistributedFunds(c)
 			statusObj['lastHeartbeats'] = await getLastHeartbeats(c)

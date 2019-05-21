@@ -34,29 +34,32 @@ function getCampaigns (req, res, next) {
 		.limit(limit)
 		.toArray()
 		.then((result) => {
+			res.set('Cache-Control', 'public, max-age=60')
 			return res.send(result)
 		})
 		.catch((err) => {
+			console.error('Error getting campaigns', err)
 			return res.status(500).send(err)
 		})
 }
 
-function getCampaignsByOwner (req, res, next) {
-	const identity = req.identity
-	const campaignsCol = db.getMongo().collection('campaigns')
+async function getCampaignsByOwner (req, res, next) {
+	try {
+		const identity = req.identity
+		const campaignsCol = db.getMongo().collection('campaigns')
 
-	campaignsCol
-		.find(
-			{ 'creator': identity },
-			{ projection: { _id: 0 } }
-		)
-		.toArray()
-		.then(result => {
-			return res.json(result)
-		})
-		.catch((err) => {
-			return res.status(500).send(err)
-		})
+		const campaigns = await campaignsCol
+			.find(
+				{ 'creator': identity },
+				{ projection: { _id: 0 } }
+			)
+			.toArray() || []
+
+		return res.json(campaigns)
+	} catch (err) {
+		console.error('Error getting campaign by owner', err)
+		return res.status(500).send(err)
+	}
 }
 
 function getCampaignInfo (req, res, next) {
@@ -82,6 +85,7 @@ function getCampaignInfo (req, res, next) {
 				})
 		})
 		.catch((err) => {
+			console.error('Error getting campaign info', err)
 			return res.status(500).send(err)
 		})
 }

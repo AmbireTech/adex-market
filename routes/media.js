@@ -14,7 +14,7 @@ async function postMedia (req, res, next) {
 			return res.json({ ipfs: hash })
 		})
 		.catch((err) => {
-			console.error(err)
+			console.error('Error adding media', err)
 			return res.status(500).send(err)
 		})
 }
