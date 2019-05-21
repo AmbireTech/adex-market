@@ -19,6 +19,7 @@ function getValidators (req, res, next) {
 			return res.send(result)
 		})
 		.catch((err) => {
+			console.error('Error getting validators', err)
 			return res.status(500).send(err)
 		})
 }
