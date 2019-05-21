@@ -92,7 +92,7 @@ function getStatusOfCampaign (campaign) {
 			const balanceTree = treeResp.validatorMessages[0] ? treeResp.validatorMessages[0].msg.balances : {}
 			return {
 				status: getStatus(messagesFromAll, campaign, balanceTree),
-				lastHeartbeats: leaderHeartbeat.concat(followerHeartbeat)
+				lastHeartbeats: messagesFromAll.leaderHeartbeat.concat(messagesFromAll.followerHeartbeat)
 			}
 		})
 }
