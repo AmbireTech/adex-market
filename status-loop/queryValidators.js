@@ -4,7 +4,8 @@ const provider = require('../helpers/web3/ethers').provider
 const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const cfg = require('../cfg')
-const updateStatus = require('./updateStatus')
+const updateCampaign = require('./updateCampaign')
+const getBalances = require('../helpers/getBalances')
 const {
 	isInitializing,
 	isOffline,
@@ -141,6 +142,11 @@ async function getEstimateInUsd (campaign) {
 	return price
 }
 
+async function getLastApproved (campaign) {
+	const { lastApproved } = await getBalances(campaign.spec.validators[0].url, campaign.id)
+	return lastApproved
+}
+
 async function queryValidators () {
 	const campaignsCol = db.getMongo().collection('campaigns')
 
@@ -152,9 +158,24 @@ async function queryValidators () {
 
 	await campaigns.map(c => getStatusOfCampaign(c)
 		.then(async ({ status, lastHeartbeat }) => {
-			const [fundsDistributedRatio, usdEstimate] = await Promise.all([getDistributedFunds(c), getEstimateInUsd(c)])
-			const statusObj = { name: status, lastChecked: Date.now(), fundsDistributedRatio, lastHeartbeat, usdEstimate }
-			return updateStatus(c, statusObj)
+			const [
+				fundsDistributedRatio,
+				usdEstimate,
+				lastApproved
+			] = await Promise.all([
+				getDistributedFunds(c),
+				getEstimateInUsd(c),
+				getLastApproved(c)
+			])
+			const statusObj = {
+				name: status,
+				lastChecked: Date.now(),
+				fundsDistributedRatio,
+				lastHeartbeat,
+				usdEstimate
+			}
+
+			return updateCampaign(c, statusObj, lastApproved)
 				.then(() => console.log(`Status of campaign ${c._id} updated`))
 		}))
 }
