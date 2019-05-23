@@ -146,26 +146,34 @@ const notOfflineMessages = {
 	approveStateFollower: []
 }
 
-// More than 50% of messages dont match
+// No recent heartbeat messages on both sides
 const disconnectedMessages1 = {
-	followerHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
-	followerFromFollower: [heartbeatMessageNowDate3, heartbeatMessageNowDate4],
+	followerHeartbeat: [],
+	followerHbFromLeader: [],
 	newStateLeader: [],
 	approveStateFollower: []
 }
 
-// 50% of messages match
+// No recent leader heartbeat messages on follower
 const disconnectedMessages2 = {
-	followerHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
-	followerFromFollower: [heartbeatMessageNowDate3, heartbeatMessageNowDate4],
+	followerHeartbeat: [heartbeatMessageNowDate],
+	followerHbFromLeader: [],
 	newStateLeader: [],
 	approveStateFollower: []
 }
 
-// Majority of messages match
+// No recent follower heartbeat messages on leader
+const disconnectedMessages3 = {
+	followerHeartbeat: [heartbeatMessageNowDate],
+	followerHbFromLeader: [],
+	newStateLeader: [],
+	approveStateFollower: []
+}
+
+// Both validators has recent heartbeat messages
 const notDisconnectedMessages1 = {
-	followerHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
-	followerFromFollower: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
+	followerHeartbeat: [heartbeatMessageNowDate],
+	followerHbFromLeader: [heartbeatMessageNowDate2],
 	newStateLeader: [],
 	approveStateFollower: []
 }
@@ -463,7 +471,7 @@ module.exports = {
 	notInitializing: { first: notInitializingMessages },
 	offline: { first: offlineMessages1, second: offlineMessages2, third: offlineMessages3 },
 	notOffline: { first: notOfflineMessages },
-	disconnected: { first: disconnectedMessages1, second: disconnectedMessages2 },
+	disconnected: { first: disconnectedMessages1, second: disconnectedMessages2, third: disconnectedMessages3 },
 	notDisconnected: { first: notDisconnectedMessages1 },
 	invalid: { first: invalidMessages },
 	notInvalid: { first: notInvalidMessages1, second: notInvalidMessages2, third: notInvalidMessages3, fourth: notInvalidMessages4 },
