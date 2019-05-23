@@ -5,7 +5,6 @@ const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const cfg = require('../cfg')
 const updateCampaign = require('./updateCampaign')
-const getBalances = require('../helpers/getBalances')
 const {
 	isInitializing,
 	isOffline,
@@ -100,7 +99,8 @@ function getStatusOfCampaign (campaign) {
 				lastHeartbeat: {
 					leader: getLasHeartbeatTimestamp(messagesFromAll.leaderHeartbeat[0]),
 					follower: getLasHeartbeatTimestamp(messagesFromAll.followerFromFollower[0])
-				}
+				},
+				lastApproved
 			}
 		})
 }
@@ -142,11 +142,6 @@ async function getEstimateInUsd (campaign) {
 	return price
 }
 
-async function getLastApproved (campaign) {
-	const { lastApproved } = await getBalances(campaign.spec.validators[0].url, campaign.id)
-	return lastApproved
-}
-
 async function queryValidators () {
 	const campaignsCol = db.getMongo().collection('campaigns')
 
@@ -157,15 +152,13 @@ async function queryValidators () {
 	const campaigns = await campaignsCol.find().toArray()
 
 	await campaigns.map(c => getStatusOfCampaign(c)
-		.then(async ({ status, lastHeartbeat }) => {
+		.then(async ({ status, lastHeartbeat, lastApproved }) => {
 			const [
 				fundsDistributedRatio,
-				usdEstimate,
-				lastApproved
+				usdEstimate
 			] = await Promise.all([
 				getDistributedFunds(c),
-				getEstimateInUsd(c),
-				getLastApproved(c)
+				getEstimateInUsd(c)
 			])
 			const statusObj = {
 				name: status,
