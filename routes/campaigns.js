@@ -8,12 +8,10 @@ const router = express.Router()
 router.get('/', getCampaigns)
 router.get('/by-owner', signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
+router.get('/by-earner/:addr', signatureCheck, getCampaignsByEarner)
 
 function getBalanceTree (validatorUrl, channelId) {
 	return getRequest(`${validatorUrl}/channel/${channelId}/tree`)
-		.then((res) => {
-			return res
-		})
 		.catch((err) => {
 			return err
 		})
@@ -87,6 +85,22 @@ function getCampaignInfo (req, res, next) {
 		.catch((err) => {
 			console.error('Error getting campaign info', err)
 			return res.status(500).send(err)
+		})
+}
+
+function getCampaignsByEarner (req, res) {
+	const earnerAddr = req.params.addr
+	const campaignsCol = db.getMongo().collection('campaigns')
+
+	return campaignsCol
+		.find(
+			{ 'lastApproved.newState.msg.balances': { '$exists': true } },
+			{ projection: { '_id': 0, 'lastApproved': 1 } })
+		.toArray()
+		.then((appr) => {
+			const balances = appr.map(r => r.lastApproved.newState.msg.balances)
+			const result = balances.filter(b => b.hasOwnProperty(earnerAddr))
+			return res.send(result)
 		})
 }
 

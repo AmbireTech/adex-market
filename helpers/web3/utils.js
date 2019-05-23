@@ -11,7 +11,7 @@ const getAddrFromPersonalSignedMsg = async ({ signature, hash }) => {
 		const recoveredAddress = ethers.utils.verifyMessage(hashBytes, signature)
 		return recoveredAddress
 	} catch (err) {
-		console.log('err with getting signature')
+		console.error('err with getting signature')
 		return err
 	}
 }
@@ -42,7 +42,6 @@ const getAddrFromTrezorSignedMsg = async ({ signature, hash }) => {
 	try {
 		// TODO: use ethers
 		const msg = web3Utils.soliditySha3('\x19Ethereum Signed Message:\n\x20', hash)
-		console.log('msg', msg)
 		const sig = getRsvFromSig(signature)
 		const pubKey = ecrecover(toBuffer(msg), sig.v, toBuffer(sig.r), toBuffer(sig.s))
 		const addr = '0x' + pubToAddress(pubKey).toString('hex')

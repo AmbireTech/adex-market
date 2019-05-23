@@ -26,7 +26,6 @@ async function authUser (req, res, next) {
 		const { identity, mode, signature, authToken, hash, typedData, signerAddress, prefixed = true } = req.body
 		const recoveredAddr = await getAddrFromSignedMsg({ mode, signature, hash, typedData, msg: authToken, prefixed })
 		const walletAddress = recoveredAddr
-
 		if (walletAddress !== signerAddress) {
 			return res.status(400).send('Invalid signature')
 		}
@@ -45,7 +44,7 @@ async function authUser (req, res, next) {
 				}),
 				(err, result) => {
 					if (err != null) {
-						console.log('Error saving session data for user ' + recoveredAddr + ' :' + err)
+						console.error('Error saving session data for user ' + recoveredAddr + ' :' + err)
 						return res.status(500).send('Db write error')
 					} else {
 						redisClient.expire('session:' + signature, sessionExpiryTime, () => { })
