@@ -11,9 +11,6 @@ router.get('/:id', getCampaignInfo)
 
 function getBalanceTree (validatorUrl, channelId) {
 	return getRequest(`${validatorUrl}/channel/${channelId}/tree`)
-		.then((res) => {
-			return res
-		})
 		.catch((err) => {
 			return err
 		})
