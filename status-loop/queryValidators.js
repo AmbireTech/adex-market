@@ -152,13 +152,8 @@ async function queryValidators () {
 
 	await campaigns.map(c => getStatusOfCampaign(c)
 		.then(async ({ status, lastHeartbeat }) => {
-			const statusObj = { name: status, lastChecked: Date.now() }
-			statusObj['fundsDistributedRatio'] = await getDistributedFunds(c)
-			statusObj['lastHeartbeat'] = lastHeartbeat
-			const usdEstimate = await getEstimateInUsd(c)
-			if (usdEstimate) {
-				statusObj['usdEstimate'] = usdEstimate
-			}
+			const [fundsDistributedRatio, usdEstimate] = await Promise.all([getDistributedFunds(c), getEstimateInUsd(c)])
+			const statusObj = { name: status, lastChecked: Date.now(), fundsDistributedRatio, lastHeartbeat, usdEstimate }
 			return updateStatus(c, statusObj)
 				.then(() => console.log(`Status of campaign ${c._id} updated`))
 		}))
