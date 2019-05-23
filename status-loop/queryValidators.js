@@ -96,9 +96,20 @@ function getStatusOfCampaign (campaign) {
 			const balanceTree = treeResp.validatorMessages[0] ? treeResp.validatorMessages[0].msg.balances : {}
 			return {
 				status: getStatus(messagesFromAll, campaign, balanceTree),
-				lastHeartbeats: messagesFromAll.leaderHeartbeat.concat(messagesFromAll.followerHeartbeat)
+				lastHeartbeat: {
+					leader: getLasHeartbeatTimestamp(messagesFromAll.leaderHeartbeat[0]),
+					follower: getLasHeartbeatTimestamp(messagesFromAll.followerFromFollower[0])
+				}
 			}
 		})
+}
+
+function getLasHeartbeatTimestamp (msg) {
+	if (msg && msg.msg) {
+		return msg.msg.timestamp
+	} else {
+		return null
+	}
 }
 
 async function getDistributedFunds (campaign) {
@@ -140,10 +151,10 @@ async function queryValidators () {
 	const campaigns = await campaignsCol.find().toArray()
 
 	await campaigns.map(c => getStatusOfCampaign(c)
-		.then(async ({ status, lastHeartbeats }) => {
+		.then(async ({ status, lastHeartbeat }) => {
 			const statusObj = { name: status, lastChecked: Date.now() }
 			statusObj['fundsDistributedRatio'] = await getDistributedFunds(c)
-			statusObj['lastHeartbeats'] = lastHeartbeats.map(h => h.timestamp)
+			statusObj['lastHeartbeat'] = lastHeartbeat
 			const usdEstimate = await getEstimateInUsd(c)
 			if (usdEstimate) {
 				statusObj['usdEstimate'] = usdEstimate
