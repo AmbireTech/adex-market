@@ -126,10 +126,7 @@ async function getDistributedFunds (campaign) {
 }
 
 async function getEstimateInUsd (campaign) {
-	const factoryAddress = process.env.FACTORY_ADDR || null // will call default
-	const daiExchangeAddress = process.env.DAI_EXCHANGE_ADDR || null
-
-	const uniprice = new Uniprice(provider, factoryAddress, daiExchangeAddress)
+	const uniprice = new Uniprice(provider, null, null)
 	const exchangeAddr = await uniprice.factory.getExchange(campaign.depositAsset)
 	const swap = uniprice.setExchange('TO-USD', exchangeAddr)
 	let price
@@ -138,7 +135,7 @@ async function getEstimateInUsd (campaign) {
 	} catch (err) {
 		return null
 	}
-	price = new BN(campaign.depositAmount, 10).muln(price).toString(10)
+	price = new BN(campaign.depositAmount, 10).muln(price).toNumber()
 	return price
 }
 
