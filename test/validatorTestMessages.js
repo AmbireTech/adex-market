@@ -4,60 +4,84 @@ const oldDate = (Math.floor((Date.now() - 10000000) / 1000))
 const oldDateNoHex = Math.floor((Date.now() - 10000000) / 1000)
 const inTheFuture = Math.floor((Date.now() + 10000000) / 1000)
 const heartbeatMessageOldDate = {
-	type: 'Heartbeat',
-	timestamp: oldDate,
-	signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower',
-	stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24'
+	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
+	msg: {
+		type: 'Heartbeat',
+		timestamp: oldDate,
+		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower',
+		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24'
+	}
 }
 
 const heartbeatMessageNowDate = {
-	type: 'Heartbeat',
-	timestamp: nowDate,
-	signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower',
-	stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24'
+	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
+	msg: {
+		type: 'Heartbeat',
+		timestamp: nowDate,
+		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower',
+		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24'
+	}
 }
 
 const heartbeatMessageNowDate2 = {
-	type: 'Heartbeat',
-	timestamp: nowDate,
-	signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 2',
-	stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec25'
+	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
+	msg: {
+		type: 'Heartbeat',
+		timestamp: nowDate,
+		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 2',
+		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec25'
+	}
 }
 
 const heartbeatMessageNowDate3 = {
-	type: 'Heartbeat',
-	timestamp: nowDate,
-	signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 3',
-	stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec26'
+	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
+	msg: {
+		type: 'Heartbeat',
+		timestamp: nowDate,
+		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 3',
+		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec26'
+	}
 }
 
 const heartbeatMessageNowDate4 = {
-	type: 'Heartbeat',
-	timestamp: nowDate,
-	signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 4',
-	stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec27'
+	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
+	msg: {
+		type: 'Heartbeat',
+		timestamp: nowDate,
+		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 4',
+		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec27'
+	}
 }
 
 const newStateMessage = {
-	type: 'NewState',
-	stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ',
-	signature: 'signature for test message 1'
+	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
+	msg: {
+		type: 'NewState',
+		stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ',
+		signature: 'signature for test message 1'
+	}
 }
 
 const approveStateMessageHealthy = {
-	type: 'ApproveState',
-	stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ',
-	lastEvAggr: nowDate,
-	signature: 'signature for test message 1',
-	isHealthy: true
+	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
+	msg: {
+		type: 'ApproveState',
+		stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ',
+		lastEvAggr: nowDate,
+		signature: 'signature for test message 1',
+		isHealthy: true
+	}
 }
 
 const approveStateMessageUnhealthy = {
-	type: 'ApproveState',
-	stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ',
-	lastEvAggr: nowDate,
-	signature: 'signature for test message 1',
-	isHealthy: false
+	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
+	msg: {
+		type: 'ApproveState',
+		stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ',
+		lastEvAggr: nowDate,
+		signature: 'signature for test message 1',
+		isHealthy: false
+	}
 }
 
 // Empty messages
@@ -93,7 +117,7 @@ const notInitializingMessages = {
 // No recent heartbeat on both
 const offlineMessages1 = {
 	leaderHeartbeat: [heartbeatMessageOldDate],
-	followerHeartbeat: [heartbeatMessageOldDate],
+	followerFromLeader: [heartbeatMessageOldDate],
 	newStateLeader: [],
 	approveStateFollower: []
 }
@@ -101,7 +125,7 @@ const offlineMessages1 = {
 // No recent heartbeat on second
 const offlineMessages2 = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
-	followerHeartbeat: [heartbeatMessageOldDate],
+	followerFromLeader: [heartbeatMessageOldDate],
 	newStateLeader: [],
 	approveStateFollower: []
 }
@@ -109,7 +133,7 @@ const offlineMessages2 = {
 // No recent heartbeat on first
 const offlineMessages3 = {
 	leaderHeartbeat: [heartbeatMessageOldDate],
-	followerHeartbeat: [heartbeatMessageNowDate],
+	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: []
 }
@@ -117,31 +141,31 @@ const offlineMessages3 = {
 // Recent heartbeat on both
 const notOfflineMessages = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
-	followerHeartbeat: [heartbeatMessageNowDate],
+	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: []
 }
 
 // More than 50% of messages dont match
 const disconnectedMessages1 = {
-	leaderHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
-	followerHeartbeat: [heartbeatMessageNowDate3, heartbeatMessageNowDate4],
+	followerHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
+	followerFromFollower: [heartbeatMessageNowDate3, heartbeatMessageNowDate4],
 	newStateLeader: [],
 	approveStateFollower: []
 }
 
 // 50% of messages match
 const disconnectedMessages2 = {
-	leaderHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
-	followerHeartbeat: [heartbeatMessageNowDate3, heartbeatMessageNowDate4],
+	followerHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
+	followerFromFollower: [heartbeatMessageNowDate3, heartbeatMessageNowDate4],
 	newStateLeader: [],
 	approveStateFollower: []
 }
 
 // Majority of messages match
 const notDisconnectedMessages1 = {
-	leaderHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
 	followerHeartbeat: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
+	followerFromFollower: [heartbeatMessageNowDate, heartbeatMessageNowDate2],
 	newStateLeader: [],
 	approveStateFollower: []
 }

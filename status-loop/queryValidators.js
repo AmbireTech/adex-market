@@ -75,17 +75,21 @@ function getStatusOfCampaign (campaign) {
 function getStatusOfCampaign (campaign) {
 	const validators = campaign.spec.validators
 
-	const leaderHeartbeat = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Heartbeat?limit=15`)
-	const followerHeartbeat = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Heartbeat?limit=15`)
+	const leaderHb = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Heartbeat?limit=15`)
+	const followerHb = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Heartbeat?limit=15`)
+	const followerHbFromLeader = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[1].id}/Heartbeat?limit=15`)
+	const followerHbFromFollower = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/${validators[1].id}/Heartbeat?limit=15`)
 	const lastApproved = getRequest(`${validators[0].url}/channel/${campaign.id}/last-approved`)
 	const treePromise = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Accounting`)
 
-	return Promise.all([leaderHeartbeat, followerHeartbeat, lastApproved, treePromise])
-		.then(([leaderHbResp, followerHbResp, lastApprovedResp, treeResp]) => {
+	return Promise.all([leaderHb, followerHb, followerHbFromLeader, followerHbFromFollower, lastApproved, treePromise])
+		.then(([leaderHbResp, followerHbResp, followerHbFromLeaderResp, followerHbFromFollowerResp, lastApprovedResp, treeResp]) => {
 			const lastApproved = lastApprovedResp.lastApproved
 			const messagesFromAll = {
-				leaderHeartbeat: leaderHbResp.validatorMessages.map(x => x.msg),
-				followerHeartbeat: followerHbResp.validatorMessages.map(x => x.msg),
+				leaderHeartbeat: leaderHbResp.validatorMessages,
+				followerHeartbeat: followerHbResp.validatorMessages,
+				followerFromLeader: followerHbFromLeaderResp.validatorMessages,
+				followerFromFollower: followerHbFromFollowerResp.validatorMessages,
 				newStateLeader: lastApproved ? [lastApproved.newState.msg] : [],
 				approveStateFollower: lastApproved ? [lastApproved.approveState.msg] : []
 			}
