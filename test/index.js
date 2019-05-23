@@ -19,9 +19,10 @@ tape('isOffline()', function (t) {
 })
 
 tape('isDisconnected()', function (t) {
-	t.equals(isDisconnected(vmt.disconnected.first), true, 'Majority of messages not matching returns true')
-	t.equals(isDisconnected(vmt.disconnected.second), true, '50% of messages not matching returns true')
-	t.equals(isDisconnected(vmt.notDisconnected.first), false, 'more than 50% of messages matching returns false')
+	t.equals(isDisconnected(vmt.disconnected.first), true, 'No recent heartbeat messages on both sides returns true')
+	t.equals(isDisconnected(vmt.disconnected.second), true, ' No recent leader heartbeat messages on follower returns true')
+	t.equals(isDisconnected(vmt.disconnected.third), true, 'No recent follower heartbeat messages on leader returns true')
+	t.equals(isDisconnected(vmt.notDisconnected.first), false, 'Both validators has recent heartbeat messages return false')
 	t.end()
 })
 
