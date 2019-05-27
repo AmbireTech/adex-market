@@ -1,14 +1,13 @@
 const sigUtil = require('eth-sig-util')
 const ethereumjs = require('ethereumjs-util')
 const { toBuffer, ecrecover, pubToAddress } = ethereumjs
-const { web3Utils } = require('./ADX')
-const { ethers } = require('./ethers')
+const { arrayify, verifyMessage, solidityKeccak256 } = require('ethers').utils
 let { SignatureModes } = require('adex-models').constants
 
 const getAddrFromPersonalSignedMsg = async ({ signature, hash }) => {
 	try {
-		const hashBytes = ethers.utils.arrayify(hash)
-		const recoveredAddress = ethers.utils.verifyMessage(hashBytes, signature)
+		const hashBytes = arrayify(hash)
+		const recoveredAddress = verifyMessage(hashBytes, signature)
 		return recoveredAddress
 	} catch (err) {
 		console.error('err with getting signature')
@@ -41,7 +40,7 @@ const getRsvFromSig = (sig) => {
 const getAddrFromTrezorSignedMsg = async ({ signature, hash }) => {
 	try {
 		// TODO: use ethers
-		const msg = web3Utils.soliditySha3('\x19Ethereum Signed Message:\n\x20', hash)
+		const msg = solidityKeccak256(['string', 'bytes32'], ['\x19Ethereum Signed Message:\n\x20', hash])
 		const sig = getRsvFromSig(signature)
 		const pubKey = ecrecover(toBuffer(msg), sig.v, toBuffer(sig.r), toBuffer(sig.s))
 		const addr = '0x' + pubToAddress(pubKey).toString('hex')
