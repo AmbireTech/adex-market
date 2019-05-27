@@ -1,6 +1,6 @@
-const BN = require('bn.js')
+const { bigNumberify, parseUnits } = require('ethers').utils
 const Uniprice = require('uniprice')
-const provider = require('../helpers/web3/ethers').provider
+const { provider, getERC20Contract } = require('../helpers/web3/ethers')
 const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const cfg = require('../cfg')
@@ -17,6 +17,10 @@ const {
 	isExpired,
 	isWithdraw
 } = require('../lib/getStatus')
+
+const DAI_ADDRESS = '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359'
+const DAI_USD_PRICE = 1
+const DAI_DECIMALS = 18
 
 function getStatus (messagesFromAll, campaign, balanceTree) {
 	if (isExpired(campaign)) {
@@ -89,28 +93,38 @@ async function getDistributedFunds (campaign) {
 
 	const tree = await getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Accounting`)
 	const balanceTree = tree.validatorMessages[0] ? tree.validatorMessages[0].msg.balances : {}
-	const totalBalances = Object.values(balanceTree).reduce((total, val) => total.add(new BN(val)), new BN(0))
-	const depositAmount = new BN(campaign.depositAmount)
-	const distributedFundsRatio = totalBalances.muln(1000).div(depositAmount) // in promiles
+	const totalBalances = Object.values(balanceTree).reduce((total, val) => total.add(bigNumberify(val)), bigNumberify(0))
+	const depositAmount = bigNumberify(campaign.depositAmount)
+	const distributedFundsRatio = totalBalances.mul(bigNumberify(1000)).div(depositAmount) // in promiles
 
 	return +distributedFundsRatio.toString(10)
 }
 
 async function getEstimateInUsd (campaign) {
-	const uniprice = new Uniprice(provider, null, null)
-	const exchangeAddr = await uniprice.factory.getExchange(campaign.depositAsset)
-	const swap = uniprice.setExchange('TO-USD', exchangeAddr)
-	let price
+	// campaign.depositAsset = '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359'
+	// console.log('campaign.depositAsset', campaign.depositAsset)
+	const { depositAsset, depositAmount } = campaign
+
+	if (depositAsset.toLowerCase() === DAI_ADDRESS.toLowerCase()) {
+		return parseUnits(depositAmount || '0', DAI_DECIMALS)
+			.mul(bigNumberify(DAI_USD_PRICE))
+			.toNumber()
+	}
+
 	try {
-		price = await swap.getPrice() // might throw contract not deployed error
+		const uniprice = new Uniprice(provider)
+		const exchangeAddr = await uniprice.factory.getExchange(campaign.depositAsset)
+		const swap = uniprice.setExchange('TO-USD', exchangeAddr)
+		const price = await swap.getPrice() // might throw contract not deployed error
+		const decimals = await getERC20Contract(campaign.depositAsset).decimals()
+		const estimatedPrice = parseUnits(campaign.depositAmount, decimals)
+			.mul(bigNumberify(price))
+			.toNumber()
+
+		return estimatedPrice
 	} catch (err) {
 		return null
 	}
-	const estimatedPrice = new BN(campaign.depositAmount, 10)
-		.div(new BN('1000000000000000000')) //  Default decimals
-		.muln(price)
-		.toNumber(10)
-	return estimatedPrice
 }
 
 async function queryValidators () {
