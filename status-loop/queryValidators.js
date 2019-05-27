@@ -106,8 +106,11 @@ async function getEstimateInUsd (campaign) {
 	} catch (err) {
 		return null
 	}
-	price = new BN(campaign.depositAmount, 10).muln(price).toNumber()
-	return price
+	const estimatedPrice = new BN(campaign.depositAmount, 10)
+		.div(new BN('1000000000000000000')) //  Default decimals
+		.muln(price)
+		.toNumber(10)
+	return estimatedPrice
 }
 
 async function queryValidators () {
