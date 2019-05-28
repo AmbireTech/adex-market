@@ -5,6 +5,7 @@ const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const cfg = require('../cfg')
 const updateCampaign = require('./updateCampaign')
+const ethersUtils = require('../helpers/web3/ethers').ethers.utils
 const {
 	isInitializing,
 	isOffline,
@@ -84,6 +85,17 @@ function getLasHeartbeatTimestamp (msg) {
 	}
 }
 
+async function verifyMessage (lastApproved) {
+	const { newState, approveState } = lastApproved
+	if (!lastApproved) {
+		return null
+	}
+	const newStateAddr = ethersUtils.verifyMessage(JSON.stringify(newState.msg), newState.msg.signature)
+	const approveStateAddr = ethersUtils.verifyMessage(JSON.stringify(approveState.msg), approveState.msg.signature)
+	console.log(newStateAddr, approveStateAddr)
+	return null
+}
+
 async function getDistributedFunds (campaign) {
 	const validators = campaign.spec.validators
 
@@ -121,6 +133,7 @@ async function queryValidators () {
 
 	await campaigns.map(c => getStatusOfCampaign(c)
 		.then(async ({ status, lastHeartbeat, lastApproved }) => {
+			await verifyMessage(lastApproved)
 			const [
 				fundsDistributedRatio,
 				usdEstimate
