@@ -5,7 +5,7 @@ const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const cfg = require('../cfg')
 const updateCampaign = require('./updateCampaign')
-const ethersUtils = require('../helpers/web3/ethers').ethers.utils
+const { arrayify, verifyMessage } = require('../helpers/web3/ethers').ethers.utils
 const {
 	isInitializing,
 	isOffline,
@@ -89,15 +89,14 @@ function getLasHeartbeatTimestamp (msg) {
 	}
 }
 
-async function verifyMessage (lastApproved) {
-	const { newState, approveState } = lastApproved
+function verifyLastApproved (lastApproved) {
 	if (!lastApproved) {
-		return null
+		return false
 	}
-	const newStateAddr = ethersUtils.verifyMessage(JSON.stringify(newState.msg), newState.msg.signature)
-	const approveStateAddr = ethersUtils.verifyMessage(JSON.stringify(approveState.msg), approveState.msg.signature)
-	console.log(newStateAddr, approveStateAddr)
-	return null
+	const { newState, approveState } = lastApproved
+	const newStateAddr = verifyMessage(JSON.stringify(newState), newState.msg.signature)
+	const approveStateAddr = verifyMessage(JSON.stringify(approveState), approveState.msg.signature)
+	return newStateAddr === newState.from && approveStateAddr === approveState.from
 }
 
 async function getDistributedFunds (campaign) {
@@ -149,12 +148,11 @@ async function queryValidators () {
 	// const lists = хawait Promise.all(cfg.initialValidators.map(url => getRequest(`${url}/channel/list`)))
 	const { channels } = await getRequest(`${cfg.initialValidators[0]}/channel/list`)
 	await channels.map(c => campaignsCol.update({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
-
 	const campaigns = await campaignsCol.find().toArray()
 
 	await campaigns.map(c => getStatusOfCampaign(c)
 		.then(async ({ status, lastHeartbeat, lastApproved }) => {
-			await verifyMessage(lastApproved)
+			const verified = verifyLastApproved(lastApproved)
 			const [
 				fundsDistributedRatio,
 				usdEstimate
