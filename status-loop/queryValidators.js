@@ -65,8 +65,8 @@ function getStatusOfCampaign (campaign) {
 				followerHeartbeat: followerHbResp.validatorMessages,
 				followerFromLeader: followerHbFromLeaderResp.validatorMessages,
 				followerFromFollower: followerHbFromFollowerResp.validatorMessages,
-				newStateLeader: lastApproved ? [lastApproved.newState.msg] : [],
-				approveStateFollower: lastApproved ? [lastApproved.approveState.msg] : []
+				newStateLeader: lastApproved ? [lastApproved.newState] : [],
+				approveStateFollower: lastApproved ? [lastApproved.approveState] : []
 			}
 			const balanceTree = treeResp.validatorMessages[0] ? treeResp.validatorMessages[0].msg.balances : {}
 			return {
