@@ -1,4 +1,4 @@
-const { bigNumberify, parseUnits } = require('ethers').utils
+const { bigNumberify, formatUnits } = require('ethers').utils
 const Uniprice = require('uniprice')
 const { provider, getERC20Contract } = require('../helpers/web3/ethers')
 const db = require('../db')
@@ -19,7 +19,7 @@ const {
 } = require('../lib/getStatus')
 
 const DAI_ADDRESS = '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359'
-const DAI_USD_PRICE = bigNumberify(1)
+const DAI_USD_PRICE = 1
 const DAI_DECIMALS = 18
 
 function getStatus (messagesFromAll, campaign, balanceTree) {
@@ -100,13 +100,22 @@ async function getDistributedFunds (campaign) {
 	return +distributedFundsRatio.toString(10)
 }
 
+function getUsdAmount (wei, price, decimals) {
+	const weiAmount = bigNumberify(wei)
+		.mul(bigNumberify(price))
+		.toString()
+
+	const normalized = formatUnits(weiAmount, decimals)
+	const amount = parseFloat(normalized)
+
+	return amount
+}
+
 async function getEstimateInUsd (campaign) {
 	const { depositAsset, depositAmount } = campaign
 
 	if (depositAsset.toLowerCase() === DAI_ADDRESS.toLowerCase()) {
-		return parseUnits(depositAmount || '0', DAI_DECIMALS)
-			.mul(DAI_USD_PRICE)
-			.toNumber()
+		return getUsdAmount(depositAmount, DAI_USD_PRICE, DAI_DECIMALS)
 	}
 
 	try {
@@ -115,11 +124,8 @@ async function getEstimateInUsd (campaign) {
 		const swap = uniprice.setExchange('TO-USD', exchangeAddr)
 		const price = await swap.getPrice() // might throw contract not deployed error
 		const decimals = await getERC20Contract(depositAsset).decimals()
-		const estimatedPrice = parseUnits(depositAmount, decimals)
-			.mul(bigNumberify(price))
-			.toNumber()
 
-		return estimatedPrice
+		return getUsdAmount(depositAmount, price, decimals)
 	} catch (err) {
 		return null
 	}
