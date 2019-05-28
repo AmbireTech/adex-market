@@ -19,7 +19,7 @@ const {
 } = require('../lib/getStatus')
 
 const DAI_ADDRESS = '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359'
-const DAI_USD_PRICE = 1
+const DAI_USD_PRICE = bigNumberify(1)
 const DAI_DECIMALS = 18
 
 function getStatus (messagesFromAll, campaign, balanceTree) {
@@ -101,23 +101,21 @@ async function getDistributedFunds (campaign) {
 }
 
 async function getEstimateInUsd (campaign) {
-	// campaign.depositAsset = '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359'
-	// console.log('campaign.depositAsset', campaign.depositAsset)
 	const { depositAsset, depositAmount } = campaign
 
 	if (depositAsset.toLowerCase() === DAI_ADDRESS.toLowerCase()) {
 		return parseUnits(depositAmount || '0', DAI_DECIMALS)
-			.mul(bigNumberify(DAI_USD_PRICE))
+			.mul(DAI_USD_PRICE)
 			.toNumber()
 	}
 
 	try {
 		const uniprice = new Uniprice(provider)
-		const exchangeAddr = await uniprice.factory.getExchange(campaign.depositAsset)
+		const exchangeAddr = await uniprice.factory.getExchange(depositAsset)
 		const swap = uniprice.setExchange('TO-USD', exchangeAddr)
 		const price = await swap.getPrice() // might throw contract not deployed error
-		const decimals = await getERC20Contract(campaign.depositAsset).decimals()
-		const estimatedPrice = parseUnits(campaign.depositAmount, decimals)
+		const decimals = await getERC20Contract(depositAsset).decimals()
+		const estimatedPrice = parseUnits(depositAmount, decimals)
 			.mul(bigNumberify(price))
 			.toNumber()
 
