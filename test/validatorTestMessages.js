@@ -149,15 +149,15 @@ const notOfflineMessages = {
 // No recent heartbeat messages on both sides
 const disconnectedMessages1 = {
 	followerHeartbeat: [],
-	followerHbFromLeader: [],
+	followerFromLeader: [],
 	newStateLeader: [],
 	approveStateFollower: []
 }
 
 // No recent leader heartbeat messages on follower
 const disconnectedMessages2 = {
-	followerHeartbeat: [heartbeatMessageNowDate],
-	followerHbFromLeader: [],
+	followerHeartbeat: [],
+	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: []
 }
@@ -165,7 +165,7 @@ const disconnectedMessages2 = {
 // No recent follower heartbeat messages on leader
 const disconnectedMessages3 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
-	followerHbFromLeader: [],
+	followerFromLeader: [],
 	newStateLeader: [],
 	approveStateFollower: []
 }
@@ -173,7 +173,7 @@ const disconnectedMessages3 = {
 // Both validators has recent heartbeat messages
 const notDisconnectedMessages1 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
-	followerHbFromLeader: [heartbeatMessageNowDate2],
+	followerFromLeader: [heartbeatMessageNowDate2],
 	newStateLeader: [],
 	approveStateFollower: []
 }
