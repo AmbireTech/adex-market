@@ -1,6 +1,6 @@
-const BN = require('bn.js')
+const { bigNumberify, formatUnits } = require('ethers').utils
 const Uniprice = require('uniprice')
-const provider = require('../helpers/web3/ethers').provider
+const { provider, getERC20Contract } = require('../helpers/web3/ethers')
 const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const cfg = require('../cfg')
@@ -18,6 +18,10 @@ const {
 	isExpired,
 	isWithdraw
 } = require('../lib/getStatus')
+
+const DAI_ADDRESS = '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359'
+const DAI_USD_PRICE = 1
+const DAI_DECIMALS = 18
 
 function getStatus (messagesFromAll, campaign, balanceTree) {
 	if (isExpired(campaign)) {
@@ -62,8 +66,8 @@ function getStatusOfCampaign (campaign) {
 				followerHeartbeat: followerHbResp.validatorMessages,
 				followerFromLeader: followerHbFromLeaderResp.validatorMessages,
 				followerFromFollower: followerHbFromFollowerResp.validatorMessages,
-				newStateLeader: lastApproved ? [lastApproved.newState.msg] : [],
-				approveStateFollower: lastApproved ? [lastApproved.approveState.msg] : []
+				newStateLeader: lastApproved ? [lastApproved.newState] : [],
+				approveStateFollower: lastApproved ? [lastApproved.approveState] : []
 			}
 			const balanceTree = treeResp.validatorMessages[0] ? treeResp.validatorMessages[0].msg.balances : {}
 			return {
@@ -101,25 +105,42 @@ async function getDistributedFunds (campaign) {
 
 	const tree = await getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Accounting`)
 	const balanceTree = tree.validatorMessages[0] ? tree.validatorMessages[0].msg.balances : {}
-	const totalBalances = Object.values(balanceTree).reduce((total, val) => total.add(new BN(val)), new BN(0))
-	const depositAmount = new BN(campaign.depositAmount)
-	const distributedFundsRatio = totalBalances.muln(1000).div(depositAmount) // in promiles
+	const totalBalances = Object.values(balanceTree).reduce((total, val) => total.add(bigNumberify(val)), bigNumberify(0))
+	const depositAmount = bigNumberify(campaign.depositAmount)
+	const distributedFundsRatio = totalBalances.mul(bigNumberify(1000)).div(depositAmount) // in promiles
 
 	return +distributedFundsRatio.toString(10)
 }
 
+function getUsdAmount (wei, price, decimals) {
+	const weiAmount = bigNumberify(wei)
+		.mul(bigNumberify(price))
+		.toString()
+
+	const normalized = formatUnits(weiAmount, decimals)
+	const amount = parseFloat(normalized)
+
+	return amount
+}
+
 async function getEstimateInUsd (campaign) {
-	const uniprice = new Uniprice(provider, null, null)
-	const exchangeAddr = await uniprice.factory.getExchange(campaign.depositAsset)
-	const swap = uniprice.setExchange('TO-USD', exchangeAddr)
-	let price
+	const { depositAsset, depositAmount } = campaign
+
+	if (depositAsset.toLowerCase() === DAI_ADDRESS.toLowerCase()) {
+		return getUsdAmount(depositAmount, DAI_USD_PRICE, DAI_DECIMALS)
+	}
+
 	try {
-		price = await swap.getPrice() // might throw contract not deployed error
+		const uniprice = new Uniprice(provider)
+		const exchangeAddr = await uniprice.factory.getExchange(depositAsset)
+		const swap = uniprice.setExchange('TO-USD', exchangeAddr)
+		const price = await swap.getPrice() // might throw contract not deployed error
+		const decimals = await getERC20Contract(depositAsset).decimals()
+
+		return getUsdAmount(depositAmount, price, decimals)
 	} catch (err) {
 		return null
 	}
-	price = new BN(campaign.depositAmount, 10).muln(price).toNumber()
-	return price
 }
 
 async function queryValidators () {
