@@ -1,11 +1,10 @@
-const { bigNumberify, formatUnits } = require('ethers').utils
+const { bigNumberify, formatUnits, verifyMessage, arrayify } = require('ethers').utils
 const Uniprice = require('uniprice')
 const { provider, getERC20Contract } = require('../helpers/web3/ethers')
 const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const cfg = require('../cfg')
 const updateCampaign = require('./updateCampaign')
-const { arrayify, verifyMessage } = require('../helpers/web3/ethers').ethers.utils
 const {
 	isInitializing,
 	isOffline,
@@ -93,10 +92,24 @@ function verifyLastApproved (lastApproved) {
 	if (!lastApproved) {
 		return false
 	}
+
 	const { newState, approveState } = lastApproved
-	const newStateAddr = verifyMessage(JSON.stringify(newState), newState.msg.signature)
-	const approveStateAddr = verifyMessage(JSON.stringify(approveState), approveState.msg.signature)
-	return newStateAddr === newState.from && approveStateAddr === approveState.from
+
+	const newStateMsg = arrayify('0x' + newState.msg.stateRoot)
+	const approveStateMsg = arrayify('0x' + approveState.msg.stateRoot)
+
+	const newStateAddr = verifyMessage(newStateMsg, newState.msg.signature)
+	const approveStateAddr = verifyMessage(approveStateMsg, approveState.msg.signature)
+
+	if (newStateAddr === newState.from && approveStateAddr === approveState.from) {
+		return doesMsgMatchValidators(lastApproved)
+	}
+	return false
+}
+
+function doesMsgMatchValidators (lastApproved) {
+	// TODO
+	return true
 }
 
 async function getDistributedFunds (campaign) {
