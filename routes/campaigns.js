@@ -20,14 +20,13 @@ function getBalanceTree (validatorUrl, channelId) {
 function getCampaigns (req, res, next) {
 	const limit = +req.query.limit || 100
 	const skip = +req.query.skip || 0
-	let query = {}
 	// Uses default statuses (active, ready) if none are requested
 	const status = req.query.status ? req.query.status.split(',') : ['Active', 'Ready']
 
 	// If request query has ?all it doesn't query for status
-	req.query.hasOwnProperty('all')
-		? query = { }
-		: query = { 'status.name': { $in: status } }
+	const query = req.query.hasOwnProperty('all')
+		? { }
+		: { 'status.name': { $in: status } }
 
 	const campaignsCol = db.getMongo().collection('campaigns')
 
