@@ -165,7 +165,6 @@ async function queryValidators () {
 	await campaigns.map(c => getStatusOfCampaign(c)
 		.then(async ({ status, lastHeartbeat, lastApproved }) => {
 			const verified = verifyLastApproved(lastApproved, c.spec.validators)
-			console.log(verified)
 			const [
 				fundsDistributedRatio,
 				usdEstimate
