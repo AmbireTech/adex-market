@@ -102,14 +102,13 @@ function verifyLastApproved (lastApproved, validators) {
 	const approveStateAddr = verifyMessage(approveStateMsg, approveState.msg.signature)
 
 	if (newStateAddr === newState.from && approveStateAddr === approveState.from) {
-		return doesMsgMatchValidators(lastApproved)
+		return doesMsgMatchValidators(newStateAddr, approveStateAddr, validators)
 	}
 	return false
 }
 
-function doesMsgMatchValidators (lastApproved, validators) {
-	console.log(validators)
-	return true
+function doesMsgMatchValidators (newStateAddr, approveStateAddr, validators) {
+	return newStateAddr === validators[0].id && approveStateAddr === validators[1].id
 }
 
 async function getDistributedFunds (campaign) {
@@ -166,6 +165,7 @@ async function queryValidators () {
 	await campaigns.map(c => getStatusOfCampaign(c)
 		.then(async ({ status, lastHeartbeat, lastApproved }) => {
 			const verified = verifyLastApproved(lastApproved, c.spec.validators)
+			console.log(verified)
 			const [
 				fundsDistributedRatio,
 				usdEstimate
