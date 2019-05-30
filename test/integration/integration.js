@@ -1,4 +1,5 @@
 /* eslint-disable indent */
+// TODO: Test GET /campaigns?all
 const tape = require('tape')
 const fetch = require('node-fetch')
 const marketUrl = process.env.TEST_MARKET_URL
