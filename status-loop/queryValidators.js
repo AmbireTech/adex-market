@@ -88,7 +88,7 @@ function getLasHeartbeatTimestamp (msg) {
 	}
 }
 
-function verifyLastApproved (lastApproved) {
+function verifyLastApproved (lastApproved, validators) {
 	if (!lastApproved) {
 		return false
 	}
@@ -107,8 +107,8 @@ function verifyLastApproved (lastApproved) {
 	return false
 }
 
-function doesMsgMatchValidators (lastApproved) {
-	// TODO
+function doesMsgMatchValidators (lastApproved, validators) {
+	console.log(validators)
 	return true
 }
 
@@ -165,7 +165,7 @@ async function queryValidators () {
 
 	await campaigns.map(c => getStatusOfCampaign(c)
 		.then(async ({ status, lastHeartbeat, lastApproved }) => {
-			const verified = verifyLastApproved(lastApproved)
+			const verified = verifyLastApproved(lastApproved, c.spec.validators)
 			const [
 				fundsDistributedRatio,
 				usdEstimate
