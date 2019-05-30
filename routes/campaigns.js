@@ -23,12 +23,13 @@ function getCampaigns (req, res, next) {
 	let query = {}
 	// Uses default statuses (active, ready) if none are requested
 	const status = req.query.status ? req.query.status.split(',') : ['Active', 'Ready']
-	const campaignsCol = db.getMongo().collection('campaigns')
 
 	// If request query has ?all it doesn't query for status
 	req.query.hasOwnProperty('all')
 		? query = { }
 		: query = { 'status.name': { $in: status } }
+
+	const campaignsCol = db.getMongo().collection('campaigns')
 
 	campaignsCol
 		.find(
