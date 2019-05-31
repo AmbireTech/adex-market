@@ -69,15 +69,28 @@ function getStatusOfCampaign (campaign) {
 				approveStateFollower: lastApproved ? [lastApproved.approveState] : []
 			}
 			const balanceTree = treeResp.validatorMessages[0] ? treeResp.validatorMessages[0].msg.balances : {}
+			const verified = verifyLastApproved(lastApproved, validators)
+			const lastApprovedSig = lastApproved ? getLastSigs(lastApproved) : []
+			const lastApprovedBalances = lastApproved ? getLastBalances(lastApproved) : {}
 			return {
-				status: getStatus(messagesFromAll, campaign, balanceTree),
+				name: getStatus(messagesFromAll, campaign, balanceTree),
 				lastHeartbeat: {
 					leader: getLasHeartbeatTimestamp(messagesFromAll.leaderHeartbeat[0]),
 					follower: getLasHeartbeatTimestamp(messagesFromAll.followerFromFollower[0])
 				},
-				lastApproved
+				lastApprovedSig,
+				lastApprovedBalances,
+				verified
 			}
 		})
+}
+
+function getLastSigs (lastApproved) {
+	return [lastApproved.newState.msg.signature, lastApproved.approveState.msg.signature]
+}
+
+function getLastBalances (lastApproved) {
+	return lastApproved.newState.msg.balances
 }
 
 function getLasHeartbeatTimestamp (msg) {
@@ -159,13 +172,12 @@ async function queryValidators () {
 
 	// const lists = хawait Promise.all(cfg.initialValidators.map(url => getRequest(`${url}/channel/list`)))
 	const { channels } = await getRequest(`${cfg.initialValidators[0]}/channel/list`)
-	await channels.map(c => campaignsCol.update({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
+	await channels.map(c => campaignsCol.updateOne({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
 	const campaigns = await campaignsCol.find().toArray()
 
 	await Promise.all(campaigns
-		.filter(c => verifyLastApproved(c.lastApproved, c.spec.validators))
 		.map(c => getStatusOfCampaign(c)
-			.then(async ({ status, lastHeartbeat, lastApproved }) => {
+			.then(async (status) => {
 				const [
 					fundsDistributedRatio,
 					usdEstimate
@@ -174,14 +186,13 @@ async function queryValidators () {
 					getEstimateInUsd(c)
 				])
 				const statusObj = {
-					name: status,
+					...status,
 					lastChecked: Date.now(),
 					fundsDistributedRatio,
-					lastHeartbeat,
-					usdEstimate
+					usdEstimate,
 				}
 
-				return updateCampaign(c, statusObj, lastApproved)
+				return updateCampaign(c, statusObj)
 					.then(() => console.log(`Status of campaign ${c._id} updated`))
 			})))
 }
