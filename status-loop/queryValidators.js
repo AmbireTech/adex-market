@@ -90,7 +90,7 @@ function getLasHeartbeatTimestamp (msg) {
 
 function verifyLastApproved (lastApproved, validators) {
 	if (!lastApproved) {
-		return false
+		return true
 	}
 
 	const { newState, approveState } = lastApproved
