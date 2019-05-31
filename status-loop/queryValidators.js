@@ -90,7 +90,7 @@ function getLastSigs (lastApproved) {
 }
 
 function getLastBalances (lastApproved) {
-	return lastApproved.newState.balances
+	return lastApproved.newState.msg.balances
 }
 
 function getLasHeartbeatTimestamp (msg) {
