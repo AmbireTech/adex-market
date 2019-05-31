@@ -1,4 +1,4 @@
-const { bigNumberify, formatUnits } = require('ethers').utils
+const { bigNumberify, formatUnits, verifyMessage, arrayify } = require('ethers').utils
 const Uniprice = require('uniprice')
 const { provider, getERC20Contract } = require('../helpers/web3/ethers')
 const db = require('../db')
@@ -88,6 +88,29 @@ function getLasHeartbeatTimestamp (msg) {
 	}
 }
 
+function verifyLastApproved (lastApproved, validators) {
+	if (!lastApproved) {
+		return true
+	}
+
+	const { newState, approveState } = lastApproved
+
+	const newStateMsg = arrayify('0x' + newState.msg.stateRoot)
+	const approveStateMsg = arrayify('0x' + approveState.msg.stateRoot)
+
+	const newStateAddr = verifyMessage(newStateMsg, newState.msg.signature)
+	const approveStateAddr = verifyMessage(approveStateMsg, approveState.msg.signature)
+
+	if (newStateAddr === newState.from && approveStateAddr === approveState.from) {
+		return doesMsgMatchValidators(newStateAddr, approveStateAddr, validators)
+	}
+	return false
+}
+
+function doesMsgMatchValidators (newStateAddr, approveStateAddr, validators) {
+	return newStateAddr === validators[0].id && approveStateAddr === validators[1].id
+}
+
 async function getDistributedFunds (campaign) {
 	const validators = campaign.spec.validators
 
@@ -137,29 +160,30 @@ async function queryValidators () {
 	// const lists = хawait Promise.all(cfg.initialValidators.map(url => getRequest(`${url}/channel/list`)))
 	const { channels } = await getRequest(`${cfg.initialValidators[0]}/channel/list`)
 	await channels.map(c => campaignsCol.update({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
-
 	const campaigns = await campaignsCol.find().toArray()
 
-	await campaigns.map(c => getStatusOfCampaign(c)
-		.then(async ({ status, lastHeartbeat, lastApproved }) => {
-			const [
-				fundsDistributedRatio,
-				usdEstimate
-			] = await Promise.all([
-				getDistributedFunds(c),
-				getEstimateInUsd(c)
-			])
-			const statusObj = {
-				name: status,
-				lastChecked: Date.now(),
-				fundsDistributedRatio,
-				lastHeartbeat,
-				usdEstimate
-			}
+	await Promise.all(campaigns
+		.filter(c => verifyLastApproved(c.lastApproved, c.spec.validators))
+		.map(c => getStatusOfCampaign(c)
+			.then(async ({ status, lastHeartbeat, lastApproved }) => {
+				const [
+					fundsDistributedRatio,
+					usdEstimate
+				] = await Promise.all([
+					getDistributedFunds(c),
+					getEstimateInUsd(c)
+				])
+				const statusObj = {
+					name: status,
+					lastChecked: Date.now(),
+					fundsDistributedRatio,
+					lastHeartbeat,
+					usdEstimate
+				}
 
-			return updateCampaign(c, statusObj, lastApproved)
-				.then(() => console.log(`Status of campaign ${c._id} updated`))
-		}))
+				return updateCampaign(c, statusObj, lastApproved)
+					.then(() => console.log(`Status of campaign ${c._id} updated`))
+			})))
 }
 
 function startStatusLoop () {
