@@ -69,15 +69,28 @@ function getStatusOfCampaign (campaign) {
 				approveStateFollower: lastApproved ? [lastApproved.approveState] : []
 			}
 			const balanceTree = treeResp.validatorMessages[0] ? treeResp.validatorMessages[0].msg.balances : {}
+			const verified = verifyLastApproved(lastApproved, validators)
+			const lastApprovedSig = lastApproved ? getLastSigs(lastApproved) : []
+			const lastApprovedBalances = lastApproved ? getLastBalances(lastApproved) : {}
 			return {
 				status: getStatus(messagesFromAll, campaign, balanceTree),
 				lastHeartbeat: {
 					leader: getLasHeartbeatTimestamp(messagesFromAll.leaderHeartbeat[0]),
 					follower: getLasHeartbeatTimestamp(messagesFromAll.followerFromFollower[0])
 				},
-				lastApproved
+				lastApprovedSig,
+				lastApprovedBalances,
+				verified
 			}
 		})
+}
+
+function getLastSigs (lastApproved) {
+	return [lastApproved.newState.msg.signature, lastApproved.approveState.msg.signature]
+}
+
+function getLastBalances (lastApproved) {
+	return lastApproved.newState.balances
 }
 
 function getLasHeartbeatTimestamp (msg) {
@@ -163,9 +176,9 @@ async function queryValidators () {
 	const campaigns = await campaignsCol.find().toArray()
 
 	await campaigns
-		.filter(c => verifyLastApproved(c.lastApproved, c.spec.validators))
+		.filter(c => c.verified)
 		.map(c => getStatusOfCampaign(c)
-			.then(async ({ status, lastHeartbeat, lastApproved }) => {
+			.then(async ({ status, lastHeartbeat, lastApprovedSig, lastApprovedBalances }) => {
 				const [
 					fundsDistributedRatio,
 					usdEstimate
@@ -181,7 +194,7 @@ async function queryValidators () {
 					usdEstimate
 				}
 
-				return updateCampaign(c, statusObj, lastApproved)
+				return updateCampaign(c, statusObj, lastApprovedSig, lastApprovedBalances)
 					.then(() => console.log(`Status of campaign ${c._id} updated`))
 			}))
 }
