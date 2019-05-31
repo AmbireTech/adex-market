@@ -73,7 +73,7 @@ function getStatusOfCampaign (campaign) {
 			const lastApprovedSig = lastApproved ? getLastSigs(lastApproved) : []
 			const lastApprovedBalances = lastApproved ? getLastBalances(lastApproved) : {}
 			return {
-				status: getStatus(messagesFromAll, campaign, balanceTree),
+				name: getStatus(messagesFromAll, campaign, balanceTree),
 				lastHeartbeat: {
 					leader: getLasHeartbeatTimestamp(messagesFromAll.leaderHeartbeat[0]),
 					follower: getLasHeartbeatTimestamp(messagesFromAll.followerFromFollower[0])
@@ -177,7 +177,7 @@ async function queryValidators () {
 
 	await Promise.all(campaigns
 		.map(c => getStatusOfCampaign(c)
-			.then(async ({ status, lastHeartbeat, lastApprovedSig, lastApprovedBalances }) => {
+			.then(async (status) => {
 				const [
 					fundsDistributedRatio,
 					usdEstimate
@@ -186,14 +186,10 @@ async function queryValidators () {
 					getEstimateInUsd(c)
 				])
 				const statusObj = {
-					name: status,
+					...status,
 					lastChecked: Date.now(),
 					fundsDistributedRatio,
-					lastHeartbeat,
 					usdEstimate,
-					verified,
-					lastApprovedSig,
-					lastApprovedBalances
 				}
 
 				return updateCampaign(c, statusObj)
