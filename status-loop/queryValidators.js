@@ -176,7 +176,6 @@ async function queryValidators () {
 	const campaigns = await campaignsCol.find().toArray()
 
 	await Promise.all(campaigns
-		.filter(c => c.verified)
 		.map(c => getStatusOfCampaign(c)
 			.then(async ({ status, lastHeartbeat, lastApprovedSig, lastApprovedBalances }) => {
 				const [
