@@ -175,7 +175,7 @@ async function queryValidators () {
 	await channels.map(c => campaignsCol.update({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
 	const campaigns = await campaignsCol.find().toArray()
 
-	await campaigns
+	await Promise.all(campaigns
 		.filter(c => c.verified)
 		.map(c => getStatusOfCampaign(c)
 			.then(async ({ status, lastHeartbeat, lastApprovedSig, lastApprovedBalances }) => {
@@ -196,7 +196,7 @@ async function queryValidators () {
 
 				return updateCampaign(c, statusObj, lastApprovedSig, lastApprovedBalances)
 					.then(() => console.log(`Status of campaign ${c._id} updated`))
-			}))
+			})))
 }
 
 function startStatusLoop () {
