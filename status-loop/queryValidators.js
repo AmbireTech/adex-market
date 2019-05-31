@@ -190,10 +190,13 @@ async function queryValidators () {
 					lastChecked: Date.now(),
 					fundsDistributedRatio,
 					lastHeartbeat,
-					usdEstimate
+					usdEstimate,
+					verified,
+					lastApprovedSig,
+					lastApprovedBalances
 				}
 
-				return updateCampaign(c, statusObj, lastApprovedSig, lastApprovedBalances)
+				return updateCampaign(c, statusObj)
 					.then(() => console.log(`Status of campaign ${c._id} updated`))
 			})))
 }
