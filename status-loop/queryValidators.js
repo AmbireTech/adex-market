@@ -172,7 +172,7 @@ async function queryValidators () {
 
 	// const lists = хawait Promise.all(cfg.initialValidators.map(url => getRequest(`${url}/channel/list`)))
 	const { channels } = await getRequest(`${cfg.initialValidators[0]}/channel/list`)
-	await channels.map(c => campaignsCol.update({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
+	await channels.map(c => campaignsCol.updateOne({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
 	const campaigns = await campaignsCol.find().toArray()
 
 	await Promise.all(campaigns
