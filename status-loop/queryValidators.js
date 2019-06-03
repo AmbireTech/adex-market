@@ -76,7 +76,7 @@ function getStatusOfCampaign (campaign) {
 			const lastApprovedSigs = lastApproved ? getLastSigs(lastApproved) : []
 			const lastApprovedBalances = lastApproved ? getLastBalances(lastApproved) : {}
 			return {
-				status: getStatus(messagesFromAll, campaign, balanceTree),
+				name: getStatus(messagesFromAll, campaign, balanceTree),
 				lastHeartbeat: {
 					leader: getLasHeartbeatTimestamp(messagesFromAll.leaderHeartbeat[0]),
 					follower: getLasHeartbeatTimestamp(messagesFromAll.followerFromFollower[0])
@@ -152,11 +152,11 @@ async function queryValidators () {
 
 	// const lists = хawait Promise.all(cfg.initialValidators.map(url => getRequest(`${url}/channel/list`)))
 	const { channels } = await getRequest(`${cfg.initialValidators[0]}/channel/list`)
-	await channels.map(c => campaignsCol.update({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
+	await channels.map(c => campaignsCol.updateOne({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
 	const campaigns = await campaignsCol.find().toArray()
 	await Promise.all(campaigns
 		.map(c => getStatusOfCampaign(c)
-			.then(async ({ status, lastHeartbeat, lastApprovedSigs, lastApprovedBalances, verified }) => {
+			.then(async (status) => {
 				const [
 					fundsDistributedRatio,
 					usdEstimate
@@ -165,15 +165,14 @@ async function queryValidators () {
 					getEstimateInUsd(c)
 				])
 				const statusObj = {
-					name: status,
+					...status,
 					lastChecked: Date.now(),
 					fundsDistributedRatio,
-					lastHeartbeat,
 					usdEstimate
 				}
 
-				if (verified) {
-					return updateCampaign(c, statusObj, lastApprovedSigs, lastApprovedBalances)
+				if (status.verified) {
+					return updateCampaign(c, statusObj)
 						.then(() => console.log(`Status of campaign ${c._id} updated`))
 				}
 				return Promise.resolve()

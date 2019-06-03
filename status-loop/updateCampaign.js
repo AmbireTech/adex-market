@@ -1,10 +1,10 @@
 const db = require('../db')
 
-function updateCampaign (campaign, status, lastApprovedSigs, lastApprovedBalances) {
+function updateCampaign (campaign, status) {
 	const campaignCol = db.getMongo().collection('campaigns')
-	return campaignCol.update(
+	return campaignCol.updateOne(
 		{ _id: campaign._id },
-		{ $set: { status, lastApprovedSigs, lastApprovedBalances } }
+		{ $set: { status } }
 	)
 }
 
