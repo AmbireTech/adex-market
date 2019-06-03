@@ -2,7 +2,6 @@ const { verifyMessage, arrayify } = require('ethers').utils
 
 function verifyLastApproved (lastApproved, validators) {
 	if (!lastApproved) {
-		console.log('no last approved, verifying')
 		return true
 	}
 
