@@ -1,10 +1,12 @@
-const { bigNumberify, formatUnits, verifyMessage, arrayify } = require('ethers').utils
+const { bigNumberify, formatUnits } = require('ethers').utils
 const Uniprice = require('uniprice')
 const { provider, getERC20Contract } = require('../helpers/web3/ethers')
 const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const cfg = require('../cfg')
 const updateCampaign = require('./updateCampaign')
+const { verifyLastApproved } = require('./verifyMessages')
+
 const {
 	isInitializing,
 	isOffline,
@@ -59,6 +61,7 @@ function getStatusOfCampaign (campaign) {
 
 	return Promise.all([leaderHb, followerHb, followerHbFromLeader, followerHbFromFollower, lastApproved, treePromise])
 		.then(([leaderHbResp, followerHbResp, followerHbFromLeaderResp, followerHbFromFollowerResp, lastApprovedResp, treeResp]) => {
+			// lastApproved doesn't get stored, used only for verification/info purposes
 			const lastApproved = lastApprovedResp.lastApproved
 			const messagesFromAll = {
 				leaderHeartbeat: leaderHbResp.validatorMessages,
@@ -70,7 +73,7 @@ function getStatusOfCampaign (campaign) {
 			}
 			const balanceTree = treeResp.validatorMessages[0] ? treeResp.validatorMessages[0].msg.balances : {}
 			const verified = verifyLastApproved(lastApproved, validators)
-			const lastApprovedSig = lastApproved ? getLastSigs(lastApproved) : []
+			const lastApprovedSigs = lastApproved ? getLastSigs(lastApproved) : []
 			const lastApprovedBalances = lastApproved ? getLastBalances(lastApproved) : {}
 			return {
 				status: getStatus(messagesFromAll, campaign, balanceTree),
@@ -78,7 +81,7 @@ function getStatusOfCampaign (campaign) {
 					leader: getLasHeartbeatTimestamp(messagesFromAll.leaderHeartbeat[0]),
 					follower: getLasHeartbeatTimestamp(messagesFromAll.followerFromFollower[0])
 				},
-				lastApprovedSig,
+				lastApprovedSigs,
 				lastApprovedBalances,
 				verified
 			}
@@ -90,7 +93,7 @@ function getLastSigs (lastApproved) {
 }
 
 function getLastBalances (lastApproved) {
-	return lastApproved.newState.balances
+	return lastApproved.newState.msg.balances
 }
 
 function getLasHeartbeatTimestamp (msg) {
@@ -99,29 +102,6 @@ function getLasHeartbeatTimestamp (msg) {
 	} else {
 		return null
 	}
-}
-
-function verifyLastApproved (lastApproved, validators) {
-	if (!lastApproved) {
-		return true
-	}
-
-	const { newState, approveState } = lastApproved
-
-	const newStateMsg = arrayify('0x' + newState.msg.stateRoot)
-	const approveStateMsg = arrayify('0x' + approveState.msg.stateRoot)
-
-	const newStateAddr = verifyMessage(newStateMsg, newState.msg.signature)
-	const approveStateAddr = verifyMessage(approveStateMsg, approveState.msg.signature)
-
-	if (newStateAddr === newState.from && approveStateAddr === approveState.from) {
-		return doesMsgMatchValidators(newStateAddr, approveStateAddr, validators)
-	}
-	return false
-}
-
-function doesMsgMatchValidators (newStateAddr, approveStateAddr, validators) {
-	return newStateAddr === validators[0].id && approveStateAddr === validators[1].id
 }
 
 async function getDistributedFunds (campaign) {
@@ -174,11 +154,9 @@ async function queryValidators () {
 	const { channels } = await getRequest(`${cfg.initialValidators[0]}/channel/list`)
 	await channels.map(c => campaignsCol.update({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
 	const campaigns = await campaignsCol.find().toArray()
-
 	await Promise.all(campaigns
-		.filter(c => c.verified)
 		.map(c => getStatusOfCampaign(c)
-			.then(async ({ status, lastHeartbeat, lastApprovedSig, lastApprovedBalances }) => {
+			.then(async ({ status, lastHeartbeat, lastApprovedSigs, lastApprovedBalances, verified }) => {
 				const [
 					fundsDistributedRatio,
 					usdEstimate
@@ -194,8 +172,11 @@ async function queryValidators () {
 					usdEstimate
 				}
 
-				return updateCampaign(c, statusObj, lastApprovedSig, lastApprovedBalances)
-					.then(() => console.log(`Status of campaign ${c._id} updated`))
+				if (verified) {
+					return updateCampaign(c, statusObj, lastApprovedSigs, lastApprovedBalances)
+						.then(() => console.log(`Status of campaign ${c._id} updated`))
+				}
+				return Promise.resolve()
 			})))
 }
 
