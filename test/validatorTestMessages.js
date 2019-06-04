@@ -33,25 +33,25 @@ const heartbeatMessageNowDate2 = {
 	}
 }
 
-const heartbeatMessageNowDate3 = {
-	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
-	msg: {
-		type: 'Heartbeat',
-		timestamp: nowDate,
-		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 3',
-		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec26'
-	}
-}
+// const heartbeatMessageNowDate3 = {
+// 	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
+// 	msg: {
+// 		type: 'Heartbeat',
+// 		timestamp: nowDate,
+// 		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 3',
+// 		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec26'
+// 	}
+// }
 
-const heartbeatMessageNowDate4 = {
-	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
-	msg: {
-		type: 'Heartbeat',
-		timestamp: nowDate,
-		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 4',
-		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec27'
-	}
-}
+// const heartbeatMessageNowDate4 = {
+// 	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
+// 	msg: {
+// 		type: 'Heartbeat',
+// 		timestamp: nowDate,
+// 		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 4',
+// 		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec27'
+// 	}
+// }
 
 const newStateMessage = {
 	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',

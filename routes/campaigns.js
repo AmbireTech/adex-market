@@ -101,11 +101,11 @@ function getCampaignsByEarner (req, res) {
 
 	return campaignsCol
 		.find(
-			{ 'lastApproved.newState.msg.balances': { '$exists': true } },
-			{ projection: { '_id': 0, 'lastApproved': 1 } })
+			{ 'lastApprovedBalances': { '$exists': true } },
+			{ projection: { '_id': 0, 'lastApprovedBalances': 1 } })
 		.toArray()
 		.then((appr) => {
-			const balances = appr.map(r => r.lastApproved.newState.msg.balances)
+			const balances = appr.map(r => r.lastApprovedBalances)
 			const result = balances.filter(b => b.hasOwnProperty(earnerAddr))
 			return res.send(result)
 		})
