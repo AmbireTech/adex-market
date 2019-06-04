@@ -9,7 +9,7 @@ function getValidators (req, res, next) {
 	const validatorsCol = db.getMongo().collection('validators')
 	const { status, addr } = req.query
 
-	const query = status ? { 'status': status } : addr ? { 'addr': addr } : query = {}
+	const query = status ? { 'status': status } : addr ? { 'addr': addr } : {}
 
 	return validatorsCol
 		.find(query)
