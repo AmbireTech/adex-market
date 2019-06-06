@@ -16,10 +16,11 @@ async function getChannels () {
 async function getAllPages (channelsObj, total) {
 	const allRequests = []
 	for (let page = 1; page < total; page++) {
-		allRequests.push(await getRequest(`${cfg.initialValidators[0]}/channel/list?page=${page}`))
+		allRequests.push(getRequest(`${cfg.initialValidators[0]}/channel/list?page=${page}`))
 	}
-	const allChannelObjects = await Promise.all(allRequests)
-	const allChannels = [channelsObj.channels, allChannelObjects.map((c) => c.channels)].flat()
+	const allChannelObjects = await Promise.all(allRequests).then((res) => res.map((c) => c.channels))
+	allChannelObjects.push(channelsObj)
+	const allChannels = [].concat.apply([], allChannelObjects) // we can just use .flat() but it's only supported on node v11.0+
 	return allChannels
 }
 
