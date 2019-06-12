@@ -1,9 +1,29 @@
 const getRequest = require('../helpers/getRequest')
 const cfg = require('../cfg')
+const db = require('../db')
+
+async function retrieveChannelsFromDb () {
+	const validatorsCol = db.getMongo().collection('validators')
+	return validatorsCol.find({})
+		.toArray()
+		.then((res) => res)
+		.catch((err) => console.error('error getting validators', err))
+}
+
+async function getUniqueChannels (channelsObj) {
+	const channels = channelsObj.reduce((cns, c) => {
+		return cns.concat(c.channels)
+	}, [])
+	const uniqueChannels = channels.filter((c, i, cns) => {
+		return cns.map(cn => cn['id']).indexOf(c['id']) === i
+	})
+	return uniqueChannels
+}
 
 async function getChannels () {
-	// const lists = хawait Promise.all(cfg.initialValidators.map(url => getRequest(`${url}/channel/list`)))
-	let { channels } = await getRequest(`${cfg.initialValidators[0]}/channel/list`)
+	const validators = await retrieveChannelsFromDb()
+	const allChannels = await Promise.all(validators.map((v) => getRequest(`${v.url}/channel/list`)))
+	const channels = getUniqueChannels(allChannels)
 	// Ensuring it would work if we change total to totalPages
 	// NOTE: Should be fixed
 	if ((channels.total && channels.total > 1) || (channels.totalPages && channels.totalPages > 1)) {

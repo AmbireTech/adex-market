@@ -3,6 +3,7 @@ const express = require('express')
 const headerParser = require('header-parser')
 const bodyParser = require('body-parser')
 const startStatusLoop = require('./status-loop/queryValidators')
+const fillInitialValidators = require('./helpers/fillInitialValidators')
 
 const signatureCheck = require('./helpers/signatureCheck')
 const campaignsRoutes = require('./routes/campaigns')
@@ -55,7 +56,7 @@ db.connect()
 		} else {
 			// Not yet necessary for integration tests
 			startStatusLoop()
-			return Promise.resolve()
+			return Promise.resolve(fillInitialValidators())
 		}
 	})
 	.then(() => {
