@@ -1,10 +1,11 @@
 const express = require('express')
 const db = require('../db')
+const signatureCheck = require('../helpers/signatureCheck')
 
 const router = express.Router()
 
 router.get('/', getValidators)
-router.post('/', postValidator)
+router.post('/', signatureCheck, postValidator)
 
 function getValidators (req, res) {
 	const validatorsCol = db.getMongo().collection('validators')
