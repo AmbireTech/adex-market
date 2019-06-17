@@ -2,10 +2,13 @@ const express = require('express')
 const db = require('../db')
 const signatureCheck = require('../helpers/signatureCheck')
 
+const { celebrate } = require('celebrate')
+const { schemas } = require('adex-models')
+
 const router = express.Router()
 
 router.get('/', getValidators)
-router.post('/', signatureCheck, postValidator)
+router.post('/', signatureCheck, celebrate({ body: schemas.validator }), postValidator)
 
 function getValidators (req, res) {
 	const validatorsCol = db.getMongo().collection('validators')
