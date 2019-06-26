@@ -17,7 +17,7 @@ function getBalanceTree (validatorUrl, channelId) {
 		})
 }
 
-function getCampaigns (req, res, next) {
+function getCampaigns (req, res) {
 	const limit = +req.query.limit || 100
 	const skip = +req.query.skip || 0
 	// Uses default statuses (active, ready) if none are requested
