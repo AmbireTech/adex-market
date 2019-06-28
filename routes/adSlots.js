@@ -3,7 +3,7 @@ const db = require('../db')
 const addDataToIpfs = require('../helpers/ipfs')
 
 const { celebrate } = require('celebrate')
-const { schemas } = require('adex-models')
+const { schemas, AdSlot } = require('adex-models')
 
 const router = express.Router()
 
@@ -58,18 +58,16 @@ function getAdSlotById (req, res) {
 }
 
 function postAdSlot (req, res) {
-	const { type, tags, created, title, description, fallbackMediaUrl, fallbackMediaMime, fallbackTargetUrl, archived = false, modified = null } = req.body
 	const identity = req.identity
-	const specForIpfs = { type, tags, owner: identity, created }
-
 	const adSlotsCol = db.getMongo().collection('adSlots')
-	const adSlot = { type, tags, owner: identity, created, title, description, fallbackMediaMime, fallbackMediaUrl, fallbackTargetUrl, archived, modified }
+	const adSlot = new AdSlot(req.body)
+	adSlot.owner = identity
 
-	return addDataToIpfs(Buffer.from(JSON.stringify(specForIpfs)))
+	return addDataToIpfs(Buffer.from(JSON.stringify(adSlot.spec)))
 		.then((dataHash) => {
 			adSlot['ipfs'] = dataHash
 
-			return adSlotsCol.insertOne(adSlot, (err, result) => {
+			return adSlotsCol.insertOne(adSlot.marketDbAdd, (err, result) => {
 				if (err) {
 					console.error('Error adding adSlot', err)
 					return res.status(500).send(err)
@@ -80,22 +78,14 @@ function postAdSlot (req, res) {
 }
 
 function putAdSlot (req, res) {
-	const { title, description, fallbackMediaUrl, fallbackMediaMime, fallbackTargetUrl, archived, modified } = req.body
+	const adSlot = new AdSlot(req.body)
 	const adSlotsCol = db.getMongo().collection('adSlots')
 	const ipfs = req.params.id
 	return adSlotsCol
 		.findOneAndUpdate(
 			{ ipfs },
 			{
-				'$set': {
-					title,
-					description,
-					archived,
-					fallbackMediaUrl,
-					fallbackMediaMime,
-					fallbackTargetUrl,
-					modified
-				}
+				'$set': adSlot.marketDbUpdate
 			}, { returnOriginal: false },
 			(err, result) => {
 				if (err) {
