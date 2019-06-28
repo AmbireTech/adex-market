@@ -3,7 +3,7 @@ const db = require('../db')
 const addDataToIpfs = require('../helpers/ipfs')
 
 const { celebrate } = require('celebrate')
-const { schemas } = require('adex-models')
+const { schemas, AdUnit } = require('adex-models')
 
 const router = express.Router()
 
@@ -54,16 +54,14 @@ function getAdUnitById (req, res) {
 }
 
 function postAdUnit (req, res) {
-	const { type, mediaUrl, mediaMime, targetUrl, targeting, tags, created, title, description, archived = false, modified = null } = req.body
 	const identity = req.identity
-
-	const specForIpfs = { type, mediaUrl, mediaMime, targetUrl, targeting, tags, owner: identity, created }
+	const adUnit = new AdUnit(req.body)
+	adUnit.owner = identity
 	const adUnitCol = db.getMongo().collection('adUnits')
-	const adUnit = { type, mediaUrl, mediaMime, targetUrl, targeting, tags, owner: identity, created, title, description, archived, modified }
-	return addDataToIpfs(Buffer.from(JSON.stringify(specForIpfs)))
+	return addDataToIpfs(Buffer.from(JSON.stringify(adUnit.spec)))
 		.then((dataHash) => {
 			adUnit['ipfs'] = dataHash
-			return adUnitCol.insertOne(adUnit, (err, result) => {
+			return adUnitCol.insertOne(adUnit.marketDbAdd, (err, result) => {
 				if (err) {
 					console.error(new Error('error adding adUnit', err))
 					return res.status(500).send(err)
@@ -74,18 +72,13 @@ function postAdUnit (req, res) {
 }
 
 function putAdUnit (req, res) {
-	const { title, description, archived, modified } = req.body
+	const adUnit = new AdUnit(req.body)
 	const adUnitCol = db.getMongo().collection('adUnits')
 	const ipfs = req.params.id
 
 	return adUnitCol
 		.findOneAndUpdate({ ipfs }, {
-			'$set': {
-				title: title,
-				description: description,
-				archived: archived,
-				modified: modified
-			}
+			'$set': adUnit.marketDbUpdate
 		}, { returnOriginal: false }, (err, result) => {
 			if (err) {
 				console.error('Error updating ad unit', err)
