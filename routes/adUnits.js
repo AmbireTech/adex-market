@@ -19,7 +19,7 @@ function getAdUnits (req, res) {
 	const adUnitCol = db.getMongo().collection('adUnits')
 
 	return adUnitCol
-		.find({ owner: identity },
+		.find({ owner: identity, passback: { $not: true } },
 			{ projection: { _id: 0 } }
 		)
 		.skip(skip)
