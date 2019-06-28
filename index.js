@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 const startStatusLoop = require('./status-loop/queryValidators')
 
 const signatureCheck = require('./helpers/signatureCheck')
+const enforcePublisherLimits = require('./helpers/enforcePublisherLimits')
 const campaignsRoutes = require('./routes/campaigns')
 const statsRoutes = require('./routes/stats')
 const usersRoutes = require('./routes/users')
@@ -20,6 +21,7 @@ const seedDb = require('./test/prep-db/seedDb').seedDb
 
 const app = express()
 const db = require('./db')
+
 const cfg = require('./cfg')
 const port = process.env.PORT || 3012
 
@@ -36,7 +38,7 @@ app.use(function (req, res, next) {
 	next()
 })
 
-app.use('/campaigns', campaignsRoutes)
+app.use('/campaigns', enforcePublisherLimits, campaignsRoutes)
 app.use('/stats', statsRoutes)
 app.use('/users', usersRoutes)
 app.use('/validators', validatorsRoutes)
