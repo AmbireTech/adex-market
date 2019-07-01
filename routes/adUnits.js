@@ -1,16 +1,18 @@
 const express = require('express')
-const db = require('../db')
-const addDataToIpfs = require('../helpers/ipfs')
 
 const { celebrate } = require('celebrate')
 const { schemas, AdUnit } = require('adex-models')
 
+const db = require('../db')
+const addDataToIpfs = require('../helpers/ipfs')
+const signatureCheck = require('./helpers/signatureCheck')
+
 const router = express.Router()
 
-router.get('/', getAdUnits)
+router.get('/', signatureCheck, getAdUnits)
 router.get('/:id', getAdUnitById)
-router.post('/', celebrate({ body: schemas.adUnitPost }), postAdUnit)
-router.put('/:id', celebrate({ body: schemas.adUnitPut }), putAdUnit)
+router.post('/', signatureCheck, celebrate({ body: schemas.adUnitPost }), postAdUnit)
+router.put('/:id', signatureCheck, celebrate({ body: schemas.adUnitPut }), putAdUnit)
 
 function getAdUnits (req, res) {
 	const identity = req.identity
@@ -35,11 +37,10 @@ function getAdUnits (req, res) {
 }
 
 function getAdUnitById (req, res) {
-	const identity = req.identity
 	const adUnitCol = db.getMongo().collection('adUnits')
 	const ipfs = req.params['id']
 	return adUnitCol
-		.findOne({ ipfs, owner: identity },
+		.findOne({ ipfs },
 			{ projection: { _id: 0 } })
 		.then((result) => {
 			if (!result) {
