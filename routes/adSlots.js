@@ -1,16 +1,17 @@
 const express = require('express')
-const db = require('../db')
-const addDataToIpfs = require('../helpers/ipfs')
-
 const { celebrate } = require('celebrate')
 const { schemas, AdSlot } = require('adex-models')
 
+const db = require('../db')
+const addDataToIpfs = require('../helpers/ipfs')
+const signatureCheck = require('./helpers/signatureCheck')
+
 const router = express.Router()
 
-router.get('/', getAdSlots)
+router.get('/', signatureCheck, getAdSlots)
 router.get('/:id', getAdSlotById)
-router.put('/:id', celebrate({ body: schemas.adSlotPut }), putAdSlot)
-router.post('/', celebrate({ body: schemas.adSlotPost }), postAdSlot)
+router.put('/:id', signatureCheck, celebrate({ body: schemas.adSlotPut }), putAdSlot)
+router.post('/', signatureCheck, celebrate({ body: schemas.adSlotPost }), postAdSlot)
 
 function getAdSlots (req, res) {
 	const identity = req.identity
@@ -36,13 +37,12 @@ function getAdSlots (req, res) {
 }
 
 function getAdSlotById (req, res) {
-	const identity = req.identity
 	const ipfs = req.params['id']
 	const adSlotsCol = db.getMongo().collection('adSlots')
 
 	return adSlotsCol
 		.findOne(
-			{ ipfs, owner: identity },
+			{ ipfs },
 			{ projection: { _id: 0 } }
 		)
 		.then((result) => {
