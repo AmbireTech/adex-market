@@ -229,7 +229,6 @@ tape('GET /stats', (t) => {
 	fetch(`${marketUrl}/stats`)
 		.then(res => res.json())
 		.then((res) => {
-			console.log(res)
 			t.ok(res.hasOwnProperty('publisherCount'), 'stats has publisherCount')
 			t.ok(res.hasOwnProperty('advertiserCount', 'stats has advertiserCount'))
 			t.ok(res.hasOwnProperty('anonPublisherCount', 'stats has anonPublisherCount'))
