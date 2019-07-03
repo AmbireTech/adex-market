@@ -3,9 +3,7 @@ const express = require('express')
 const headerParser = require('header-parser')
 const bodyParser = require('body-parser')
 const startStatusLoop = require('./status-loop/queryValidators')
-
 const signatureCheck = require('./helpers/signatureCheck')
-const enforcePublisherLimits = require('./helpers/enforcePublisherLimits')
 const campaignsRoutes = require('./routes/campaigns')
 const statsRoutes = require('./routes/stats')
 const usersRoutes = require('./routes/users')
@@ -38,7 +36,7 @@ app.use(function (req, res, next) {
 	next()
 })
 
-app.use('/campaigns', enforcePublisherLimits, campaignsRoutes)
+app.use('/campaigns', campaignsRoutes)
 app.use('/stats', statsRoutes)
 app.use('/users', usersRoutes)
 app.use('/validators', validatorsRoutes)
