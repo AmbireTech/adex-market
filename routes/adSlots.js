@@ -4,7 +4,7 @@ const { schemas, AdSlot } = require('adex-models')
 
 const db = require('../db')
 const addDataToIpfs = require('../helpers/ipfs')
-const signatureCheck = require('./helpers/signatureCheck')
+const signatureCheck = require('../helpers/signatureCheck')
 
 const router = express.Router()
 
