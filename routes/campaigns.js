@@ -39,6 +39,7 @@ function getCampaigns (req, res) {
 		.limit(limit)
 		.toArray()
 		.then((result) => {
+			console.log(result)
 			res.set('Cache-Control', 'public, max-age=60')
 			return res.send(result)
 		})
@@ -101,7 +102,7 @@ function getCampaignsByEarner (req, res) {
 
 	return campaignsCol
 		.find(
-			{ 'lastApprovedBalances': { '$exists': true } },
+			{ 'status.lastApprovedBalances': { '$exists': true } },
 			{ projection: { 'lastApprovedBalances': 1 } }) // NOTE: Assuming _id and id are the same as they currently are from queryValidators.js
 		.toArray()
 		.then((campaigns) => {

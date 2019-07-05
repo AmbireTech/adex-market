@@ -2,9 +2,37 @@ const fetch = require('node-fetch')
 const db = require('../db').getMongo()
 const RELAYER_HOST = process.env.RELAYER_HOST
 const EARNINGS_LIMIT = process.env.EARNINGS_LIMIT // TODO might not be an env variable
+const CHANNEL_LIMIT = process.env.CHANNEL_LIMIT
 const BN = require('bn.js')
 
+async function moreChannelsThanAllowed (addr) {
+	const channelsEarningFrom = await earningFrom(addr)
+	return channelsEarningFrom > CHANNEL_LIMIT
+}
+
+function earningFrom (addr) {
+	const campaignsCol = db.collection('campaigns')
+	const queryKey = `status.lastApprovedBalances.${addr}`
+
+	const countOfChannels = campaignsCol
+		.find({
+			'$and': [
+				{ [queryKey]: { '$exists': true } },
+				{
+					'$or': [
+						{ 'status.name': 'Active' },
+						{ 'status.name': 'Ready' }
+					]
+				}
+			]
+		})
+		.count()
+
+	return countOfChannels
+}
+
 async function isAddrLimited (addr) {
+	return  false // TODO uncomment
 	return fetch(`${RELAYER_HOST}/TODO`, { // TODO: Do this when ready might be just a GET
 		method: 'POST',
 		headers: {
@@ -23,7 +51,7 @@ async function getAccEarnings (addr) {
 
 	return campaignsCol
 		.find(
-			{ 'lastApprovedBalances': { '$exists': true } },
+			{ 'status.lastApprovedBalances': { '$exists': true } },
 			{ projection: { 'lastApprovedBalances': 1 } })
 		.toArray()
 		.then((campaigns) => {
@@ -53,4 +81,4 @@ async function enforceLimited (req, res, next) {
 		: next()
 }
 
-module.exports = enforceLimited
+module.exports = { enforceLimited, moreChannelsThanAllowed }
