@@ -61,9 +61,7 @@ const mockAdSlot = 	{
 	type: 'legacy_250x250',
 	tags: [{ tag: 'games', score: 42 }, { tag: 'usa', score: 60 }],
 	created: Date.now(),
-	fallbackMediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
-	fallbackTargetUrl: 'https://google.com',
-	fallbackMediaMime: 'image/jpeg',
+	fallbackUnit: 'QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 	title: 'Test slot 1',
 	description: 'Test slot for running integration tests',
 	archived: false,
@@ -74,10 +72,7 @@ const brokenAdSlot = {
 	type: 'legacy_251x250',
 	tags: [{ tag: 'games', score: 42 }, { tag: 'usa', score: 60 }],
 	created: Date.now(),
-	fallbackMediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
-	fallbackTargetUrl: 'https://google.com',
-	fallbackMediaMime: 'image/jpeg',
-	title: 'Test slot 1',
+	title: '',
 	description: 'Test slot for running integration tests',
 	archived: false,
 	modified: Date.now()
@@ -282,14 +277,13 @@ tape('===== Authorized routes =====', (t) => {
 		const form = new FormData()
 		form.append('media', fs.createReadStream(`${__dirname}/../resources/img.jpg`))
 
-		const getAdSlots = fetch(`${marketUrl}/slots`, { headers: { 'x-user-signature': signature }, identity: identityAddr })
+		const getAdSlots = fetch(`${marketUrl}/slots`)
 		.then(res => res.json())
 		.then((res) => {
 			t.ok(Array.isArray(res), 'returns array')
 			t.equals(res.length, 1, 'returns right amount of slots')
 			t.ok(res[0].hasOwnProperty('type'), 'slot has property type')
-			t.ok(res[0].hasOwnProperty('fallbackMediaUrl'), 'slot has property fallbackMediaUrl')
-			t.ok(res[0].hasOwnProperty('fallbackTargetUrl'), 'slot has property fallbackTargetUrl')
+			t.ok(res[0].hasOwnProperty('fallbackUnit'), 'slot has property fallbackUnit')
 			t.ok(res[0].hasOwnProperty('tags'), 'slot has property tags')
 			t.ok(res[0].hasOwnProperty('owner'), 'slot has property owner')
 			t.ok(Array.isArray(res[0].tags), 'slot has tags')
@@ -298,13 +292,7 @@ tape('===== Authorized routes =====', (t) => {
 		})
 		.catch(err => t.fail(err))
 
-		const getAdUnits = fetch(`${marketUrl}/units`,
-		{
-			headers: {
-				'x-user-signature': signature
-			},
-			identity: identityAddr
-		})
+		const getAdUnits = fetch(`${marketUrl}/units`)
 		.then(res => res.json())
 		.then((res) => {
 			t.ok(Array.isArray(res), 'returns array')
@@ -312,6 +300,7 @@ tape('===== Authorized routes =====', (t) => {
 			t.ok(res[0].hasOwnProperty('type'), 'adUnit has property type')
 			t.ok(res[0].hasOwnProperty('mediaUrl'), 'adUnit has property mediaUrl')
 			t.ok(res[0].hasOwnProperty('targetUrl'), 'adUnit has property targetUrl')
+			t.ok(res[0].hasOwnProperty('mediaMime'), 'adUnit has property mediaMime')
 			t.ok(res[0].hasOwnProperty('tags'), 'adUnit has property tags')
 			t.ok(res[0].hasOwnProperty('owner'), 'adUnit has property owner')
 			t.ok(addrRegex40.test(res[0].owner), 'Owner is a real address')
@@ -351,14 +340,10 @@ tape('===== Authorized routes =====', (t) => {
 			return res.json()
 		})
 		.then((res) => {
-			fetch(`${marketUrl}/units`,
-				{
-					headers: { 'x-user-signature': signature },
-					identity: identityAddr
-				})
+			fetch(`${marketUrl}/units/?identity=${identityAddr}`)
 				.then(getRes => getRes.json())
 				.then((getRes) => {
-					t.ok(Array.isArray(getRes), 'an array with slots is returned')
+					t.ok(Array.isArray(getRes), 'an array with units is returned')
 					t.equals(getRes.length, 4, 'new element is added') // 3 from test data + new one
 				})
 			fetch(`${marketUrl}/units/${res.ipfs}`, { headers: { 'x-user-signature': signature } })
@@ -423,11 +408,7 @@ tape('===== Authorized routes =====', (t) => {
 			return res.json()
 		})
 		.then((res) => {
-			fetch(`${marketUrl}/slots`,
-				{
-					headers: { 'x-user-signature': signature },
-					identity: identityAddr
-				})
+			fetch(`${marketUrl}/slots/?identity=${identityAddr}`)
 				.then(getRes => getRes.json())
 				.then((getRes) => {
 					t.ok(Array.isArray(getRes), 'an array is returned')
