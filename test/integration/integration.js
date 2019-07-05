@@ -96,8 +96,6 @@ tape('GET /campaigns', (t) => {
 			t.ok(res[0].hasOwnProperty('depositAmount'), 'campaign has property depositAmount')
 			t.ok(res[0].hasOwnProperty('spec'), 'campaign has property spec')
 			t.ok(res[0].spec.hasOwnProperty('validators'), 'campaign has property validators')
-			t.ok(res[0].hasOwnProperty('lastApprovedSigs'))
-			t.ok(res[0].hasOwnProperty('lastApprovedBalances'))
 			t.ok(res.every((c) => (c.status.name === 'Active' || c.status.name === 'Ready')))
 			t.equals(typeof res[0].id, 'string', 'property id is of type string')
 			t.equals(typeof res[0].status, 'object', 'property status is of type string')
@@ -529,6 +527,7 @@ tape('===== Authorized routes =====', (t) => {
 			return res.json()
 		})
 		.then((res) => {
+			console.log(res)
 			const balanceObj = res[0]
 			t.ok(Array.isArray(res), 'Returns array')
 			t.equals(res.length, 2, 'has earnings from 2 channels')
