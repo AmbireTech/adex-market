@@ -5,7 +5,7 @@ const bodyParser = require('body-parser')
 const startStatusLoop = require('./status-loop/queryValidators')
 
 const signatureCheck = require('./helpers/signatureCheck')
-const { enforceLimited, moreChannelsThanAllowed } = require('./helpers/enforcePublisherLimits')
+const { enforceLimited } = require('./helpers/enforcePublisherLimits')
 const campaignsRoutes = require('./routes/campaigns')
 const statsRoutes = require('./routes/stats')
 const usersRoutes = require('./routes/users')
@@ -38,7 +38,7 @@ app.use(function (req, res, next) {
 	next()
 })
 
-app.use('/campaigns', enforceLimited, moreChannelsThanAllowed, campaignsRoutes)
+app.use('/campaigns', enforceLimited, campaignsRoutes)
 app.use('/stats', statsRoutes)
 app.use('/users', usersRoutes)
 app.use('/validators', validatorsRoutes)
