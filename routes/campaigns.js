@@ -2,10 +2,10 @@ const express = require('express')
 const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const signatureCheck = require('../helpers/signatureCheck')
-
+const { limitCampaigns } = require('../helpers/enforcePublisherLimits')
 const router = express.Router()
 
-router.get('/', getCampaigns)
+router.get('/', limitCampaigns, getCampaigns)
 router.get('/by-owner', signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
 router.get('/by-earner/:addr', signatureCheck, getCampaignsByEarner)
@@ -18,11 +18,12 @@ function getBalanceTree (validatorUrl, channelId) {
 }
 
 function getCampaigns (req, res) {
+	// NOTE: re.query.limit might be modified in the limitCampaigns middleware function
 	const limit = +req.query.limit || 100
 	const skip = +req.query.skip || 0
+
 	// Uses default statuses (active, ready) if none are requested
 	const status = req.query.status ? req.query.status.split(',') : ['Active', 'Ready']
-
 	// If request query has ?all it doesn't query for status
 	const query = req.query.hasOwnProperty('all')
 		? { }
@@ -39,7 +40,6 @@ function getCampaigns (req, res) {
 		.limit(limit)
 		.toArray()
 		.then((result) => {
-			console.log(result)
 			res.set('Cache-Control', 'public, max-age=60')
 			return res.send(result)
 		})
