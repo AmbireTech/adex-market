@@ -82,14 +82,7 @@ const testData = {
 			'lastChecked': 1562143408103,
 			'fundsDistributedRatio': 1000,
 			'usdEstimate': null
-		},
-		'lastApprovedBalances': {
-			'0x712e40a78735af344f6ae3b79fa6952d698c3b37': '1000000000000000000'
-		},
-		'lastApprovedSigs': [
-			'0xe1ebfc9e1918096ce2b3306f287442baf2ba6ad296b035ba8c59fd19aa095a3c7c58e8eb29737405570cedc8d7cb36a6626000a165356b6e0580bb6cde0d92201c',
-			'0x95af2c6037e17dcfe1b8996d887ae09a0303412d937c91a9db52b86d529406a266ec4e4d1b46478202f10321b162953fece9f79cc12748f9c80deba936d76c1c1c'
-		]
+		}
 	},
 	{
 		'_id': '0x242bdbb98c5d9e71e9a3954e0ff3eaf7910d87a313324b41b7c189d7821cc356',
@@ -172,15 +165,7 @@ const testData = {
 			'lastChecked': 1562143408383,
 			'fundsDistributedRatio': 3,
 			'usdEstimate': null
-		},
-		'lastApprovedBalances': {
-			'0x712e40a78735af344f6ae3b79fa6952d698c3b37': '3000000000000000',
-			'0x13ab83316c05ec84ea7c7e85bee5a4b26d812b30': '4000000000000000'
-		},
-		'lastApprovedSigs': [
-			'0xa2db423c929f3517ade6b41badd29cbdfa375808eb9bad0b11e3f867bfdbe7110b4f0428491809c1a534234d3f86fb5d1c02eb100826b318a6a622cfcd8aea571b',
-			'0x9b368d2066254cd4b3b6204446bd2bd9b45e072b812ca4ccd30deb46ae5444284a714cee788636f2cbbc8795161a66223a3e6d2eb1302cd305d7c5867ba2bf4c1b'
-		]
+		}
 	}],
 	validators: [
 		{ _id: 'awesomeLeader', id: 'awesomeLeader', url: 'https://tom.adex.network', status: 'active', addr: '0x000000000000000078787874656e746163696f6e' },
