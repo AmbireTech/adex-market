@@ -527,8 +527,6 @@ tape('===== Authorized routes =====', (t) => {
 			return res.json()
 		})
 		.then((res) => {
-			console.log(res)
-			const balanceObj = res[0]
 			t.ok(Array.isArray(res), 'Returns array')
 			t.equals(res.length, 2, 'has earnings from 2 channels')
 		})
