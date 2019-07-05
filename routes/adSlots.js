@@ -22,7 +22,7 @@ function getAdSlots (req, res) {
 	const query = {}
 
 	if (identity) {
-		query['identity'] = identity
+		query['owner'] = identity
 	}
 
 	return adSlotsCol

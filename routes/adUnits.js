@@ -15,7 +15,7 @@ router.post('/', signatureCheck, celebrate({ body: schemas.adUnitPost }), postAd
 router.put('/:id', signatureCheck, celebrate({ body: schemas.adUnitPut }), putAdUnit)
 
 function getAdUnits (req, res) {
-	const identity = req.identity
+	const identity = req.query.identity
 	const limit = +req.query.limit || 100
 	const skip = +req.query.skip || 0
 	const adUnitCol = db.getMongo().collection('adUnits')
@@ -23,7 +23,7 @@ function getAdUnits (req, res) {
 	const query = { passback: { $ne: true } }
 
 	if (identity) {
-		query['identity'] = identity
+		query['owner'] = identity
 	}
 
 	return adUnitCol
