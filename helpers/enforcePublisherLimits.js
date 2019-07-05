@@ -7,12 +7,9 @@ const CHANNEL_LIMIT = process.env.CHANNEL_LIMIT
 
 const BN = require('bn.js')
 
-async function moreChannelsThanAllowed (req, res, next) {
-	const { publisherAddr } = req.body
-	const channelsEarningFrom = await earningFrom(publisherAddr)
+async function moreChannelsThanAllowed (addr) {
+	const channelsEarningFrom = await earningFrom(addr)
 	return channelsEarningFrom > CHANNEL_LIMIT
-		? res.status(403).send({ error: 'EXCEEDED_CHANNELS_LIMIT' })
-		: next()
 }
 
 function earningFrom (addr) {
