@@ -3,7 +3,6 @@ const express = require('express')
 const headerParser = require('header-parser')
 const bodyParser = require('body-parser')
 const startStatusLoop = require('./status-loop/queryValidators')
-
 const signatureCheck = require('./helpers/signatureCheck')
 const campaignsRoutes = require('./routes/campaigns')
 const statsRoutes = require('./routes/stats')
@@ -20,6 +19,7 @@ const seedDb = require('./test/prep-db/seedDb').seedDb
 
 const app = express()
 const db = require('./db')
+
 const cfg = require('./cfg')
 const port = process.env.PORT || 3012
 
