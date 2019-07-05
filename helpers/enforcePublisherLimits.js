@@ -1,13 +1,18 @@
 const fetch = require('node-fetch')
 const db = require('../db').getMongo()
 const RELAYER_HOST = process.env.RELAYER_HOST
-const EARNINGS_LIMIT = process.env.EARNINGS_LIMIT // TODO might not be an env variable
+
+const EARNINGS_LIMIT = process.env.EARNINGS_LIMIT // TODO this and channel limit might not be env variables
 const CHANNEL_LIMIT = process.env.CHANNEL_LIMIT
+
 const BN = require('bn.js')
 
-async function moreChannelsThanAllowed (addr) {
-	const channelsEarningFrom = await earningFrom(addr)
+async function moreChannelsThanAllowed (req, res, next) {
+	const { publisherAddr } = req.body
+	const channelsEarningFrom = await earningFrom(publisherAddr)
 	return channelsEarningFrom > CHANNEL_LIMIT
+		? res.status(403).send({ error: 'EXCEEDED_CHANNELS_LIMIT' })
+		: next()
 }
 
 function earningFrom (addr) {
@@ -19,10 +24,7 @@ function earningFrom (addr) {
 			'$and': [
 				{ [queryKey]: { '$exists': true } },
 				{
-					'$or': [
-						{ 'status.name': 'Active' },
-						{ 'status.name': 'Ready' }
-					]
+					'status.name': 'Active'
 				}
 			]
 		})
@@ -32,7 +34,7 @@ function earningFrom (addr) {
 }
 
 async function isAddrLimited (addr) {
-	return  false // TODO uncomment
+	return false // TODO uncomment
 	return fetch(`${RELAYER_HOST}/TODO`, { // TODO: Do this when ready might be just a GET
 		method: 'POST',
 		headers: {
