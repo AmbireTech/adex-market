@@ -8,20 +8,26 @@ const signatureCheck = require('../helpers/signatureCheck')
 
 const router = express.Router()
 
-router.get('/', signatureCheck, getAdSlots)
+router.get('/', getAdSlots)
 router.get('/:id', getAdSlotById)
 router.put('/:id', signatureCheck, celebrate({ body: schemas.adSlotPut }), putAdSlot)
 router.post('/', signatureCheck, celebrate({ body: schemas.adSlotPost }), postAdSlot)
 
 function getAdSlots (req, res) {
-	const identity = req.identity
+	const identity = req.query.identity
 	const limit = +req.query.limit || 100
 	const skip = +req.query.skip || 0
 	const adSlotsCol = db.getMongo().collection('adSlots')
 
+	const query = {}
+
+	if (identity) {
+		query['identity'] = identity
+	}
+
 	return adSlotsCol
 		.find(
-			{ owner: identity },
+			query,
 			{ projection: { _id: 0 } }
 		)
 		.skip(skip)

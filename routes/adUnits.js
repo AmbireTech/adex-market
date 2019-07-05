@@ -9,7 +9,7 @@ const signatureCheck = require('../helpers/signatureCheck')
 
 const router = express.Router()
 
-router.get('/', signatureCheck, getAdUnits)
+router.get('/', getAdUnits)
 router.get('/:id', getAdUnitById)
 router.post('/', signatureCheck, celebrate({ body: schemas.adUnitPost }), postAdUnit)
 router.put('/:id', signatureCheck, celebrate({ body: schemas.adUnitPut }), putAdUnit)
@@ -20,8 +20,15 @@ function getAdUnits (req, res) {
 	const skip = +req.query.skip || 0
 	const adUnitCol = db.getMongo().collection('adUnits')
 
+	const query = { passback: { $ne: true } }
+
+	if (identity) {
+		query['identity'] = identity
+	}
+
 	return adUnitCol
-		.find({ owner: identity, passback: { $ne: true } },
+		.find(
+			query,
 			{ projection: { _id: 0 } }
 		)
 		.skip(skip)
