@@ -4,10 +4,7 @@ const headerParser = require('header-parser')
 const bodyParser = require('body-parser')
 const startStatusLoop = require('./status-loop/queryValidators')
 const signatureCheck = require('./helpers/signatureCheck')
-<<<<<<< HEAD
 const { enforceLimited } = require('./helpers/enforcePublisherLimits')
-=======
->>>>>>> e4317b0a496282a0ed5cd4dffe0210f0a1abcf48
 const campaignsRoutes = require('./routes/campaigns')
 const statsRoutes = require('./routes/stats')
 const usersRoutes = require('./routes/users')
