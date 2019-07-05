@@ -1,25 +1,34 @@
 const express = require('express')
-const db = require('../db')
-const addDataToIpfs = require('../helpers/ipfs')
 
 const { celebrate } = require('celebrate')
-const { schemas } = require('adex-models')
+const { schemas, AdUnit } = require('adex-models')
+
+const db = require('../db')
+const addDataToIpfs = require('../helpers/ipfs')
+const signatureCheck = require('../helpers/signatureCheck')
 
 const router = express.Router()
 
 router.get('/', getAdUnits)
 router.get('/:id', getAdUnitById)
-router.post('/', celebrate({ body: schemas.adUnitPost }), postAdUnit)
-router.put('/:id', celebrate({ body: schemas.adUnitPut }), putAdUnit)
+router.post('/', signatureCheck, celebrate({ body: schemas.adUnitPost }), postAdUnit)
+router.put('/:id', signatureCheck, celebrate({ body: schemas.adUnitPut }), putAdUnit)
 
 function getAdUnits (req, res) {
-	const identity = req.identity
+	const identity = req.query.identity
 	const limit = +req.query.limit || 100
 	const skip = +req.query.skip || 0
 	const adUnitCol = db.getMongo().collection('adUnits')
 
+	const query = { passback: { $ne: true } }
+
+	if (identity) {
+		query['owner'] = identity
+	}
+
 	return adUnitCol
-		.find({ owner: identity },
+		.find(
+			query,
 			{ projection: { _id: 0 } }
 		)
 		.skip(skip)
@@ -35,11 +44,10 @@ function getAdUnits (req, res) {
 }
 
 function getAdUnitById (req, res) {
-	const identity = req.identity
 	const adUnitCol = db.getMongo().collection('adUnits')
 	const ipfs = req.params['id']
 	return adUnitCol
-		.findOne({ ipfs, owner: identity },
+		.findOne({ ipfs },
 			{ projection: { _id: 0 } })
 		.then((result) => {
 			if (!result) {
@@ -54,16 +62,14 @@ function getAdUnitById (req, res) {
 }
 
 function postAdUnit (req, res) {
-	const { type, mediaUrl, mediaMime, targetUrl, targeting, tags, created, title, description, archived = false, modified = null } = req.body
 	const identity = req.identity
-
-	const specForIpfs = { type, mediaUrl, mediaMime, targetUrl, targeting, tags, owner: identity, created }
+	const adUnit = new AdUnit(req.body)
+	adUnit.owner = identity
 	const adUnitCol = db.getMongo().collection('adUnits')
-	const adUnit = { type, mediaUrl, mediaMime, targetUrl, targeting, tags, owner: identity, created, title, description, archived, modified }
-	return addDataToIpfs(Buffer.from(JSON.stringify(specForIpfs)))
+	return addDataToIpfs(Buffer.from(JSON.stringify(adUnit.spec)))
 		.then((dataHash) => {
 			adUnit['ipfs'] = dataHash
-			return adUnitCol.insertOne(adUnit, (err, result) => {
+			return adUnitCol.insertOne(adUnit.marketDbAdd, (err, result) => {
 				if (err) {
 					console.error(new Error('error adding adUnit', err))
 					return res.status(500).send(err)
@@ -74,18 +80,13 @@ function postAdUnit (req, res) {
 }
 
 function putAdUnit (req, res) {
-	const { title, description, archived, modified } = req.body
+	const adUnit = new AdUnit(req.body)
 	const adUnitCol = db.getMongo().collection('adUnits')
 	const ipfs = req.params.id
 
 	return adUnitCol
 		.findOneAndUpdate({ ipfs }, {
-			'$set': {
-				title: title,
-				description: description,
-				archived: archived,
-				modified: modified
-			}
+			'$set': adUnit.marketDbUpdate
 		}, { returnOriginal: false }, (err, result) => {
 			if (err) {
 				console.error('Error updating ad unit', err)

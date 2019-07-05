@@ -103,12 +103,12 @@ function getCampaignsByEarner (req, res) {
 	return campaignsCol
 		.find(
 			{ 'status.lastApprovedBalances': { '$exists': true } },
-			{ projection: { 'lastApprovedBalances': 1 } }) // NOTE: Assuming _id and id are the same as they currently are from queryValidators.js
+			{ projection: { 'status.lastApprovedBalances': 1 } }) // NOTE: Assuming _id and id are the same as they currently are from queryValidators.js
 		.toArray()
 		.then((campaigns) => {
-			const campaignsWithAddr = campaigns.filter(c => c.lastApprovedBalances.hasOwnProperty(earnerAddr))
+			const campaignsWithAddr = campaigns.filter(c => c.status.lastApprovedBalances.hasOwnProperty(earnerAddr))
 			const result = campaignsWithAddr.map((c) => {
-				return { [c._id]: c.lastApprovedBalances[earnerAddr] }
+				return { [c._id]: c.status.lastApprovedBalances[earnerAddr] }
 			})
 			return res.send(result)
 		})

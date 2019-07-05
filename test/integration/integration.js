@@ -1,5 +1,4 @@
 /* eslint-disable indent */
-// TODO: Test GET /campaigns?all
 const tape = require('tape')
 const fetch = require('node-fetch')
 const marketUrl = process.env.TEST_MARKET_URL
@@ -9,7 +8,9 @@ const FormData = require('form-data')
 
 const identityAddr = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
 const signerAddr = `0x2aecF52ABe359820c48986046959B4136AfDfbe2`
-const earnerAddr = '0xd6e371526cdaeE04cd8AF225D42e37Bc14688D9E'
+const earnerAddr = '0x712e40a78735af344f6ae3b79fa6952d698c3b37'
+
+const constants = require('./testConstants')
 
 const addrRegex40 = /^0x[0-9A-Fa-f]{40}$/
 const addrRegex64 = /^0x[0-9A-Fa-f]{64}$/
@@ -61,9 +62,7 @@ const mockAdSlot = 	{
 	type: 'legacy_250x250',
 	tags: [{ tag: 'games', score: 42 }, { tag: 'usa', score: 60 }],
 	created: Date.now(),
-	fallbackMediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
-	fallbackTargetUrl: 'https://google.com',
-	fallbackMediaMime: 'image/jpeg',
+	fallbackUnit: 'QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 	title: 'Test slot 1',
 	description: 'Test slot for running integration tests',
 	archived: false,
@@ -74,10 +73,7 @@ const brokenAdSlot = {
 	type: 'legacy_251x250',
 	tags: [{ tag: 'games', score: 42 }, { tag: 'usa', score: 60 }],
 	created: Date.now(),
-	fallbackMediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
-	fallbackTargetUrl: 'https://google.com',
-	fallbackMediaMime: 'image/jpeg',
-	title: 'Test slot 1',
+	title: '',
 	description: 'Test slot for running integration tests',
 	archived: false,
 	modified: Date.now()
@@ -88,22 +84,21 @@ tape('GET /campaigns', (t) => {
 		.then(res => res.json())
 		.then((res) => {
 			t.ok(Array.isArray(res), 'returns array')
-			t.equals(res.length, 1, 'returns right amount of campaigns')
+			t.equals(res.length, constants.ACTIVE_CAMPAIGNS, 'returns right amount of campaigns')
 			t.ok(res[0].hasOwnProperty('id'), 'campaign has property id')
 			t.ok(res[0].hasOwnProperty('status'), 'campaign has property status')
 			t.ok(res[0].hasOwnProperty('depositAsset'), 'campaign has property depositAsset')
 			t.ok(res[0].hasOwnProperty('depositAmount'), 'campaign has property depositAmount')
-			t.ok(res[0].hasOwnProperty('validators'), 'campaign has property validators')
 			t.ok(res[0].hasOwnProperty('spec'), 'campaign has property spec')
-			t.ok(res[0].hasOwnProperty('lastApprovedSigs'))
-			t.ok(res[0].hasOwnProperty('lastApprovedBalances'))
+			t.ok(res[0].spec.hasOwnProperty('validators'), 'campaign has property validators')
+			t.ok(res.every((c) => (c.status.name === 'Active' || c.status.name === 'Ready')))
 			t.equals(typeof res[0].id, 'string', 'property id is of type string')
 			t.equals(typeof res[0].status, 'object', 'property status is of type string')
 			t.ok(res[0].status.hasOwnProperty('name'), 'campaign status has name property')
 			t.equals(typeof res[0].depositAsset, 'string', 'property depositAsset is of type string')
-			t.equals(typeof res[0].depositAmount, 'number', 'property depositAmount is of type number')
-			t.ok(Array.isArray(res[0].validators), 'campaign validators is an array')
-			t.equals(res[0].validators.length, 2, 'campaign has two validators')
+			t.equals(typeof res[0].depositAmount, 'string', 'property depositAmount is of type string')
+			t.ok(Array.isArray(res[0].spec.validators), 'campaign validators is an array')
+			t.equals(res[0].spec.validators.length, 2, 'campaign has two validators')
 			t.equals(typeof res[0].spec, 'object', 'property spec is of type object')
 			t.equals(res[0].status.name, 'Active', 'first campaign is active')
 			t.end()
@@ -111,9 +106,39 @@ tape('GET /campaigns', (t) => {
 		.catch(err => t.fail(err))
 })
 
+tape('GET /campaigns?all', (t) => {
+	fetch(`${marketUrl}/campaigns?all`)
+		.then((res) => res.json())
+		.then((res) => {
+			t.ok(Array.isArray(res), 'Returns result')
+			t.equals(res.length, constants.ALL_CAMPAIGNS, 'Returns right amount of campaigns')
+			t.end()
+		})
+})
+
+tape('GET /campaigns?skip=1', (t) => {
+	fetch(`${marketUrl}/campaigns?all&skip=1`)
+		.then((res) => res.json())
+		.then((res) => {
+			t.ok(Array.isArray(res), 'Returns some result')
+			t.equals(res.length, constants.ALL_CAMPAIGNS - 1, 'Returns right amount of campaigns')
+			t.end()
+		})
+})
+
+tape('GET /campaigns?limit=1', (t) => {
+	fetch(`${marketUrl}/campaigns?all&limit=1`)
+		.then((res) => res.json())
+		.then((res) => {
+			t.ok(Array.isArray(res), 'Returns some result')
+			t.equals(res.length, 1, 'Returns right amount of campaigns')
+			t.end()
+		})
+})
+
 tape('GET /campaigns/:id', (t) => {
-	fetch(`${marketUrl}/campaigns/testCampaign1`)
-		.then(res => res.json())
+	fetch(`${marketUrl}/campaigns/${testData.campaigns[1]._id}`)
+		.then((res) => res.json())
 		.then((res) => {
 			t.ok(Array.isArray(res), 'returns array with the element')
 			t.equals(res.length, 1, 'only one campaign is returned')
@@ -215,9 +240,9 @@ tape('GET /stats', (t) => {
 			t.equals(res.advertiserCount, 1, 'advertiserCount is the right amount')
 			t.equals(res.anonPublisherCount, 0, 'anonPublisherCount is right amount')
 			t.equals(res.anonAdvertiserCount, 0, 'anonAdvertiserCount is of right amount')
-			t.equals(res.campaignCount, 1, 'campaignCount is of right amount')
+			t.equals(res.campaignCount, 2, 'campaignCount is of right amount')
 			t.equals(res.campaignsByStatus['Active'], 1, 'active status campaigns are the right amount')
-			t.equals(res.totalSpentFundsByAssetType['DAI'], 1000, 'funds are the right amount')
+			t.equals(res.totalSpentFundsByAssetType[constants.DAI_ADDR], '010000000000000000002000000000000000000', 'funds are the right amount')
 			t.end()
 		})
 		.catch(err => t.fail(err))
@@ -282,14 +307,13 @@ tape('===== Authorized routes =====', (t) => {
 		const form = new FormData()
 		form.append('media', fs.createReadStream(`${__dirname}/../resources/img.jpg`))
 
-		const getAdSlots = fetch(`${marketUrl}/slots`, { headers: { 'x-user-signature': signature }, identity: identityAddr })
+		const getAdSlots = fetch(`${marketUrl}/slots`)
 		.then(res => res.json())
 		.then((res) => {
 			t.ok(Array.isArray(res), 'returns array')
 			t.equals(res.length, 1, 'returns right amount of slots')
 			t.ok(res[0].hasOwnProperty('type'), 'slot has property type')
-			t.ok(res[0].hasOwnProperty('fallbackMediaUrl'), 'slot has property fallbackMediaUrl')
-			t.ok(res[0].hasOwnProperty('fallbackTargetUrl'), 'slot has property fallbackTargetUrl')
+			t.ok(res[0].hasOwnProperty('fallbackUnit'), 'slot has property fallbackUnit')
 			t.ok(res[0].hasOwnProperty('tags'), 'slot has property tags')
 			t.ok(res[0].hasOwnProperty('owner'), 'slot has property owner')
 			t.ok(Array.isArray(res[0].tags), 'slot has tags')
@@ -298,13 +322,7 @@ tape('===== Authorized routes =====', (t) => {
 		})
 		.catch(err => t.fail(err))
 
-		const getAdUnits = fetch(`${marketUrl}/units`,
-		{
-			headers: {
-				'x-user-signature': signature
-			},
-			identity: identityAddr
-		})
+		const getAdUnits = fetch(`${marketUrl}/units`)
 		.then(res => res.json())
 		.then((res) => {
 			t.ok(Array.isArray(res), 'returns array')
@@ -312,6 +330,7 @@ tape('===== Authorized routes =====', (t) => {
 			t.ok(res[0].hasOwnProperty('type'), 'adUnit has property type')
 			t.ok(res[0].hasOwnProperty('mediaUrl'), 'adUnit has property mediaUrl')
 			t.ok(res[0].hasOwnProperty('targetUrl'), 'adUnit has property targetUrl')
+			t.ok(res[0].hasOwnProperty('mediaMime'), 'adUnit has property mediaMime')
 			t.ok(res[0].hasOwnProperty('tags'), 'adUnit has property tags')
 			t.ok(res[0].hasOwnProperty('owner'), 'adUnit has property owner')
 			t.ok(addrRegex40.test(res[0].owner), 'Owner is a real address')
@@ -351,14 +370,10 @@ tape('===== Authorized routes =====', (t) => {
 			return res.json()
 		})
 		.then((res) => {
-			fetch(`${marketUrl}/units`,
-				{
-					headers: { 'x-user-signature': signature },
-					identity: identityAddr
-				})
+			fetch(`${marketUrl}/units/?identity=${identityAddr}`)
 				.then(getRes => getRes.json())
 				.then((getRes) => {
-					t.ok(Array.isArray(getRes), 'an array with slots is returned')
+					t.ok(Array.isArray(getRes), 'an array with units is returned')
 					t.equals(getRes.length, 4, 'new element is added') // 3 from test data + new one
 				})
 			fetch(`${marketUrl}/units/${res.ipfs}`, { headers: { 'x-user-signature': signature } })
@@ -423,11 +438,7 @@ tape('===== Authorized routes =====', (t) => {
 			return res.json()
 		})
 		.then((res) => {
-			fetch(`${marketUrl}/slots`,
-				{
-					headers: { 'x-user-signature': signature },
-					identity: identityAddr
-				})
+			fetch(`${marketUrl}/slots/?identity=${identityAddr}`)
 				.then(getRes => getRes.json())
 				.then((getRes) => {
 					t.ok(Array.isArray(getRes), 'an array is returned')
@@ -497,12 +508,37 @@ tape('===== Authorized routes =====', (t) => {
 			return res.json()
 		})
 		.then((res) => {
-			const balanceObj = res[0]
-			t.ok(balanceObj.hasOwnProperty(earnerAddr), 'retrieved balances contain the user object')
-			t.equals(typeof balanceObj[earnerAddr], 'number', 'balance is a number')
+			t.ok(Array.isArray(res), 'Returns array')
+			t.equals(res.length, 2, 'has earnings from 2 channels')
 		})
 
-		Promise.all([postMedia, postAdUnit, postBadAdUnit, postAdSlot, postBadAdSlot, getAdUnits, getAdSlots, getEarnerBalances])
+		const session = fetch(`${marketUrl}/session`,
+		{
+			headers: {
+				'x-user-signature': signature
+			}
+		})
+		.then((res) => {
+			t.comment('GET /session')
+			t.equals(res.status, 200, 'Session retrieved successfully')
+			return res.json()
+		})
+		.then((res) => {
+			t.equals(typeof res, 'object', 'Returned object')
+			t.ok(res.hasOwnProperty('authenticated'), 'returns correct object')
+			t.equals(res.authenticated, true, 'User is authenticated')
+		})
+
+		Promise.all([
+			postMedia,
+			postAdUnit,
+			postBadAdUnit,
+			postAdSlot,
+			postBadAdSlot,
+			getAdUnits,
+			getAdSlots,
+			getEarnerBalances,
+			session])
 			.then(() => {
 				t.end()
 			})
@@ -580,4 +616,23 @@ tape('POST /units unauthenticated', (t) => {
 		t.end()
 	})
 	.catch(err => t.fail(err))
+})
+
+tape('GET /session unauthenticated', (t) => {
+	fetch(`${marketUrl}/session`)
+	.then((res) => {
+		t.equals(res.status, 403, 'Session returns unauthenticated')
+		t.end()
+	})
+})
+
+tape('GET /tags', (t) => {
+	fetch(`${marketUrl}/tags/tags`) // TODO: ASK
+	.then((res) => res.json())
+	.then((res) => {
+		t.ok(Array.isArray(res), 'Tags is an array')
+		t.ok(res.every((i) => i.hasOwnProperty('_id')), 'All tags have IDs')
+		t.ok(res.every((i) => typeof i['_id'] === 'string'), 'Every tag is a string')
+		t.end()
+	})
 })

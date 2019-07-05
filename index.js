@@ -3,9 +3,11 @@ const express = require('express')
 const headerParser = require('header-parser')
 const bodyParser = require('body-parser')
 const startStatusLoop = require('./status-loop/queryValidators')
-
 const signatureCheck = require('./helpers/signatureCheck')
+<<<<<<< HEAD
 const { enforceLimited } = require('./helpers/enforcePublisherLimits')
+=======
+>>>>>>> e4317b0a496282a0ed5cd4dffe0210f0a1abcf48
 const campaignsRoutes = require('./routes/campaigns')
 const statsRoutes = require('./routes/stats')
 const usersRoutes = require('./routes/users')
@@ -45,8 +47,8 @@ app.use('/validators', validatorsRoutes)
 app.use('/tags', tagsRoutes)
 app.use('/auth', authRoutes)
 app.use('/session', signatureCheck, sessionRoutes)
-app.use('/slots', signatureCheck, adSlotsRoutes)
-app.use('/units', signatureCheck, adUnitsRoutes)
+app.use('/slots', adSlotsRoutes)
+app.use('/units', adUnitsRoutes)
 app.use('/media', signatureCheck, mediaRoutes)
 
 db.connect()
