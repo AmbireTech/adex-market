@@ -28,7 +28,7 @@ async function earningFrom (addr) {
 			'$and': [
 				{ [queryKey]: { '$exists': true } },
 				{
-					'status.name': 'Expired'
+					'status.name': 'Active'
 				}
 			]
 		})
