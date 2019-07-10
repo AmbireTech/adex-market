@@ -21,6 +21,7 @@ const seedDb = require('./test/prep-db/seedDb').seedDb
 
 const app = express()
 const db = require('./db')
+
 const cfg = require('./cfg')
 const port = process.env.PORT || 3012
 
@@ -44,8 +45,8 @@ app.use('/validators', validatorsRoutes)
 app.use('/tags', tagsRoutes)
 app.use('/auth', authRoutes)
 app.use('/session', signatureCheck, sessionRoutes)
-app.use('/slots', signatureCheck, adSlotsRoutes)
-app.use('/units', signatureCheck, adUnitsRoutes)
+app.use('/slots', adSlotsRoutes)
+app.use('/units', adUnitsRoutes)
 app.use('/media', signatureCheck, mediaRoutes)
 
 db.connect()
