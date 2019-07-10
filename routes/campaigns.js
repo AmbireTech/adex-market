@@ -17,7 +17,7 @@ function getBalanceTree (validatorUrl, channelId) {
 		})
 }
 
-function getCampaigns (req, res, next) {
+function getCampaigns (req, res) {
 	const limit = +req.query.limit || 100
 	const skip = +req.query.skip || 0
 	// Uses default statuses (active, ready) if none are requested
@@ -101,12 +101,14 @@ function getCampaignsByEarner (req, res) {
 
 	return campaignsCol
 		.find(
-			{ 'lastApprovedBalances': { '$exists': true } },
-			{ projection: { '_id': 0, 'lastApprovedBalances': 1 } })
+			{ 'status.lastApprovedBalances': { '$exists': true } },
+			{ projection: { 'status.lastApprovedBalances': 1 } }) // NOTE: Assuming _id and id are the same as they currently are from queryValidators.js
 		.toArray()
-		.then((appr) => {
-			const balances = appr.map(r => r.lastApprovedBalances)
-			const result = balances.filter(b => b.hasOwnProperty(earnerAddr))
+		.then((campaigns) => {
+			const campaignsWithAddr = campaigns.filter(c => c.status.lastApprovedBalances.hasOwnProperty(earnerAddr))
+			const result = campaignsWithAddr.map((c) => {
+				return { [c._id]: c.status.lastApprovedBalances[earnerAddr] }
+			})
 			return res.send(result)
 		})
 }
