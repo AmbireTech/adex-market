@@ -23,7 +23,7 @@ async function earningFrom (addr) {
 	const campaignsCol = db.getMongo().collection('campaigns')
 	const queryKey = `status.lastApprovedBalances.${addr}`
 
-	const earningCampaigns = await campaignsCol
+	const earningCampaignsCount = await campaignsCol
 		.find({
 			'$and': [
 				{ [queryKey]: { '$exists': true } },
@@ -32,13 +32,13 @@ async function earningFrom (addr) {
 				}
 			]
 		})
-		.toArray()
+		.count()
 
-	return earningCampaigns.length || 0
+	return earningCampaignsCount
 }
 
 async function isAddrLimited (addr) {
-	return false // TODO uncomment
+	return false // TODO remove this line when relayer is configured for this
 	return fetch(`${RELAYER_HOST}/TODO`, { // TODO: Do this when ready might be just a GET
 		method: 'POST',
 		headers: {
