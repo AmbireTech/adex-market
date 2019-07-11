@@ -17,18 +17,26 @@ function getBalanceTree (validatorUrl, channelId) {
 		})
 }
 
-function getCampaigns (req, res) {
-	// NOTE: re.query.limit might be modified in the limitCampaigns middleware function
-	const limit = +req.query.limit || 100
-	const skip = +req.query.skip || 0
-
+function getCampaignsQuery (query) {
 	// Uses default statuses (active, ready) if none are requested
-	const status = req.query.status ? req.query.status.split(',') : ['Active', 'Ready']
+	const status = query.status ? query.status.split(',') : ['Active', 'Ready']
+
 	// If request query has ?all it doesn't query for status
-	const query = req.query.hasOwnProperty('all')
+	const findQuery = query.hasOwnProperty('all')
 		? { }
 		: { 'status.name': { $in: status } }
 
+	if (query.hasOwnProperty('depositAsset')) {
+		findQuery['depositAsset'] = query.depositAsset
+	}
+
+	return findQuery
+}
+
+function getCampaigns (req, res) {
+	const limit = +req.query.limit || 100
+	const skip = +req.query.skip || 0
+	const query = getCampaignsQuery(req.query)
 	const campaignsCol = db.getMongo().collection('campaigns')
 
 	campaignsCol
