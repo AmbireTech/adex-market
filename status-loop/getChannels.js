@@ -26,7 +26,7 @@ async function getChannels () {
 	const channels = getUniqueChannels(allChannels)
 	// Ensuring it would work if we change total to totalPages
 	// NOTE: Should be fixed
-	if ((channels.total && channels.total > 1) || (channels.totalPages && channels.totalPages > 1)) {
+	if (channels.totalPages && channels.totalPages > 1) {
 		const pageCount = channels.total || channels.totalPages
 		const allChannels = await getAllPages(channels, pageCount)
 		return allChannels
