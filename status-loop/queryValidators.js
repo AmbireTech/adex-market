@@ -6,6 +6,7 @@ const getRequest = require('../helpers/getRequest')
 const cfg = require('../cfg')
 const updateCampaign = require('./updateCampaign')
 const { verifyLastApproved } = require('./verifyMessages')
+const getChannels = require('./getChannels')
 
 const {
 	isInitializing,
@@ -149,9 +150,8 @@ async function getEstimateInUsd (campaign) {
 
 async function queryValidators () {
 	const campaignsCol = db.getMongo().collection('campaigns')
+	const channels = await getChannels()
 
-	// const lists = хawait Promise.all(cfg.initialValidators.map(url => getRequest(`${url}/channel/list`)))
-	const { channels } = await getRequest(`${cfg.initialValidators[0]}/channel/list`)
 	await channels.map(c => campaignsCol.updateOne({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
 	const campaigns = await campaignsCol.find().toArray()
 	await Promise.all(campaigns
