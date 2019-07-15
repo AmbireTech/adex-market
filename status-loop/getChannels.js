@@ -6,7 +6,6 @@ async function retrieveChannelsFromDb () {
 	const validatorsCol = db.getMongo().collection('validators')
 	return validatorsCol.find({})
 		.toArray()
-		.then((res) => res)
 		.catch((err) => console.error('error getting validators', err))
 }
 
