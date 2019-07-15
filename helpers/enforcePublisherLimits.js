@@ -1,4 +1,4 @@
-const fetch = require('node-fetch')
+const getRequest = require('../helpers/getRequest')
 const db = require('../db')
 const RELAYER_HOST = process.env.RELAYER_HOST
 
@@ -37,18 +37,17 @@ async function earningFrom (addr) {
 	return earningCampaignsCount
 }
 
-async function isAddrLimited (addr) {
-	return false // TODO remove this line when relayer is configured for this
-	return fetch(`${RELAYER_HOST}/TODO`, { // TODO: Do this when ready might be just a GET
-		method: 'POST',
-		headers: {
-			'Content-type': 'application/json'
-		},
-		body: JSON.stringify({ addr })
-	})
+function isAddrLimited (addr) {
+	if (!addr) {
+		return false
+	}
+	return getRequest(`${RELAYER_HOST}/identity/is-limited/${addr}`)
 		.then((res) => res.json())
 		.then((res) => {
-			return res.privilleges > 1
+			return res.isLimited
+		})
+		.catch((err) => {
+			throw new Error('Identity with that address not found!', err)
 		})
 }
 
