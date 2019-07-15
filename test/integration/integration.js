@@ -627,7 +627,7 @@ tape('GET /session unauthenticated', (t) => {
 })
 
 tape('GET /tags', (t) => {
-	fetch(`${marketUrl}/tags/tags`) // TODO: ASK
+	fetch(`${marketUrl}/tags`)
 	.then((res) => res.json())
 	.then((res) => {
 		t.ok(Array.isArray(res), 'Tags is an array')
