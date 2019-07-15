@@ -2,10 +2,10 @@ const express = require('express')
 const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const signatureCheck = require('../helpers/signatureCheck')
-
+const { limitCampaigns } = require('../helpers/enforcePublisherLimits')
 const router = express.Router()
 
-router.get('/', getCampaigns)
+router.get('/', limitCampaigns, getCampaigns)
 router.get('/by-owner', signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
 router.get('/by-earner/:addr', signatureCheck, getCampaignsByEarner)
