@@ -2,7 +2,7 @@ require('dotenv').config()
 const express = require('express')
 const headerParser = require('header-parser')
 const bodyParser = require('body-parser')
-const startStatusLoop = require('./status-loop/queryValidators')
+const startStatusLoop = require('./status-loop/queryValidators').startStatusLoop
 const signatureCheck = require('./helpers/signatureCheck')
 const { enforceLimited } = require('./helpers/enforcePublisherLimits')
 const campaignsRoutes = require('./routes/campaigns')
