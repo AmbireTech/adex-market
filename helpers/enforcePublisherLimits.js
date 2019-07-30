@@ -1,40 +1,20 @@
 const fetch = require('node-fetch')
 const db = require('../db')
 const RELAYER_HOST = process.env.RELAYER_HOST
+const cfg = require('../cfg')
 
 const EARNINGS_LIMIT = process.env.EARNINGS_LIMIT // TODO this and channel limit might not be env variables
-const CHANNEL_LIMIT = process.env.CHANNEL_LIMIT
+const CHANNEL_LIMIT = cfg.defaultChannelLimit
 
 const BN = require('bn.js')
 
 async function limitCampaigns (req, res, next) {
-	const { publisherAddr } = req.query
+	const publisherAddr = req.query.limitForPublisher
 	if (!publisherAddr) {
 		return next()
 	}
-	const channelsEarningFrom = await earningFrom(publisherAddr)
-	if (channelsEarningFrom >= CHANNEL_LIMIT) {
-		req.query.limit = CHANNEL_LIMIT.toString()
-	}
+	req.query.limit = CHANNEL_LIMIT.toString()
 	return next()
-}
-
-async function earningFrom (addr) {
-	const campaignsCol = db.getMongo().collection('campaigns')
-	const queryKey = `status.lastApprovedBalances.${addr}`
-
-	const earningCampaignsCount = await campaignsCol
-		.find({
-			'$and': [
-				{ [queryKey]: { '$exists': true } },
-				{
-					'status.name': 'Active'
-				}
-			]
-		})
-		.count()
-
-	return earningCampaignsCount
 }
 
 async function isAddrLimited (addr) {
@@ -74,7 +54,7 @@ async function getAccEarnings (addr) {
 }
 
 async function enforceLimited (req, res, next) {
-	const { publisherAddr } = req.query
+	const publisherAddr = req.query.limitForPublisher
 	const isPublisherLimited = await isAddrLimited(publisherAddr)
 	if (!isPublisherLimited) {
 		return next()
