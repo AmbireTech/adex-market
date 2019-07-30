@@ -45,7 +45,7 @@ function getStatus (messagesFromAll, campaign, balanceTree) {
 	} else if (isActive(messagesFromAll)) {
 		return 'Active'
 	} else if (isReady(messagesFromAll)) {
-		return 'Ready'
+		return campaign.spec.activeFrom > Date.now() ? 'Ready' : 'Waiting'
 	}
 	throw new Error('internal error: no status detected; should never happen')
 }
