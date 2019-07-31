@@ -173,7 +173,7 @@ async function queryValidators () {
 
 				if (status.verified) {
 					return updateCampaign(c, statusObj)
-						.then(() => console.log(`Status of campaign ${c._id} updated`))
+						.then(() => console.log(`Status of campaign ${c._id} updated: ${status.name}`))
 				}
 				return Promise.resolve()
 			})))
