@@ -45,7 +45,7 @@ function getStatus (messagesFromAll, campaign, balanceTree) {
 	} else if (isActive(messagesFromAll)) {
 		return 'Active'
 	} else if (isReady(messagesFromAll)) {
-		return 'Ready'
+		return campaign.spec.activeFrom > Date.now() ? 'Ready' : 'Waiting'
 	}
 	throw new Error('internal error: no status detected; should never happen')
 }
@@ -173,7 +173,7 @@ async function queryValidators () {
 
 				if (status.verified) {
 					return updateCampaign(c, statusObj)
-						.then(() => console.log(`Status of campaign ${c._id} updated`))
+						.then(() => console.log(`Status of campaign ${c._id} updated: ${status.name}`))
 				}
 				return Promise.resolve()
 			})))
@@ -184,4 +184,4 @@ function startStatusLoop () {
 	setInterval(queryValidators, cfg.statusLoopTick)
 }
 
-module.exports = startStatusLoop
+module.exports = { startStatusLoop, getEstimateInUsd }
