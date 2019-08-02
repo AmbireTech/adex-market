@@ -159,7 +159,6 @@ async function queryValidators () {
 	await Promise.all(campaigns
 		.map(c => getStatusOfCampaign(c)
 			.then(async (status) => {
-				console.log(c.status.name)
 				const [
 					fundsDistributedRatio,
 					usdEstimate
