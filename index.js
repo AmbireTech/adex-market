@@ -58,7 +58,7 @@ db.connect()
 		} else {
 			// Not yet necessary for integration tests
 			startStatusLoop()
-			return Promise.resolve(fillInitialValidators())
+			return fillInitialValidators()
 		}
 	})
 	.then(() => {

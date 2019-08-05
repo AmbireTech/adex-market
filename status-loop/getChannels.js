@@ -22,7 +22,7 @@ async function getUniqueChannels (channelsObj) {
 async function getChannels () {
 	const validators = await retrieveChannelsFromDb()
 	const allChannels = await Promise.all(validators.map((v) => getRequest(`${v.url}/channel/list`)))
-	const channels = getUniqueChannels(allChannels)
+	const channels = await getUniqueChannels(allChannels)
 	// Ensuring it would work if we change total to totalPages
 	// NOTE: Should be fixed
 	if (channels.totalPages && channels.totalPages > 1) {
