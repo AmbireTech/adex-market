@@ -53,7 +53,9 @@ function getAdUnitById (req, res) {
 			if (!result) {
 				return res.status(404).send('Ad Unit not found')
 			}
-			return res.send([result])
+			return res.send({
+				unit: result
+			})
 		})
 		.catch((err) => {
 			console.error('Error getting ad unit by id', err)
