@@ -7,7 +7,8 @@
     "start": "node index",
     "dev-start": "nodemon index",
     "test": "node test/index.js",
-    "test-integration": "./test/run-integration.sh"
+    "test-integration": "./test/run-integration.sh",
+    "lint": "./node_modules/.bin/eslint ."
   },
   "keywords": [
     "adex",
