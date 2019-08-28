@@ -24,9 +24,11 @@ if (dbUseSSL) {
 	redisClient = redis.createClient(dbPort, dbHost)
 }
 
-if (dbPassword) redisClient.auth(dbPassword, function (err) {
-	if (err) throw err
-})
+if (dbPassword) {
+	redisClient.auth(dbPassword, function (err) {
+		if (err) throw err
+	})
+}
 
 console.log('Redis Database server is on ' + dbHost + ', port ' + dbPort)
 
