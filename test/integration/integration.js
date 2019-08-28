@@ -447,6 +447,7 @@ tape('===== Authorized routes =====', (t) => {
 			fetch(`${marketUrl}/slots/${res.ipfs}`, { headers: { 'x-user-signature': signature } })
 				.then(getRes => getRes.json())
 				.then((getRes) => {
+					console.log(getRes)
 					t.ok(Array.isArray(getRes), 'returns array')
 					t.equals(getRes.length, 1, 'returns 1 slot by ID')
 					t.equals(getRes[0].ipfs, res.ipfs, 'slot ipfs hash is correct')
