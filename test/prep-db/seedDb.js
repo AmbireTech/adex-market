@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+const { AdSlot, AdUnit } = require('adex-models')
 const identityAddr = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
 
 const testData = {
@@ -182,7 +183,7 @@ const testData = {
 		role: 'advertiser'
 	},
 	adUnits: [
-		{
+		new AdUnit({
 			type: 'legacy_250x250',
 			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 			mediaMime: 'image/jpeg',
@@ -193,8 +194,8 @@ const testData = {
 			description: 'test ad unit for seeding db',
 			tags: [{ tag: 'games', score: 42 }, { tag: 'usa', score: 60 }],
 			owner: identityAddr
-		},
-		{
+		}),
+		new AdUnit({
 			type: 'legacy_160x600',
 			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 			mediaMime: 'image/jpeg',
@@ -204,8 +205,8 @@ const testData = {
 			description: 'test ad unit for seeding db',
 			tags: [{ tag: 'movies', score: 42 }, { tag: 'usa', score: 60 }],
 			owner: identityAddr
-		},
-		{
+		}),
+		new AdUnit({
 			type: 'legacy_728x90',
 			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 			mediaMime: 'image/jpeg',
@@ -217,9 +218,9 @@ const testData = {
 			tags: [{ tag: 'music', score: 42 }, { tag: 'rap', score: 60 }],
 			owner: identityAddr,
 			archived: true
-		}
+		})
 	],
-	adSlot: {
+	adSlot: new AdSlot({
 		type: 'legacy_250x250',
 		tags: [{ tag: 'games', score: 42 }, { tag: 'usa', score: 60 }],
 		owner: identityAddr,
@@ -230,7 +231,7 @@ const testData = {
 		description: 'Test slot for running integration tests',
 		archived: false,
 		modified: Date.now()
-	}
+	})
 }
 
 function seedDb (db) {

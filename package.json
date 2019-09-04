@@ -6,9 +6,9 @@
   "scripts": {
     "start": "node index",
     "dev-start": "nodemon index",
-    "test": "eslint . && node test/index.js",
-    "eslint-fix": "eslint . --fix && node test/index.js",
-    "test-integration": "./test/run-integration.sh"
+    "test": "node test/index.js",
+    "test-integration": "./test/run-integration.sh",
+    "eslint-fix": "./node_modules/.bin/eslint . --fix && node test/index.js"
   },
   "keywords": [
     "adex",
