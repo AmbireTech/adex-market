@@ -20,7 +20,6 @@ function getBalanceTree (validatorUrl, channelId) {
 function getCampaignsQuery (query) {
 	// Uses default statuses (active, ready) if none are requested
 	const status = query.status ? query.status.split(',') : ['Active', 'Ready']
-
 	// If request query has ?all it doesn't query for status
 	const findQuery = query.hasOwnProperty('all')
 		? { }
@@ -28,6 +27,11 @@ function getCampaignsQuery (query) {
 
 	if (query.hasOwnProperty('depositAsset')) {
 		findQuery['depositAsset'] = query.depositAsset
+	}
+
+	if (query.hasOwnProperty('byEarner')) {
+		const queryClause = `status.lastApprovedBalances.${query.byEarner}`
+		findQuery[queryClause] = { '$exists': true }
 	}
 
 	return findQuery
