@@ -379,9 +379,7 @@ tape('===== Authorized routes =====', (t) => {
 			fetch(`${marketUrl}/units/${res.ipfs}`, { headers: { 'x-user-signature': signature } })
 				.then(getRes => getRes.json())
 				.then((getRes) => {
-					t.ok(Array.isArray(getRes), 'returns array')
-					t.equals(getRes.length, 1, 'Only 1 ad unit is retrieved with get')
-					t.equals(getRes[0].ipfs, res.ipfs, 'returns item with correct ipfs hash')
+					t.equals(getRes.unit.ipfs, res.ipfs, 'returns item with correct ipfs hash')
 					fetch(`${marketUrl}/units/${res.ipfs}`, {
 						method: 'PUT',
 						headers: {
@@ -447,10 +445,8 @@ tape('===== Authorized routes =====', (t) => {
 			fetch(`${marketUrl}/slots/${res.ipfs}`, { headers: { 'x-user-signature': signature } })
 				.then(getRes => getRes.json())
 				.then((getRes) => {
-					t.ok(Array.isArray(getRes), 'returns array')
-					t.equals(getRes.length, 1, 'returns 1 slot by ID')
-					t.equals(getRes[0].ipfs, res.ipfs, 'slot ipfs hash is correct')
-					t.equals(getRes[0].owner, identityAddr, 'owner is correct')
+					t.equals(getRes.slot.ipfs, res.ipfs, 'slot ipfs hash is correct')
+					t.equals(getRes.slot.owner, identityAddr, 'owner is correct')
 					fetch(`${marketUrl}/slots/${res.ipfs}`, {
 						method: 'PUT',
 						headers: {
@@ -627,7 +623,7 @@ tape('GET /session unauthenticated', (t) => {
 })
 
 tape('GET /tags', (t) => {
-	fetch(`${marketUrl}/tags/tags`) // TODO: ASK
+	fetch(`${marketUrl}/tags`)
 	.then((res) => res.json())
 	.then((res) => {
 		t.ok(Array.isArray(res), 'Tags is an array')

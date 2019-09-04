@@ -1,4 +1,4 @@
-const fetch = require('node-fetch')
+const getRequest = require('../helpers/getRequest')
 const db = require('../db')
 const RELAYER_HOST = process.env.RELAYER_HOST
 const cfg = require('../cfg')
@@ -17,19 +17,35 @@ async function limitCampaigns (req, res, next) {
 	return next()
 }
 
-async function isAddrLimited (addr) {
-	if (process.env.NODE_ENV === 'production') { return false } // TODO remove this line when relayer is configured for this
+async function earningFrom (addr) {
+	const campaignsCol = db.getMongo().collection('campaigns')
+	const queryKey = `status.lastApprovedBalances.${addr}`
 
-	return fetch(`${RELAYER_HOST}/TODO`, { // TODO: Do this when ready might be just a GET
-		method: 'POST',
-		headers: {
-			'Content-type': 'application/json'
-		},
-		body: JSON.stringify({ addr })
-	})
+	const earningCampaignsCount = await campaignsCol
+		.find({
+			'$and': [
+				{ [queryKey]: { '$exists': true } },
+				{
+					'status.name': 'Active'
+				}
+			]
+		})
+		.count()
+
+	return earningCampaignsCount
+}
+
+function isAddrLimited (addr) {
+	if (!addr) {
+		return false
+	}
+	return getRequest(`${RELAYER_HOST}/identity/is-limited/${addr}`)
 		.then((res) => res.json())
 		.then((res) => {
-			return res.privilleges > 1
+			return res.isLimited
+		})
+		.catch((err) => {
+			throw new Error('Identity with that address not found!', err)
 		})
 }
 
