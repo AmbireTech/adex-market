@@ -86,7 +86,11 @@ function postAdSlot (req, res) {
 }
 
 function putAdSlot (req, res) {
-	const adSlot = new AdSlot(req.body)
+	const slot = {
+		...req.body,
+		modified: Date.now()
+	}
+	const adSlot = new AdSlot(slot)
 	const adSlotsCol = db.getMongo().collection('adSlots')
 	const ipfs = req.params.id
 	return adSlotsCol

@@ -82,7 +82,11 @@ function postAdUnit (req, res) {
 }
 
 function putAdUnit (req, res) {
-	const adUnit = new AdUnit(req.body)
+	const unit = {
+		...req.body,
+		modified: Date.now()
+	}
+	const adUnit = new AdUnit(unit)
 	const adUnitCol = db.getMongo().collection('adUnits')
 	const ipfs = req.params.id
 

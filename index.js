@@ -39,7 +39,7 @@ app.use(function (req, res, next) {
 	next()
 })
 
-app.use('/campaigns', enforceLimited, campaignsRoutes)
+app.use('/campaigns', campaignsRoutes)
 app.use('/stats', statsRoutes)
 app.use('/users', usersRoutes)
 app.use('/validators', validatorsRoutes)
