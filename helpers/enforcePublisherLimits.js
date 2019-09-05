@@ -19,14 +19,11 @@ async function isAddrLimited (addr) {
 	if (!addr) {
 		return false
 	}
-	return getRequest(`${RELAYER_HOST}/identity/is-limited/${addr}`)
-		.then((res) => res.json())
-		.then((res) => {
-			return res.isLimited
-		})
-		.catch((err) => {
-			throw new Error('Identity with that address not found!', err)
-		})
+
+	const response = await getRequest(`${RELAYER_HOST}/identity/is-limited/${addr}`)
+	const data = (await response.json()) || {}
+
+	return data.isLimited
 }
 
 async function getAccOutstandingBalance (addr) {
@@ -58,20 +55,27 @@ async function getIdentityBalance (addr = '') {
 }
 
 async function enforceLimited (req, res, next) {
-	const publisherAddr = req.query.limitForPublisher
-	const isPublisherLimited = await isAddrLimited(publisherAddr)
-	if (!isPublisherLimited) {
-		return next()
+	try {
+		const publisherAddr = req.query.limitForPublisher
+		const isPublisherLimited = await isAddrLimited(publisherAddr)
+		if (!isPublisherLimited) {
+			return next()
+		}
+
+		const [ outstanding, addrBalance ] = await Promise
+			.all([getAccOutstandingBalance(publisherAddr), getIdentityBalance(publisherAddr)])
+
+		const total = outstanding.add(addrBalance)
+
+		if (total.gt(EARNINGS_LIMIT)) {
+			return res.status(403).send({ error: 'EXCEEDED_EARNINGS_LIMIT' })
+		} else {
+			return next()
+		}
+	} catch (err) {
+		console.error('Error on enforcing limited check', err)
+		return res.status(500).send(err)
 	}
-
-	const outstanding = await getAccOutstandingBalance(publisherAddr)
-	const addrBalance = await getIdentityBalance(publisherAddr)
-
-	const total = outstanding.add(addrBalance)
-
-	return total.gt(EARNINGS_LIMIT)
-		? res.status(403).send({ error: 'EXCEEDED_EARNINGS_LIMIT' })
-		: next()
 }
 
 module.exports = { enforceLimited, limitCampaigns }
