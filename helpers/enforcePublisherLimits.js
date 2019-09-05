@@ -30,7 +30,7 @@ function isAddrLimited (addr) {
 		})
 }
 
-async function getAccEarnings (addr) {
+async function getAccOutstandingBalance (addr) {
 	const campaignsCol = db.getMongo().collection('campaigns')
 
 	return campaignsCol
@@ -58,7 +58,7 @@ async function enforceLimited (req, res, next) {
 		return next()
 	}
 
-	const earnings = await getAccEarnings(publisherAddr)
+	const earnings = await getAccOutstandingBalance(publisherAddr)
 
 	return earnings >= EARNINGS_LIMIT
 		? res.status(403).send({ error: 'EXCEEDED_EARNINGS_LIMIT' })
