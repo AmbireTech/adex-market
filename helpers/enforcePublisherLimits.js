@@ -35,8 +35,8 @@ async function getAccEarnings (addr) {
 
 	return campaignsCol
 		.find(
-			{ 'status.lastApprovedBalances': { '$exists': true } },
-			{ projection: { 'status.lastApprovedBalances': 1 } })
+			{ [`status.lastApprovedBalances.${addr}`]: { '$exists': true } },
+			{ projection: { [`status.lastApprovedBalances.${addr}`]: 1 } })
 		.toArray()
 		.then((campaigns) => {
 			const earningsBn = new BN(0)
