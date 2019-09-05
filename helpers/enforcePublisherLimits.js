@@ -1,12 +1,11 @@
+const BN = require('bn.js')
 const getRequest = require('../helpers/getRequest')
 const db = require('../db')
-const RELAYER_HOST = process.env.RELAYER_HOST
 const cfg = require('../cfg')
 
-const EARNINGS_LIMIT = process.env.EARNINGS_LIMIT // TODO this and channel limit might not be env variables
+const RELAYER_HOST = process.env.RELAYER_HOST
 const CHANNEL_LIMIT = cfg.defaultChannelLimit
-
-const BN = require('bn.js')
+const EARNINGS_LIMIT = new BN(cfg.limitedIdentityEarningsLimit)
 
 async function limitCampaigns (req, res, next) {
 	const publisherAddr = req.query.limitForPublisher
@@ -51,6 +50,13 @@ async function getAccOutstandingBalance (addr) {
 		})
 }
 
+async function getIdentityBalance (addr = '') {
+	const response = await getRequest(`${RELAYER_HOST}/identity/is-limited/${addr}`)
+	const data = (await response.json()) || {}
+
+	return new BN(data.balance || 0)
+}
+
 async function enforceLimited (req, res, next) {
 	const publisherAddr = req.query.limitForPublisher
 	const isPublisherLimited = await isAddrLimited(publisherAddr)
@@ -58,9 +64,12 @@ async function enforceLimited (req, res, next) {
 		return next()
 	}
 
-	const earnings = await getAccOutstandingBalance(publisherAddr)
+	const outstanding = await getAccOutstandingBalance(publisherAddr)
+	const addrBalance = await getIdentityBalance(publisherAddr)
 
-	return earnings >= EARNINGS_LIMIT
+	const total = outstanding.add(addrBalance)
+
+	return total.gt(EARNINGS_LIMIT)
 		? res.status(403).send({ error: 'EXCEEDED_EARNINGS_LIMIT' })
 		: next()
 }
