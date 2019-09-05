@@ -15,7 +15,7 @@ async function limitCampaigns (req, res, next) {
 	return next()
 }
 
-function isAddrLimited (addr) {
+async function isAddrLimited (addr) {
 	if (!addr) {
 		return false
 	}
@@ -51,7 +51,7 @@ async function getAccOutstandingBalance (addr) {
 }
 
 async function getIdentityBalance (addr = '') {
-	const response = await getRequest(`${RELAYER_HOST}/identity/is-limited/${addr}`)
+	const response = await getRequest(`${RELAYER_HOST}/identity/balance/${addr}`)
 	const data = (await response.json()) || {}
 
 	return new BN(data.balance || 0)
