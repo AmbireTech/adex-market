@@ -10,10 +10,9 @@ const BN = require('bn.js')
 
 async function limitCampaigns (req, res, next) {
 	const publisherAddr = req.query.limitForPublisher
-	if (!publisherAddr) {
-		return next()
+	if (publisherAddr) {
+		req.query.limit = CHANNEL_LIMIT.toString()
 	}
-	req.query.limit = CHANNEL_LIMIT.toString()
 	return next()
 }
 
