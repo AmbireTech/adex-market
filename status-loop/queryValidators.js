@@ -45,7 +45,7 @@ function getStatus (messagesFromAll, campaign, balanceTree) {
 	} else if (isActive(messagesFromAll)) {
 		return 'Active'
 	} else if (isReady(messagesFromAll)) {
-		return 'Ready'
+		return campaign.spec.activeFrom > Date.now() ? 'Ready' : 'Waiting'
 	}
 	throw new Error('internal error: no status detected; should never happen')
 }
@@ -153,7 +153,9 @@ async function queryValidators () {
 	const channels = await getChannels()
 
 	await channels.map(c => campaignsCol.updateOne({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
-	const campaigns = await campaignsCol.find().toArray()
+
+	// Expired and Exhausted are permanent so there's no point to include them in the loop
+	const campaigns = await campaignsCol.find({ 'status.name': { '$nin': ['Expired', 'Exhausted'] } }).toArray()
 	await Promise.all(campaigns
 		.map(c => getStatusOfCampaign(c)
 			.then(async (status) => {
@@ -173,7 +175,7 @@ async function queryValidators () {
 
 				if (status.verified) {
 					return updateCampaign(c, statusObj)
-						.then(() => console.log(`Status of campaign ${c._id} updated`))
+						.then(() => console.log(`Status of campaign ${c._id} updated: ${status.name}`))
 				}
 				return Promise.resolve()
 			})))
@@ -184,4 +186,4 @@ function startStatusLoop () {
 	setInterval(queryValidators, cfg.statusLoopTick)
 }
 
-module.exports = startStatusLoop
+module.exports = { startStatusLoop, getEstimateInUsd }

@@ -1,11 +1,16 @@
 const express = require('express')
 const db = require('../db')
+const signatureCheck = require('../helpers/signatureCheck')
+
+const { celebrate } = require('celebrate')
+const { schemas } = require('adex-models')
 
 const router = express.Router()
 
 router.get('/', getValidators)
+router.post('/', signatureCheck, celebrate({ body: schemas.validator }), postValidator)
 
-function getValidators (req, res, next) {
+function getValidators (req, res) {
 	const validatorsCol = db.getMongo().collection('validators')
 	const { status, addr } = req.query
 
@@ -21,6 +26,19 @@ function getValidators (req, res, next) {
 			console.error('Error getting validators', err)
 			return res.status(500).send(err)
 		})
+}
+
+function postValidator (req, res) {
+	const validatorsCol = db.getMongo().collection('validators')
+	const validator = req.body
+
+	return validatorsCol.insertOne(validator, (err, result) => {
+		if (err) {
+			console.error('Err adding validator!', err)
+			return res.status(500).send(err)
+		}
+		return res.send(validator)
+	})
 }
 
 module.exports = router
