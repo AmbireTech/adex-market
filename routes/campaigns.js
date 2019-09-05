@@ -8,7 +8,6 @@ const router = express.Router()
 router.get('/', limitCampaigns, getCampaigns)
 router.get('/by-owner', signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
-router.get('/by-earner/:addr', signatureCheck, getCampaignsByEarner)
 
 function getBalanceTree (validatorUrl, channelId) {
 	return getRequest(`${validatorUrl}/channel/${channelId}/tree`)
@@ -105,24 +104,6 @@ function getCampaignInfo (req, res, next) {
 		.catch((err) => {
 			console.error('Error getting campaign info', err)
 			return res.status(500).send(err)
-		})
-}
-
-function getCampaignsByEarner (req, res) {
-	const earnerAddr = req.params.addr
-	const campaignsCol = db.getMongo().collection('campaigns')
-
-	return campaignsCol
-		.find(
-			{ 'status.lastApprovedBalances': { '$exists': true } },
-			{ projection: { 'status.lastApprovedBalances': 1 } }) // NOTE: Assuming _id and id are the same as they currently are from queryValidators.js
-		.toArray()
-		.then((campaigns) => {
-			const campaignsWithAddr = campaigns.filter(c => c.status.lastApprovedBalances.hasOwnProperty(earnerAddr))
-			const result = campaignsWithAddr.map((c) => {
-				return { [c._id]: c.status.lastApprovedBalances[earnerAddr] }
-			})
-			return res.send(result)
 		})
 }
 
