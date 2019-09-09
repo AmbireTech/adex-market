@@ -56,7 +56,7 @@ function getCampaigns (req, res) {
 		})
 		.catch((err) => {
 			console.error('Error getting campaigns', err)
-			return res.status(500).send(err)
+			return res.status(500).send(err.toString())
 		})
 }
 
@@ -75,7 +75,7 @@ async function getCampaignsByOwner (req, res, next) {
 		return res.json(campaigns)
 	} catch (err) {
 		console.error('Error getting campaign by owner', err)
-		return res.status(500).send(err)
+		return res.status(500).send(err.toString())
 	}
 }
 
@@ -103,7 +103,7 @@ function getCampaignInfo (req, res, next) {
 		})
 		.catch((err) => {
 			console.error('Error getting campaign info', err)
-			return res.status(500).send(err)
+			return res.status(500).send(err.toString())
 		})
 }
 

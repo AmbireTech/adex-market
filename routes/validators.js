@@ -24,7 +24,7 @@ function getValidators (req, res) {
 		})
 		.catch((err) => {
 			console.error('Error getting validators', err)
-			return res.status(500).send(err)
+			return res.status(500).send(err.toString())
 		})
 }
 
@@ -35,7 +35,7 @@ function postValidator (req, res) {
 	return validatorsCol.insertOne(validator, (err, result) => {
 		if (err) {
 			console.error('Err adding validator!', err)
-			return res.status(500).send(err)
+			return res.status(500).send(err.toString())
 		}
 		return res.send(validator)
 	})
