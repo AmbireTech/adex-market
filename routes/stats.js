@@ -93,7 +93,7 @@ function getStats (req, res, next) {
 				})
 				.catch((err) => {
 					console.error('Error getting stats', err)
-					return res.status(500).send(err)
+					return res.status(500).send(err.toString())
 				})
 		})
 }
