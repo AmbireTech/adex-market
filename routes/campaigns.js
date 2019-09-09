@@ -8,7 +8,6 @@ const router = express.Router()
 router.get('/', limitCampaigns, getCampaigns)
 router.get('/by-owner', signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
-router.get('/by-earner/:addr', signatureCheck, getCampaignsByEarner)
 
 function getBalanceTree (validatorUrl, channelId) {
 	return getRequest(`${validatorUrl}/channel/${channelId}/tree`)
@@ -20,7 +19,6 @@ function getBalanceTree (validatorUrl, channelId) {
 function getCampaignsQuery (query) {
 	// Uses default statuses (active, ready) if none are requested
 	const status = query.status ? query.status.split(',') : ['Active', 'Ready']
-
 	// If request query has ?all it doesn't query for status
 	const findQuery = query.hasOwnProperty('all')
 		? { }
@@ -28,6 +26,11 @@ function getCampaignsQuery (query) {
 
 	if (query.hasOwnProperty('depositAsset')) {
 		findQuery['depositAsset'] = query.depositAsset
+	}
+
+	if (query.hasOwnProperty('byEarner')) {
+		const queryClause = `status.lastApprovedBalances.${query.byEarner}`
+		findQuery[queryClause] = { '$exists': true }
 	}
 
 	return findQuery
@@ -53,7 +56,7 @@ function getCampaigns (req, res) {
 		})
 		.catch((err) => {
 			console.error('Error getting campaigns', err)
-			return res.status(500).send(err)
+			return res.status(500).send(err.toString())
 		})
 }
 
@@ -72,7 +75,7 @@ async function getCampaignsByOwner (req, res, next) {
 		return res.json(campaigns)
 	} catch (err) {
 		console.error('Error getting campaign by owner', err)
-		return res.status(500).send(err)
+		return res.status(500).send(err.toString())
 	}
 }
 
@@ -100,25 +103,7 @@ function getCampaignInfo (req, res, next) {
 		})
 		.catch((err) => {
 			console.error('Error getting campaign info', err)
-			return res.status(500).send(err)
-		})
-}
-
-function getCampaignsByEarner (req, res) {
-	const earnerAddr = req.params.addr
-	const campaignsCol = db.getMongo().collection('campaigns')
-
-	return campaignsCol
-		.find(
-			{ 'status.lastApprovedBalances': { '$exists': true } },
-			{ projection: { 'status.lastApprovedBalances': 1 } }) // NOTE: Assuming _id and id are the same as they currently are from queryValidators.js
-		.toArray()
-		.then((campaigns) => {
-			const campaignsWithAddr = campaigns.filter(c => c.status.lastApprovedBalances.hasOwnProperty(earnerAddr))
-			const result = campaignsWithAddr.map((c) => {
-				return { [c._id]: c.status.lastApprovedBalances[earnerAddr] }
-			})
-			return res.send(result)
+			return res.status(500).send(err.toString())
 		})
 }
 

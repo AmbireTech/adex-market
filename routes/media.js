@@ -15,7 +15,7 @@ async function postMedia (req, res, next) {
 		})
 		.catch((err) => {
 			console.error('Error adding media', err)
-			return res.status(500).send(err)
+			return res.status(500).send(err.toString())
 		})
 }
 

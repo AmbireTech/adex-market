@@ -1,63 +1,37 @@
+const BN = require('bn.js')
 const getRequest = require('../helpers/getRequest')
 const db = require('../db')
+const cfg = require('../cfg')
+
 const RELAYER_HOST = process.env.RELAYER_HOST
-
-const EARNINGS_LIMIT = process.env.EARNINGS_LIMIT // TODO this and channel limit might not be env variables
-const CHANNEL_LIMIT = process.env.CHANNEL_LIMIT
-
-const BN = require('bn.js')
+const CHANNEL_LIMIT = cfg.defaultChannelLimit
+const EARNINGS_LIMIT = new BN(cfg.limitedIdentityEarningsLimit)
 
 async function limitCampaigns (req, res, next) {
-	const { publisherAddr } = req.query
-	if (!publisherAddr) {
-		return next()
-	}
-	const channelsEarningFrom = await earningFrom(publisherAddr)
-	if (channelsEarningFrom >= CHANNEL_LIMIT) {
-		req.query.limit = CHANNEL_LIMIT.toString()
+	const publisherAddr = req.query.limitForPublisher
+	if (publisherAddr) {
+		req.query.limit = CHANNEL_LIMIT
 	}
 	return next()
 }
 
-async function earningFrom (addr) {
-	const campaignsCol = db.getMongo().collection('campaigns')
-	const queryKey = `status.lastApprovedBalances.${addr}`
-
-	const earningCampaignsCount = await campaignsCol
-		.find({
-			'$and': [
-				{ [queryKey]: { '$exists': true } },
-				{
-					'status.name': 'Active'
-				}
-			]
-		})
-		.count()
-
-	return earningCampaignsCount
-}
-
-function isAddrLimited (addr) {
+async function isAddrLimited (addr) {
 	if (!addr) {
 		return false
 	}
-	return getRequest(`${RELAYER_HOST}/identity/is-limited/${addr}`)
-		.then((res) => res.json())
-		.then((res) => {
-			return res.isLimited
-		})
-		.catch((err) => {
-			throw new Error('Identity with that address not found!', err)
-		})
+
+	const data = (await getRequest(`${RELAYER_HOST}/identity/is-limited/${addr}`)) || {}
+
+	return data.isLimited
 }
 
-async function getAccEarnings (addr) {
+async function getAccOutstandingBalance (addr) {
 	const campaignsCol = db.getMongo().collection('campaigns')
 
 	return campaignsCol
 		.find(
-			{ 'status.lastApprovedBalances': { '$exists': true } },
-			{ projection: { 'status.lastApprovedBalances': 1 } })
+			{ [`status.lastApprovedBalances.${addr}`]: { '$exists': true } },
+			{ projection: { [`status.lastApprovedBalances.${addr}`]: 1 } })
 		.toArray()
 		.then((campaigns) => {
 			const earningsBn = new BN(0)
@@ -72,18 +46,34 @@ async function getAccEarnings (addr) {
 		})
 }
 
+async function getIdentityBalance (addr = '') {
+	const data = (await getRequest(`${RELAYER_HOST}/identity/balance/${addr}`)) || {}
+
+	return new BN(data.balance || 0)
+}
+
 async function enforceLimited (req, res, next) {
-	const { publisherAddr } = req.query
-	const isPublisherLimited = await isAddrLimited(publisherAddr)
-	if (!isPublisherLimited) {
-		return next()
+	try {
+		const publisherAddr = req.query.limitForPublisher
+		const isPublisherLimited = await isAddrLimited(publisherAddr)
+		if (!isPublisherLimited) {
+			return next()
+		}
+
+		const [outstanding, addrBalance] = await Promise
+			.all([getAccOutstandingBalance(publisherAddr), getIdentityBalance(publisherAddr)])
+
+		const total = outstanding.add(addrBalance)
+
+		if (total.gt(EARNINGS_LIMIT)) {
+			return res.status(403).send({ error: 'EXCEEDED_EARNINGS_LIMIT' })
+		} else {
+			return next()
+		}
+	} catch (err) {
+		console.error('Error on enforcing limited check', err.toString())
+		return res.status(500).send(err.toString())
 	}
-
-	const earnings = await getAccEarnings(publisherAddr)
-
-	return earnings >= EARNINGS_LIMIT
-		? res.status(403).send({ error: 'EXCEEDED_EARNINGS_LIMIT' })
-		: next()
 }
 
 module.exports = { enforceLimited, limitCampaigns }
