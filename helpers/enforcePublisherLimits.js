@@ -20,8 +20,7 @@ async function isAddrLimited (addr) {
 		return false
 	}
 
-	const response = await getRequest(`${RELAYER_HOST}/identity/is-limited/${addr}`)
-	const data = (await response.json()) || {}
+	const data = (await getRequest(`${RELAYER_HOST}/identity/is-limited/${addr}`)) || {}
 
 	return data.isLimited
 }
@@ -48,8 +47,7 @@ async function getAccOutstandingBalance (addr) {
 }
 
 async function getIdentityBalance (addr = '') {
-	const response = await getRequest(`${RELAYER_HOST}/identity/balance/${addr}`)
-	const data = (await response.json()) || {}
+	const data = (await getRequest(`${RELAYER_HOST}/identity/balance/${addr}`)) || {}
 
 	return new BN(data.balance || 0)
 }
@@ -62,7 +60,7 @@ async function enforceLimited (req, res, next) {
 			return next()
 		}
 
-		const [ outstanding, addrBalance ] = await Promise
+		const [outstanding, addrBalance] = await Promise
 			.all([getAccOutstandingBalance(publisherAddr), getIdentityBalance(publisherAddr)])
 
 		const total = outstanding.add(addrBalance)
@@ -73,8 +71,8 @@ async function enforceLimited (req, res, next) {
 			return next()
 		}
 	} catch (err) {
-		console.error('Error on enforcing limited check', err)
-		return res.status(500).send(err)
+		console.error('Error on enforcing limited check', err.toString())
+		return res.status(500).send(err.toString())
 	}
 }
 
