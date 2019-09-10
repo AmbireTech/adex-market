@@ -94,7 +94,7 @@ function putAdUnit (req, res) {
 				console.error('Error updating ad unit', err)
 				return res.status(500).send(err.toString())
 			}
-			return res.status(200).send(result)
+			return res.status(200).send({ unit: result.value })
 		})
 }
 
