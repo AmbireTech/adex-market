@@ -38,7 +38,7 @@ function getAdSlots (req, res) {
 		})
 		.catch((err) => {
 			console.error('Error getting ad slots', err)
-			return res.status(500).send(err)
+			return res.status(500).send(err.toString())
 		})
 }
 
@@ -61,7 +61,7 @@ function getAdSlotById (req, res) {
 		})
 		.catch(err => {
 			console.error('Error getting slot by id', err)
-			res.status(500).send(err)
+			return res.status(500).send(err.toString())
 		})
 }
 
@@ -78,7 +78,7 @@ function postAdSlot (req, res) {
 			return adSlotsCol.insertOne(adSlot.marketDbAdd, (err, result) => {
 				if (err) {
 					console.error('Error adding adSlot', err)
-					return res.status(500).send(err)
+					return res.status(500).send(err.toString())
 				}
 				return res.send(adSlot)
 			})
@@ -98,9 +98,9 @@ function putAdSlot (req, res) {
 			(err, result) => {
 				if (err) {
 					console.error('Error updating slot', err)
-					return res.status(500).send(err)
+					return res.status(500).send(err.toString())
 				}
-				return res.status(200).send(result)
+				return res.status(200).send({ slot: result.value })
 			})
 }
 
