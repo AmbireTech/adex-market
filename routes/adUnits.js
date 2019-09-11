@@ -39,7 +39,7 @@ function getAdUnits (req, res) {
 		})
 		.catch((err) => {
 			console.error('Error getting ad units', err)
-			return res.status(500).send(err)
+			return res.status(500).send(err.toString())
 		})
 }
 
@@ -59,7 +59,7 @@ function getAdUnitById (req, res) {
 		})
 		.catch((err) => {
 			console.error('Error getting ad unit by id', err)
-			return res.status(500).send(err)
+			return res.status(500).send(err.toString())
 		})
 }
 
@@ -74,7 +74,7 @@ function postAdUnit (req, res) {
 			return adUnitCol.insertOne(adUnit.marketDbAdd, (err, result) => {
 				if (err) {
 					console.error(new Error('error adding adUnit', err))
-					return res.status(500).send(err)
+					return res.status(500).send(err.toString())
 				}
 				return res.status(200).send(adUnit)
 			})
@@ -92,9 +92,9 @@ function putAdUnit (req, res) {
 		}, { returnOriginal: false }, (err, result) => {
 			if (err) {
 				console.error('Error updating ad unit', err)
-				return res.status(500).send(err)
+				return res.status(500).send(err.toString())
 			}
-			return res.status(200).send(result)
+			return res.status(200).send({ unit: result.value })
 		})
 }
 
