@@ -492,22 +492,6 @@ tape('===== Authorized routes =====', (t) => {
 			t.equals(res.status, 500, 'broken adslots cant be submitted')
 		})
 
-		const getEarnerBalances = fetch(`${marketUrl}/campaigns/by-earner/${earnerAddr}`,
-		{
-			headers: {
-				'x-user-signature': signature
-			}
-		})
-		.then((res) => {
-			t.comment('GET /campaigns/by-earner/:id')
-			t.equals(res.status, 200, 'Balances retrieved successfully')
-			return res.json()
-		})
-		.then((res) => {
-			t.ok(Array.isArray(res), 'Returns array')
-			t.equals(res.length, 2, 'has earnings from 2 channels')
-		})
-
 		const session = fetch(`${marketUrl}/session`,
 		{
 			headers: {
@@ -533,7 +517,6 @@ tape('===== Authorized routes =====', (t) => {
 			postBadAdSlot,
 			getAdUnits,
 			getAdSlots,
-			getEarnerBalances,
 			session])
 			.then(() => {
 				t.end()
