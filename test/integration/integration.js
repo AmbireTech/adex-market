@@ -8,7 +8,7 @@ const FormData = require('form-data')
 
 const identityAddr = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
 const signerAddr = `0x2aecF52ABe359820c48986046959B4136AfDfbe2`
-const earnerAddr = '0x712e40a78735af344f6ae3b79fa6952d698c3b37'
+// const earnerAddr = '0x712e40a78735af344f6ae3b79fa6952d698c3b37'
 
 const constants = require('./testConstants')
 
