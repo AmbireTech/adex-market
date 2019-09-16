@@ -3,86 +3,45 @@ const nowDate = (Math.floor(Date.now() / 1000))
 const oldDate = (Math.floor((Date.now() - 10000000) / 1000))
 const oldDateNoHex = Math.floor((Date.now() - 10000000) / 1000)
 const inTheFuture = Math.floor((Date.now() + 10000000) / 1000)
-const heartbeatMessageOldDate = {
-	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
-	msg: {
-		type: 'Heartbeat',
-		timestamp: oldDate,
-		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower',
-		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24'
+
+function generateMessage (params) {
+	const { type, timestamp, healthy } = params
+
+	const validatorMessage =  {
+		from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
+		msg: {
+			type,
+			signature: '0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+			stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24'
+		}
 	}
+
+	switch (type) {
+	case 'Heartbeat':
+		validatorMessage.msg['timestamp'] = timestamp
+		break
+	case 'ApproveState':
+		validatorMessage.msg['lastEvAggr'] = timestamp
+		validatorMessage.msg['isHealthy'] = healthy
+		break
+	default:
+		break
+	}
+
+	return validatorMessage
 }
 
-const heartbeatMessageNowDate = {
-	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
-	msg: {
-		type: 'Heartbeat',
-		timestamp: nowDate,
-		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower',
-		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24'
-	}
-}
+const heartbeatMessageOldDate = generateMessage({ type: 'Heartbeat', timestamp: oldDate })
 
-const heartbeatMessageNowDate2 = {
-	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
-	msg: {
-		type: 'Heartbeat',
-		timestamp: nowDate,
-		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 2',
-		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec25'
-	}
-}
+const heartbeatMessageNowDate = generateMessage({ type: 'Heartbeat', timestamp: nowDate })
 
-// const heartbeatMessageNowDate3 = {
-// 	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
-// 	msg: {
-// 		type: 'Heartbeat',
-// 		timestamp: nowDate,
-// 		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 3',
-// 		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec26'
-// 	}
-// }
+const heartbeatMessageNowDate2 = generateMessage({ type: 'Heartbeat', timestamp: nowDate })
 
-// const heartbeatMessageNowDate4 = {
-// 	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
-// 	msg: {
-// 		type: 'Heartbeat',
-// 		timestamp: nowDate,
-// 		signature: 'Dummy adapter signature for cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24 by awesomeFollower 4',
-// 		stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec27'
-// 	}
-// }
+const newStateMessage = generateMessage({ type: 'NewState' })
 
-const newStateMessage = {
-	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
-	msg: {
-		type: 'NewState',
-		stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ',
-		signature: 'signature for test message 1'
-	}
-}
+const approveStateMessageHealthy = generateMessage({ type: 'ApproveState', timestamp: nowDate, healthy: true })
 
-const approveStateMessageHealthy = {
-	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
-	msg: {
-		type: 'ApproveState',
-		stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ',
-		lastEvAggr: nowDate,
-		signature: 'signature for test message 1',
-		isHealthy: true
-	}
-}
-
-const approveStateMessageUnhealthy = {
-	from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
-	msg: {
-		type: 'ApproveState',
-		stateRoot: '64chars 64chars 64chars 64chars 64chars 64chars 64chars 64chars ',
-		lastEvAggr: nowDate,
-		signature: 'signature for test message 1',
-		isHealthy: false
-	}
-}
+const approveStateMessageUnhealthy = generateMessage({ type: 'ApproveState', timestamp: nowDate, healthy: false })
 
 // Empty messages
 const initializingMessages1 = {
