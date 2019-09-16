@@ -4,15 +4,34 @@ const oldDate = (Math.floor((Date.now() - 10000000) / 1000))
 const oldDateNoHex = Math.floor((Date.now() - 10000000) / 1000)
 const inTheFuture = Math.floor((Date.now() + 10000000) / 1000)
 
+const VALIDATOR_MSG_FROM_ADDRESS = '0x2892f6C41E0718eeeDd49D98D648C789668cA67d'
+const VALIDATOR_MSG_STATE_ROOT = 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24'
+const TEST_CHANNEL_NAME = 'awesomeTestChannel'
+
+const balanceTreeExceeds = {
+	lilPeep: 50,
+	xxxtentacion: 51
+}
+
+const balanceTreeEquals = {
+	lilPeep: 50,
+	xxxtentacion: 50
+}
+
+const balanceTreeUnder = {
+	lilPeep: 50,
+	xxxtentacion: 49
+}
+
 function generateMessage (params) {
 	const { type, timestamp, healthy } = params
 
-	const validatorMessage =  {
-		from: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
+	const validatorMessage = {
+		from: VALIDATOR_MSG_FROM_ADDRESS,
 		msg: {
 			type,
 			signature: '0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-			stateRoot: 'cc43cd5a31f60002f08f18ef311d1c3e3114d52d59257fbcf861c9c3fd6bec24'
+			stateRoot: VALIDATOR_MSG_STATE_ROOT
 		}
 	}
 
@@ -29,6 +48,39 @@ function generateMessage (params) {
 	}
 
 	return validatorMessage
+}
+
+function generateCampaign (params) {
+	const { validUntil, balanceTree } = params
+
+	const campaign = {
+		campaign: {
+			id: TEST_CHANNEL_NAME,
+			depositAmount: 100,
+			depositAsset: 'DAI',
+			spec: {
+				validators: [
+					{
+						id: 'awesomeLeader',
+						url: 'https://tom.adex.network'
+					},
+					{
+						id: 'awesomeFollower',
+						url: 'https://jerry.adex.network'
+					}
+				]
+			}
+		}
+	}
+
+	if (balanceTree) {
+		campaign['balanceTree'] = balanceTree
+	}
+	if (validUntil) {
+		campaign.campaign['validUntil'] = validUntil
+	}
+
+	return campaign
 }
 
 const heartbeatMessageOldDate = generateMessage({ type: 'Heartbeat', timestamp: oldDate })
@@ -275,155 +327,20 @@ const notActiveMessages3 = {
 	approveStateFollower: [approveStateMessageHealthy]
 }
 
-/*
-// Working example but there's no approveState
-const notActiveMessages4 = {
-	leaderHeartbeat: [heartbeatMessageNowDate],
-	followerHeartbeat: [heartbeatMessageNowDate],
-	newStateLeader: [newStateMessage],
-	approveStateFollower: []
-}
-*/
-
 // Total balances is more than depositAmount
-const exhausted1 = {
-	campaign: {
-		_id: 'awesomeBTCChannel',
-		depositAmount: 100,
-		depositAsset: 'DAI',
-		id: 'awesomeTestChannel',
-		spec: {
-			validators: [
-				{
-					id: 'awesomeLeader',
-					url: 'https://tom.adex.network'
-				},
-				{
-					id: 'awesomeFollower',
-					url: 'https://jerry.adex.network'
-				}
-			]
-		},
-		validators: [
-			'awesomeLeader',
-			'awesomeFollower'
-		]
-	},
-	balanceTree: {
-		lilPeep: 50,
-		xxxtentacion: 51
-	}
-}
+const exhausted1 = generateCampaign({ balanceTree: balanceTreeExceeds })
 
 // Total balances is equal to depositAmount
-const exhausted2 = {
-	campaign: {
-		_id: 'awesomeBTCChannel',
-		depositAmount: 100,
-		depositAsset: 'DAI',
-		id: 'awesomeTestChannel',
-		spec: {
-			validators: [
-				{
-					id: 'awesomeLeader',
-					url: 'https://tom.adex.network'
-				},
-				{
-					id: 'awesomeFollower',
-					url: 'https://jerry.adex.network'
-				}
-			]
-		},
-		validators: [
-			'awesomeLeader',
-			'awesomeFollower'
-		]
-	},
-	balanceTree: {
-		lilPeep: 50,
-		xxxtentacion: 50
-	}
-}
+const exhausted2 = generateCampaign({ balanceTree: balanceTreeEquals })
 
 // Total balances is less than depositAmount
-const notExhausted = {
-	campaign: {
-		_id: 'awesomeBTCChannel',
-		depositAmount: 100,
-		depositAsset: 'DAI',
-		id: 'awesomeTestChannel',
-		spec: {
-			validators: [
-				{
-					id: 'awesomeLeader',
-					url: 'https://tom.adex.network'
-				},
-				{
-					id: 'awesomeFollower',
-					url: 'https://jerry.adex.network'
-				}
-			]
-		},
-		validators: [
-			'awesomeLeader',
-			'awesomeFollower'
-		]
-	},
-	balanceTree: {
-		lilPeep: 50,
-		xxxtentacion: 49
-	}
-}
+const notExhausted = generateCampaign({ balanceTree: balanceTreeUnder })
 
 // Expired
-const expiredCampaign = {
-	_id: 'awesomeBTCChannel',
-	depositAmount: 100,
-	depositAsset: 'DAI',
-	id: 'awesomeTestChannel',
-	validUntil: oldDateNoHex,
-	spec: {
-		validators: [
-			{
-				id: 'awesomeLeader',
-				url: 'https://tom.adex.network'
-			},
-			{
-				id: 'awesomeFollower',
-				url: 'https://jerry.adex.network'
-			}
-		]
-	},
-	validators: [
-		'awesomeLeader',
-		'awesomeFollower'
-	]
-}
+const expiredCampaign = generateCampaign({ validUntil: oldDateNoHex })
 
 // Not expired
-const notExpiredCampaign = {
-	_id: 'awesomeBTCChannel',
-	depositAmount: 100,
-	depositAsset: 'DAI',
-	id: 'awesomeTestChannel',
-	validUntil: inTheFuture,
-	spec: {
-		validators: [
-			{
-				id: 'awesomeLeader',
-				url: 'https://tom.adex.network'
-			},
-			{
-				id: 'awesomeFollower',
-				url: 'https://jerry.adex.network'
-			}
-		]
-	},
-	validators: [
-		'awesomeLeader',
-		'awesomeFollower'
-	]
-}
+const notExpiredCampaign = generateCampaign({ validUntil: inTheFuture })
 
 module.exports = {
 	initializing: { first: initializingMessages1, second: initializingMessages2, third: initializingMessages3 },
