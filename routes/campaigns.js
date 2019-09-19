@@ -5,6 +5,8 @@ const signatureCheck = require('../helpers/signatureCheck')
 const { limitCampaigns } = require('../helpers/enforcePublisherLimits')
 const router = express.Router()
 
+const MAX_LIMIT = 300
+
 router.get('/', limitCampaigns, getCampaigns)
 router.get('/by-owner', signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
@@ -37,7 +39,7 @@ function getCampaignsQuery (query) {
 }
 
 function getCampaigns (req, res) {
-	const limit = +req.query.limit || 100
+	const limit = +req.query.limit || MAX_LIMIT
 	const skip = +req.query.skip || 0
 	const query = getCampaignsQuery(req.query)
 	const campaignsCol = db.getMongo().collection('campaigns')
