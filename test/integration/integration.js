@@ -66,7 +66,8 @@ const mockAdSlot = 	{
 	title: 'Test slot 1',
 	description: 'Test slot for running integration tests',
 	archived: false,
-	modified: Date.now()
+	modified: Date.now(),
+	minPerImpression: { balance: '100' }
 }
 
 const brokenAdSlot = {
@@ -390,8 +391,7 @@ tape('===== Authorized routes =====', (t) => {
 						body: JSON.stringify({
 							title: 'Test slot 1',
 							description: 'Test description for test slot 1',
-							archived: true,
-							modified: Date.now()
+							archived: true
 						})
 					})
 						.then((putRes) => {
@@ -457,11 +457,9 @@ tape('===== Authorized routes =====', (t) => {
 						body: JSON.stringify({
 							title: res.title,
 							description: res.description,
-							fallbackMediaUrl: res.fallbackMediaUrl,
-							fallbackMediaMime: res.fallbackMediaMime,
-							fallbackTargetUrl: res.fallbackTargetUrl,
-							archived: true,
-							modified: Date.now()
+							fallbackUnit: res.fallbackUnit,
+							minPerImpression: res.minPerImpression,
+							archived: true
 						})
 					})
 						.then((putRes) => {
@@ -479,7 +477,7 @@ tape('===== Authorized routes =====', (t) => {
 		})
 		.catch((err) => console.error(err))
 
-		const postBadAdSlot = fetch(`${marketUrl}/units`, {
+		const postBadAdSlot = fetch(`${marketUrl}/slots`, {
 			method: 'POST',
 			headers: {
 				'Content-type': 'application/json',
