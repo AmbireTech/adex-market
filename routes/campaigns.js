@@ -30,6 +30,10 @@ function getCampaignsQuery (query) {
 		findQuery['depositAsset'] = query.depositAsset
 	}
 
+	if (query.hasOwnProperty('byCreator')) {
+		findQuery['creator'] = query.byCreator
+	}
+
 	if (query.hasOwnProperty('byEarner')) {
 		const queryClause = `status.lastApprovedBalances.${query.byEarner}`
 		findQuery[queryClause] = { '$exists': true }
