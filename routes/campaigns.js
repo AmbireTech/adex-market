@@ -2,7 +2,7 @@ const express = require('express')
 const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const signatureCheck = require('../helpers/signatureCheck')
-const { noCache } = require('../helpers/signatureCheck')
+const { noCache } = require('../helpers/cache')
 const { limitCampaigns } = require('../helpers/enforcePublisherLimits')
 const router = express.Router()
 
