@@ -2,13 +2,14 @@ const express = require('express')
 const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const signatureCheck = require('../helpers/signatureCheck')
+const { noCache } = require('../helpers/signatureCheck')
 const { limitCampaigns } = require('../helpers/enforcePublisherLimits')
 const router = express.Router()
 
 const MAX_LIMIT = 300
 
 router.get('/', limitCampaigns, getCampaigns)
-router.get('/by-owner', signatureCheck, getCampaignsByOwner)
+router.get('/by-owner', noCache, signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
 
 function getBalanceTree (validatorUrl, channelId) {
