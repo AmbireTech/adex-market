@@ -70,7 +70,6 @@ function postAdSlot (req, res) {
 	const adSlotsCol = db.getMongo().collection('adSlots')
 	const adSlot = new AdSlot(req.body)
 	adSlot.owner = identity
-
 	return addDataToIpfs(Buffer.from(JSON.stringify(adSlot.spec)))
 		.then((dataHash) => {
 			adSlot['ipfs'] = dataHash

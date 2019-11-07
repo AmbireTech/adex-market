@@ -8,7 +8,7 @@ const FormData = require('form-data')
 
 const identityAddr = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
 const signerAddr = `0x2aecF52ABe359820c48986046959B4136AfDfbe2`
-const earnerAddr = '0x712e40a78735af344f6ae3b79fa6952d698c3b37'
+// const earnerAddr = '0x712e40a78735af344f6ae3b79fa6952d698c3b37'
 
 const constants = require('./testConstants')
 
@@ -66,7 +66,8 @@ const mockAdSlot = 	{
 	title: 'Test slot 1',
 	description: 'Test slot for running integration tests',
 	archived: false,
-	modified: Date.now()
+	modified: Date.now(),
+	minPerImpression: { balance: '100' }
 }
 
 const brokenAdSlot = {
@@ -379,9 +380,7 @@ tape('===== Authorized routes =====', (t) => {
 			fetch(`${marketUrl}/units/${res.ipfs}`, { headers: { 'x-user-signature': signature } })
 				.then(getRes => getRes.json())
 				.then((getRes) => {
-					t.ok(Array.isArray(getRes), 'returns array')
-					t.equals(getRes.length, 1, 'Only 1 ad unit is retrieved with get')
-					t.equals(getRes[0].ipfs, res.ipfs, 'returns item with correct ipfs hash')
+					t.equals(getRes.unit.ipfs, res.ipfs, 'returns item with correct ipfs hash')
 					fetch(`${marketUrl}/units/${res.ipfs}`, {
 						method: 'PUT',
 						headers: {
@@ -392,8 +391,7 @@ tape('===== Authorized routes =====', (t) => {
 						body: JSON.stringify({
 							title: 'Test slot 1',
 							description: 'Test description for test slot 1',
-							archived: true,
-							modified: Date.now()
+							archived: true
 						})
 					})
 						.then((putRes) => {
@@ -447,11 +445,8 @@ tape('===== Authorized routes =====', (t) => {
 			fetch(`${marketUrl}/slots/${res.ipfs}`, { headers: { 'x-user-signature': signature } })
 				.then(getRes => getRes.json())
 				.then((getRes) => {
-					console.log(getRes)
-					t.ok(Array.isArray(getRes), 'returns array')
-					t.equals(getRes.length, 1, 'returns 1 slot by ID')
-					t.equals(getRes[0].ipfs, res.ipfs, 'slot ipfs hash is correct')
-					t.equals(getRes[0].owner, identityAddr, 'owner is correct')
+					t.equals(getRes.slot.ipfs, res.ipfs, 'slot ipfs hash is correct')
+					t.equals(getRes.slot.owner, identityAddr, 'owner is correct')
 					fetch(`${marketUrl}/slots/${res.ipfs}`, {
 						method: 'PUT',
 						headers: {
@@ -462,11 +457,9 @@ tape('===== Authorized routes =====', (t) => {
 						body: JSON.stringify({
 							title: res.title,
 							description: res.description,
-							fallbackMediaUrl: res.fallbackMediaUrl,
-							fallbackMediaMime: res.fallbackMediaMime,
-							fallbackTargetUrl: res.fallbackTargetUrl,
-							archived: true,
-							modified: Date.now()
+							fallbackUnit: res.fallbackUnit,
+							minPerImpression: res.minPerImpression,
+							archived: true
 						})
 					})
 						.then((putRes) => {
@@ -484,7 +477,7 @@ tape('===== Authorized routes =====', (t) => {
 		})
 		.catch((err) => console.error(err))
 
-		const postBadAdSlot = fetch(`${marketUrl}/units`, {
+		const postBadAdSlot = fetch(`${marketUrl}/slots`, {
 			method: 'POST',
 			headers: {
 				'Content-type': 'application/json',
@@ -495,22 +488,6 @@ tape('===== Authorized routes =====', (t) => {
 		.then((res) => {
 			t.comment('/POST adslots - bad data')
 			t.equals(res.status, 500, 'broken adslots cant be submitted')
-		})
-
-		const getEarnerBalances = fetch(`${marketUrl}/campaigns/by-earner/${earnerAddr}`,
-		{
-			headers: {
-				'x-user-signature': signature
-			}
-		})
-		.then((res) => {
-			t.comment('GET /campaigns/by-earner/:id')
-			t.equals(res.status, 200, 'Balances retrieved successfully')
-			return res.json()
-		})
-		.then((res) => {
-			t.ok(Array.isArray(res), 'Returns array')
-			t.equals(res.length, 2, 'has earnings from 2 channels')
 		})
 
 		const session = fetch(`${marketUrl}/session`,
@@ -538,7 +515,6 @@ tape('===== Authorized routes =====', (t) => {
 			postBadAdSlot,
 			getAdUnits,
 			getAdSlots,
-			getEarnerBalances,
 			session])
 			.then(() => {
 				t.end()
