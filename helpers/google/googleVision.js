@@ -1,12 +1,14 @@
 const vision = require('@google-cloud/vision')
 
-export const labelDetection = async image => {
+const webDetection = async imageBuffer => {
 	try {
 		const client = new vision.ImageAnnotatorClient()
-		const [result] = await client.labelDetection(image)
-		return result
+		const [result] = await client.webDetection(imageBuffer)
+		return result.webDetection
 	} catch (error) {
 		console.log(error)
 		return false
 	}
 }
+
+module.exports = { webDetection }
