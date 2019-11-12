@@ -52,7 +52,7 @@ async function getCategoriesFromPage (pagesWithMatchingImages) {
 	const matchingCategories = await Promise.all(results)
 	let unwrap = []
 	matchingCategories.map(
-		i => (unwrap = unwrap.concat(i.categories))
+		i => { if (i.categories) unwrap = unwrap.concat(i.categories) }
 	)
 	return unwrap
 }
