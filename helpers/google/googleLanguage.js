@@ -18,6 +18,21 @@ const classifyWebpage = async (URL) => {
 	}
 }
 
+const classifyText = async (text) => {
+	try {
+		const document = {
+			content: text,
+			type: 'PLAIN_TEXT'
+		}
+		const client = new language.LanguageServiceClient()
+		const [result] = await client.classifyText({ document: document })
+		return result
+	} catch (error) {
+		console.log(error)
+		return false
+	}
+}
+
 const getHTMLFromURL = (URL) => {
 	return new Promise((resolve, reject) => {
 		request({ uri: URL },
@@ -31,4 +46,4 @@ const getHTMLFromURL = (URL) => {
 	})
 }
 
-module.exports = { classifyWebpage }
+module.exports = { classifyWebpage, classifyText }
