@@ -1,6 +1,6 @@
 const express = require('express')
-const { webDetection } = require('../helpers/google/googleVision')
-const { classifyWebpage } = require('../helpers/google/googleLanguage')
+const { webDetection, labelDetection } = require('../helpers/google/googleVision')
+const { classifyWebpage, classifyText } = require('../helpers/google/googleLanguage')
 const { PredefinedTags } = require('adex-models').constants
 const multer = require('multer')
 
@@ -17,15 +17,44 @@ function getTags (req, res) {
 }
 
 async function getImageCategories (req, res) {
-	if (req.file) {
-		const image = req.file.buffer
-		const { pagesWithMatchingImages } = await webDetection(image)
-		//TODO: get all matching pages suggestions!
-		const categories = await classifyWebpage(pagesWithMatchingImages[0].url)
-		return res.json(categories)
-	} else {
-		console.log('NO FILE ATTACHED!')
+	try {
+		if (req.file) {
+			const image = req.file.buffer
+			const { pagesWithMatchingImages, webEntities } = await webDetection(image)
+			const labels = await labelDetection(image)
+			const labelsCategories = await getCategoriesFromLabels(labels) || []
+			const entitiesCategories = await getCategoriesFromLabels(webEntities) || []
+			const pagesCategories = await getCategoriesFromPage(pagesWithMatchingImages) || []
+			const result = { categories: [...entitiesCategories, ...pagesCategories, ...labelsCategories] }
+			return res.json(result)
+		} else {
+			throw new Error('NO FILE ATTACHED!')
+		}
+	} catch (error) {
+		console.error('Error getting category suggestions', error)
+		return res.status(500).send(error.toString())
 	}
+}
+
+async function getCategoriesFromLabels (labels) {
+	const results = []
+	labels && labels.map(i => i.description && results.push(i.description))
+	const { categories } = await classifyText(results.join(', '))
+	return categories
+}
+
+async function getCategoriesFromPage (pagesWithMatchingImages) {
+	const results = []
+	pagesWithMatchingImages &&
+			pagesWithMatchingImages.map(match => {
+				results.push(classifyWebpage(match.url))
+			})
+	const matchingCategories = await Promise.all(results)
+	let unwrap = []
+	matchingCategories.map(
+		i => (unwrap = unwrap.concat(i.categories))
+	)
+	return unwrap
 }
 
 async function getWebsiteCategories (req, res) {
