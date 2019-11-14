@@ -50,43 +50,39 @@ function getStatus (messagesFromAll, campaign, balanceTree, lastApprovedBalances
 	throw new Error('internal error: no status detected; should never happen')
 }
 
-function getStatusOfCampaign (campaign) {
+async function getStatusOfCampaign (campaign) {
 	const validators = campaign.spec.validators
 
-	const leaderHb = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Heartbeat?limit=15`)
-	const followerHb = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Heartbeat?limit=15`)
-	const followerHbFromLeader = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[1].id}/Heartbeat?limit=15`)
-	const followerHbFromFollower = getRequest(`${validators[1].url}/channel/${campaign.id}/validator-messages/${validators[1].id}/Heartbeat?limit=15`)
-	const lastApproved = getRequest(`${validators[0].url}/channel/${campaign.id}/last-approved`)
-	const treePromise = getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Accounting`)
+	const callLeader = getRequest(`${validators[0].url}/channel/${campaign.id}/last-approved?withHeartbeat=true`)
+	const callFollower = getRequest(`${validators[1].url}/channel/${campaign.id}/last-approved?withHeartbeat=true`)
 
-	return Promise.all([leaderHb, followerHb, followerHbFromLeader, followerHbFromFollower, lastApproved, treePromise])
-		.then(([leaderHbResp, followerHbResp, followerHbFromLeaderResp, followerHbFromFollowerResp, lastApprovedResp, treeResp]) => {
-			// lastApproved doesn't get stored, used only for verification/info purposes
-			const lastApproved = lastApprovedResp.lastApproved
-			const messagesFromAll = {
-				leaderHeartbeat: leaderHbResp.validatorMessages,
-				followerHeartbeat: followerHbResp.validatorMessages,
-				followerFromLeader: followerHbFromLeaderResp.validatorMessages,
-				followerFromFollower: followerHbFromFollowerResp.validatorMessages,
-				newStateLeader: lastApproved ? [lastApproved.newState] : [],
-				approveStateFollower: lastApproved ? [lastApproved.approveState] : []
-			}
-			const balanceTree = treeResp.validatorMessages[0] ? treeResp.validatorMessages[0].msg.balances : {}
-			const verified = verifyLastApproved(lastApproved, validators)
-			const lastApprovedSigs = lastApproved ? getLastSigs(lastApproved) : []
-			const lastApprovedBalances = lastApproved ? getLastBalances(lastApproved) : {}
-			return {
-				name: getStatus(messagesFromAll, campaign, balanceTree, lastApprovedBalances),
-				lastHeartbeat: {
-					leader: getLasHeartbeatTimestamp(messagesFromAll.leaderHeartbeat[0]),
-					follower: getLasHeartbeatTimestamp(messagesFromAll.followerFromFollower[0])
-				},
-				lastApprovedSigs,
-				lastApprovedBalances,
-				verified
-			}
-		})
+	const [ dataLeader, dataFollower ] = await Promise.all([callLeader, callFollower])
+
+	const lastApproved = dataLeader.lastApproved
+	const leaderHeartbeats = dataLeader.heartbeats || []
+	const folowerHeartbeats = dataFollower.heartbeats || []
+	const messagesFromAll = {
+		leaderHeartbeat: (leaderHeartbeats[0] || {}).msg,
+		followerHeartbeat: (leaderHeartbeats[1] || {}).msg,
+		followerFromLeader: (leaderHeartbeats[0] || {}).msg,
+		followerFromFollower: (folowerHeartbeats[1] || {}).msg,
+		newStateLeader: lastApproved ? [lastApproved.newState] : [],
+		approveStateFollower: lastApproved ? [lastApproved.approveState] : []
+	}
+	const balanceTree = (lastApproved && lastApproved.msg) ? lastApproved.msg.balances : {}
+	const verified = verifyLastApproved(lastApproved, validators)
+	const lastApprovedSigs = lastApproved ? getLastSigs(lastApproved) : []
+	const lastApprovedBalances = lastApproved ? getLastBalances(lastApproved) : {}
+	return {
+		name: getStatus(messagesFromAll, campaign, balanceTree, lastApprovedBalances),
+		lastHeartbeat: {
+			leader: getLasHeartbeatTimestamp(messagesFromAll.leaderHeartbeat[0]),
+			follower: getLasHeartbeatTimestamp(messagesFromAll.followerFromFollower[0])
+		},
+		lastApprovedSigs,
+		lastApprovedBalances,
+		verified
+	}
 }
 
 function getLastSigs (lastApproved) {
@@ -155,11 +151,11 @@ async function queryValidators () {
 	await channels.map(c => campaignsCol.updateOne({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
 
 	// Expired and Exhausted are permanent so there's no point to include them in the loop
-	const campaigns = await campaignsCol.find( { '$or': [
-		{ 'status.name': { '$nin': ['Expired', 'Exhausted'] }},
-		{ '$and': [{ 'status.name': 'Exhausted' }, { 'status.lastApprovedBalances': {} }]}
+	const campaigns = await campaignsCol.find({ '$or': [
+		{ 'status.name': { '$nin': ['Expired', 'Exhausted'] } },
+		{ '$and': [{ 'status.name': 'Exhausted' }, { 'status.lastApprovedBalances': {} }] }
 	] }).toArray()
-	
+
 	await Promise.all(campaigns
 		.map(c => getStatusOfCampaign(c)
 			.then(async (status) => {
