@@ -25,12 +25,12 @@ const DAI_ADDRESS = '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359'
 const DAI_USD_PRICE = 1
 const DAI_DECIMALS = 18
 
-function getStatus (messagesFromAll, campaign, balanceTree) {
+function getStatus (messagesFromAll, campaign, balanceTree, lastApprovedBalances) {
 	if (isExpired(campaign)) {
 		return 'Expired'
 	} else if (isWithdraw(campaign)) {
 		return 'Withdraw'
-	} else if (isExhausted(campaign, balanceTree)) {
+	} else if (isExhausted(campaign, balanceTree) && Object.keys(lastApprovedBalances).length) {
 		return 'Exhausted'
 	} else if (isInitializing(messagesFromAll)) {
 		return 'Initializing'
@@ -77,7 +77,7 @@ function getStatusOfCampaign (campaign) {
 			const lastApprovedSigs = lastApproved ? getLastSigs(lastApproved) : []
 			const lastApprovedBalances = lastApproved ? getLastBalances(lastApproved) : {}
 			return {
-				name: getStatus(messagesFromAll, campaign, balanceTree),
+				name: getStatus(messagesFromAll, campaign, balanceTree, lastApprovedBalances),
 				lastHeartbeat: {
 					leader: getLasHeartbeatTimestamp(messagesFromAll.leaderHeartbeat[0]),
 					follower: getLasHeartbeatTimestamp(messagesFromAll.followerFromFollower[0])
@@ -155,7 +155,11 @@ async function queryValidators () {
 	await channels.map(c => campaignsCol.updateOne({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
 
 	// Expired and Exhausted are permanent so there's no point to include them in the loop
-	const campaigns = await campaignsCol.find({ 'status.name': { '$nin': ['Expired', 'Exhausted'] } }).toArray()
+	const campaigns = await campaignsCol.find( { '$or': [
+		{ 'status.name': { '$nin': ['Expired', 'Exhausted'] }},
+		{ '$and': [{ 'status.name': 'Exhausted' }, { 'status.lastApprovedBalances': {} }]}
+	] }).toArray()
+	
 	await Promise.all(campaigns
 		.map(c => getStatusOfCampaign(c)
 			.then(async (status) => {
