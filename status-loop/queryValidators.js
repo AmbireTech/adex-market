@@ -151,10 +151,7 @@ async function queryValidators () {
 	await channels.map(c => campaignsCol.updateOne({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
 
 	// Expired and Exhausted are permanent so there's no point to include them in the loop
-	const campaigns = await campaignsCol.find({ '$or': [
-		{ 'status.name': { '$nin': ['Expired', 'Exhausted'] } },
-		{ '$and': [{ 'status.name': 'Exhausted' }, { 'status.lastApprovedBalances': {} }] }
-	] }).toArray()
+	const campaigns = await campaignsCol.find({ 'status.name': { '$nin': ['Expired', 'Exhausted'] } }).toArray()
 
 	await Promise.all(campaigns
 		.map(c => getStatusOfCampaign(c)
