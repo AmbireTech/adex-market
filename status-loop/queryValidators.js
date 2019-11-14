@@ -62,10 +62,10 @@ async function getStatusOfCampaign (campaign) {
 	const leaderHeartbeats = dataLeader.heartbeats || []
 	const folowerHeartbeats = dataFollower.heartbeats || []
 	const messagesFromAll = {
-		leaderHeartbeat: (leaderHeartbeats[0] || {}).msg,
-		followerHeartbeat: (leaderHeartbeats[1] || {}).msg,
-		followerFromLeader: (leaderHeartbeats[0] || {}).msg,
-		followerFromFollower: (folowerHeartbeats[1] || {}).msg,
+		leaderHeartbeat: leaderHeartbeats,
+		followerHeartbeat: leaderHeartbeats,
+		followerFromLeader: leaderHeartbeats,
+		followerFromFollower: folowerHeartbeats,
 		newStateLeader: lastApproved ? [lastApproved.newState] : [],
 		approveStateFollower: lastApproved ? [lastApproved.approveState] : []
 	}
