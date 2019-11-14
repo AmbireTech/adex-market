@@ -41,6 +41,7 @@ function getCampaignsQuery (query) {
 
 function getCampaigns (req, res) {
 	const limit = +req.query.limit || MAX_LIMIT
+	const publisherChannelLimit = req.query.publisherChannelLimit
 	const skip = +req.query.skip || 0
 	const query = getCampaignsQuery(req.query)
 	const campaignsCol = db.getMongo().collection('campaigns')
@@ -51,10 +52,11 @@ function getCampaigns (req, res) {
 			{ projection: { _id: 0 } }
 		)
 		.skip(skip)
+		.limit(limit)
 		.toArray()
 		.then((campaigns) => {
 			if (query.hasOwnProperty('limitForPublisher')) {
-				campaigns = filterCampaignsForPublisher(campaigns, limit, query.limitForPublisher)
+				campaigns = filterCampaignsForPublisher(campaigns, publisherChannelLimit, query.limitForPublisher)
 			}
 			res.set('Cache-Control', 'public, max-age=60')
 			return res.send(campaigns)
