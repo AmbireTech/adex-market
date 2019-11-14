@@ -54,7 +54,7 @@ async function getIdentityBalance (addr = '') {
 
 async function enforceLimited (req, res, next) {
 	// TEMP hotfix
-	return next()
+	// return next()
 	try {
 		const publisherAddr = req.query.limitForPublisher
 		const isPublisherLimited = await isAddrLimited(publisherAddr)

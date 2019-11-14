@@ -4,6 +4,7 @@ const getRequest = require('../helpers/getRequest')
 const signatureCheck = require('../helpers/signatureCheck')
 const { noCache } = require('../helpers/cache')
 const { limitCampaigns } = require('../helpers/enforcePublisherLimits')
+const { filterCampaignsForPublisher } = require('../helpers/campaignLimiting')
 const router = express.Router()
 
 const MAX_LIMIT = 300
@@ -35,11 +36,6 @@ function getCampaignsQuery (query) {
 		findQuery['creator'] = query.byCreator
 	}
 
-	if (query.hasOwnProperty('byEarner')) {
-		const queryClause = `status.lastApprovedBalances.${query.byEarner}`
-		findQuery[queryClause] = { '$exists': true }
-	}
-
 	return findQuery
 }
 
@@ -55,11 +51,13 @@ function getCampaigns (req, res) {
 			{ projection: { _id: 0 } }
 		)
 		.skip(skip)
-		.limit(limit)
 		.toArray()
-		.then((result) => {
+		.then((campaigns) => {
+			if (query.hasOwnProperty('limitForPublisher')) {
+				campaigns = filterCampaignsForPublisher(campaigns, limit, query.limitForPublisher)
+			}
 			res.set('Cache-Control', 'public, max-age=60')
-			return res.send(result)
+			return res.send(campaigns)
 		})
 		.catch((err) => {
 			console.error('Error getting campaigns', err)
