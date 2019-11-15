@@ -25,7 +25,7 @@ const DAI_ADDRESS = '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359'
 const DAI_USD_PRICE = 1
 const DAI_DECIMALS = 18
 
-function getStatus (messagesFromAll, campaign, balanceTree, lastApprovedBalances) {
+function getStatus (messagesFromAll, campaign, balanceTree) {
 	if (isExpired(campaign)) {
 		return 'Expired'
 	} else if (isWithdraw(campaign)) {
@@ -79,9 +79,8 @@ async function getStatusOfCampaign (campaign) {
 	const verified = verifyLastApproved(lastApproved, validators)
 	const lastApprovedSigs = lastApproved ? getLastSigs(lastApproved) : []
 	const lastApprovedBalances = lastApproved ? getLastBalances(lastApproved) : {}
-	const balanceTree = lastApprovedBalances
 	return {
-		name: getStatus(messagesFromAll, campaign, balanceTree, lastApprovedBalances),
+		name: getStatus(messagesFromAll, campaign, lastApprovedBalances),
 		lastHeartbeat: {
 			leader: getLasHeartbeatTimestamp(messagesFromAll.leaderHeartbeat[0]),
 			follower: getLasHeartbeatTimestamp(messagesFromAll.followerFromFollower[0])
