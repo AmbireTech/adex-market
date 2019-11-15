@@ -40,7 +40,7 @@ function getCampaignsQuery (query) {
 }
 
 function getCampaigns (req, res) {
-	const limit = +req.query.limit || MAX_LIMIT
+	const campaignLimit = +req.query.limit || MAX_LIMIT
 	const publisherChannelLimit = req.query.publisherChannelLimit
 	const skip = +req.query.skip || 0
 	const mongoQuery = getCampaignsQuery(req.query)
@@ -51,7 +51,7 @@ function getCampaigns (req, res) {
 			{ projection: { _id: 0 } }
 		)
 		.skip(skip)
-		.limit(limit)
+		.limit(campaignLimit)
 		.toArray()
 		.then((campaigns) => {
 			if (req.query.hasOwnProperty('limitForPublisher')) {
