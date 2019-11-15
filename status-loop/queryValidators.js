@@ -30,7 +30,7 @@ function getStatus (messagesFromAll, campaign, balanceTree, lastApprovedBalances
 		return 'Expired'
 	} else if (isWithdraw(campaign)) {
 		return 'Withdraw'
-	} else if (isExhausted(campaign, balanceTree) && Object.keys(lastApprovedBalances).length) {
+	} else if (isExhausted(campaign, balanceTree)) {
 		return 'Exhausted'
 	} else if (isInitializing(messagesFromAll)) {
 		return 'Initializing'
