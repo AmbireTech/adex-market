@@ -75,10 +75,11 @@ async function getStatusOfCampaign (campaign) {
 		newStateLeader: lastApproved ? [lastApproved.newState] : [],
 		approveStateFollower: lastApproved ? [lastApproved.approveState] : []
 	}
-	const balanceTree = (lastApproved && lastApproved.msg) ? lastApproved.msg.balances : {}
+
 	const verified = verifyLastApproved(lastApproved, validators)
 	const lastApprovedSigs = lastApproved ? getLastSigs(lastApproved) : []
 	const lastApprovedBalances = lastApproved ? getLastBalances(lastApproved) : {}
+	const balanceTree = lastApprovedBalances
 	return {
 		name: getStatus(messagesFromAll, campaign, balanceTree, lastApprovedBalances),
 		lastHeartbeat: {
@@ -107,11 +108,7 @@ function getLasHeartbeatTimestamp (msg) {
 	}
 }
 
-async function getDistributedFunds (campaign) {
-	const validators = campaign.spec.validators
-
-	const tree = await getRequest(`${validators[0].url}/channel/${campaign.id}/validator-messages/${validators[0].id}/Accounting`)
-	const balanceTree = tree.validatorMessages[0] ? tree.validatorMessages[0].msg.balances : {}
+async function getDistributedFunds (campaign, balanceTree) {
 	const totalBalances = Object.values(balanceTree).reduce((total, val) => total.add(bigNumberify(val)), bigNumberify(0))
 	const depositAmount = bigNumberify(campaign.depositAmount)
 	const distributedFundsRatio = totalBalances.mul(bigNumberify(1000)).div(depositAmount) // in promiles
@@ -167,7 +164,7 @@ async function queryValidators () {
 					fundsDistributedRatio,
 					usdEstimate
 				] = await Promise.all([
-					getDistributedFunds(c),
+					getDistributedFunds(c, status.lastApprovedBalances),
 					getEstimateInUsd(c)
 				])
 				const statusObj = {
