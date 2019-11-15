@@ -8,8 +8,7 @@ const CHANNEL_LIMIT = cfg.defaultChannelLimit
 const EARNINGS_LIMIT = new BN(cfg.limitedIdentityEarningsLimit)
 
 async function limitCampaigns (req, res, next) {
-	const publisherAddr = req.query.limitForPublisher
-	if (publisherAddr) {
+	if (req.query.limitForPublisher) {
 		req.query.publisherChannelLimit = CHANNEL_LIMIT
 	}
 	return next()
