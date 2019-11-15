@@ -66,12 +66,12 @@ async function getStatusOfCampaign (campaign) {
 
 	const lastApproved = dataLeader.lastApproved
 	const leaderHeartbeats = dataLeader.heartbeats || []
-	const folowerHeartbeats = dataFollower.heartbeats || []
+	const followerHeartbeats = dataFollower.heartbeats || []
 	const messagesFromAll = {
 		leaderHeartbeat: leaderHeartbeats.filter(hbByValidator.bind(this, leader.id)),
-		followerHeartbeat: leaderHeartbeats.filter(hbByValidator.bind(this, leader.id)),
+		followerHeartbeat: followerHeartbeats.filter(hbByValidator.bind(this, leader.id)),
 		followerFromLeader: leaderHeartbeats.filter(hbByValidator.bind(this, follower.id)),
-		followerFromFollower: folowerHeartbeats.filter(hbByValidator.bind(this, follower.id)),
+		followerFromFollower: followerHeartbeats.filter(hbByValidator.bind(this, follower.id)),
 		newStateLeader: lastApproved ? [lastApproved.newState] : [],
 		approveStateFollower: lastApproved ? [lastApproved.approveState] : []
 	}
