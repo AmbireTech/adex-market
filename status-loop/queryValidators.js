@@ -50,11 +50,17 @@ function getStatus (messagesFromAll, campaign, balanceTree, lastApprovedBalances
 	throw new Error('internal error: no status detected; should never happen')
 }
 
+function hbByValidator (validatorId, hb) {
+	return hb.from === validatorId
+}
+
 async function getStatusOfCampaign (campaign) {
 	const validators = campaign.spec.validators
+	const leader = validators[0]
+	const follower = validators[1]
 
-	const callLeader = getRequest(`${validators[0].url}/channel/${campaign.id}/last-approved?withHeartbeat=true`)
-	const callFollower = getRequest(`${validators[1].url}/channel/${campaign.id}/last-approved?withHeartbeat=true`)
+	const callLeader = getRequest(`${leader.url}/channel/${campaign.id}/last-approved?withHeartbeat=true`)
+	const callFollower = getRequest(`${follower.url}/channel/${campaign.id}/last-approved?withHeartbeat=true`)
 
 	const [ dataLeader, dataFollower ] = await Promise.all([callLeader, callFollower])
 
@@ -62,10 +68,10 @@ async function getStatusOfCampaign (campaign) {
 	const leaderHeartbeats = dataLeader.heartbeats || []
 	const folowerHeartbeats = dataFollower.heartbeats || []
 	const messagesFromAll = {
-		leaderHeartbeat: leaderHeartbeats,
-		followerHeartbeat: leaderHeartbeats,
-		followerFromLeader: leaderHeartbeats,
-		followerFromFollower: folowerHeartbeats,
+		leaderHeartbeat: leaderHeartbeats.filter(hbByValidator.bind(null, leader.id)),
+		followerHeartbeat: leaderHeartbeats.filter(hbByValidator.bind(null, leader.id)),
+		followerFromLeader: leaderHeartbeats.filter(hbByValidator.bind(follower.id)),
+		followerFromFollower: folowerHeartbeats.filter(hbByValidator.bind(follower.id)),
 		newStateLeader: lastApproved ? [lastApproved.newState] : [],
 		approveStateFollower: lastApproved ? [lastApproved.approveState] : []
 	}
@@ -151,7 +157,8 @@ async function queryValidators () {
 	await channels.map(c => campaignsCol.updateOne({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
 
 	// Expired and Exhausted are permanent so there's no point to include them in the loop
-	const campaigns = await campaignsCol.find({ 'status.name': { '$nin': ['Expired', 'Exhausted'] } }).toArray()
+	const campaigns = await campaignsCol
+		.find({ 'status.name': { '$nin': ['Expired', 'Exhausted'] } }).toArray()
 
 	await Promise.all(campaigns
 		.map(c => getStatusOfCampaign(c)
