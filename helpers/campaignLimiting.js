@@ -1,8 +1,8 @@
 const BN = require('bn.js')
 
-function getFilteredCampaigns (campaigns, publisherAddr) {
+function getFilteredCampaigns (campaigns) {
 	const filteredCampaigns = campaigns.filter((c) => {
-		return (c.status.name !== 'Expired') && (c.status.lastApprovedBalances.hasOwnProperty(publisherAddr))
+		return c.status.name !== 'Expired'
 	})
 
 	return filteredCampaigns
@@ -13,7 +13,7 @@ function shouldWeLimitCampaigns (filteredCampaigns, limit) {
 }
 
 function filterCampaignsForPublisher (campaigns, limit, publisherAddr) {
-	const filteredCampaigns = getFilteredCampaigns(campaigns, publisherAddr)
+	const filteredCampaigns = getFilteredCampaigns(campaigns)
 	if (shouldWeLimitCampaigns(filteredCampaigns, limit, publisherAddr)) {
 		return filteredCampaigns
 			.sort((c1, c2) => {
