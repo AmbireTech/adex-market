@@ -1,12 +1,21 @@
 const express = require('express')
-const { webDetection, labelDetection } = require('../helpers/google/googleVision')
-const { classifyWebpage, classifyText } = require('../helpers/google/googleLanguage')
+const {
+	webDetection,
+	labelDetection,
+	textDetection
+} = require('../helpers/google/googleVision')
+const {
+	classifyWebpage,
+	classifyText
+} = require('../helpers/google/googleLanguage')
 const { PredefinedTags } = require('adex-models').constants
 const multer = require('multer')
 
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
 const router = express.Router()
+
+const MINIMUM_WORDS_NEEDED = 20
 
 router.get('/', getTags)
 router.post('/imageCategories', upload.single('media'), getImageCategories)
@@ -19,13 +28,36 @@ function getTags (req, res) {
 async function getImageCategories (req, res) {
 	try {
 		if (req.file) {
+			const { targetUrl } = req.body
 			const image = req.file.buffer
-			const { pagesWithMatchingImages, webEntities } = await webDetection(image)
-			const labels = await labelDetection(image)
-			const labelsCategories = await getCategoriesFromLabels(labels) || []
-			const entitiesCategories = await getCategoriesFromLabels(webEntities) || []
-			const pagesCategories = await getCategoriesFromPage(pagesWithMatchingImages) || []
-			const result = { categories: [...entitiesCategories, ...pagesCategories, ...labelsCategories] }
+			const [
+				{ pagesWithMatchingImages },
+				textAnnotations,
+				labels
+			] = await Promise.all([
+				webDetection(image),
+				textDetection(image),
+				labelDetection(image)
+			])
+			const [
+				[targetUlrSuggestions],
+				[imageTextSuggestions],
+				[labelsSuggestions],
+				[[matchingPagesSuggestions]]
+			] = await Promise.all([
+				classifyWebpage(targetUrl),
+				getCategoriesFromLabels(textAnnotations),
+				getCategoriesFromLabels(labels),
+				getCategoriesFromPage(pagesWithMatchingImages)
+			])
+			const result = {
+				categories: [
+					...((targetUlrSuggestions || []).categories),
+					...((imageTextSuggestions || []).categories),
+					...((labelsSuggestions || []).categories),
+					...((matchingPagesSuggestions || []).categories)
+				]
+			}
 			return res.json(result)
 		} else {
 			throw new Error('NO FILE ATTACHED!')
@@ -39,22 +71,20 @@ async function getImageCategories (req, res) {
 async function getCategoriesFromLabels (labels) {
 	const results = []
 	labels && labels.map(i => i.description && results.push(i.description))
-	const { categories } = await classifyText(results.join(', '))
-	return categories
+	let enoughWords = []
+	while (enoughWords.length < MINIMUM_WORDS_NEEDED && results.length !== 0) {
+		enoughWords = enoughWords.concat(results)
+	}
+	return classifyText(enoughWords.join(' '))
 }
 
 async function getCategoriesFromPage (pagesWithMatchingImages) {
 	const results = []
 	pagesWithMatchingImages &&
-			pagesWithMatchingImages.map(match => {
-				results.push(classifyWebpage(match.url))
-			})
-	const matchingCategories = await Promise.all(results)
-	let unwrap = []
-	matchingCategories.map(
-		i => { if (i.categories) unwrap = unwrap.concat(i.categories) }
-	)
-	return unwrap
+	pagesWithMatchingImages.map(match => {
+		results.push(classifyWebpage(match.url))
+	})
+	return Promise.all(results)
 }
 
 async function getWebsiteCategories (req, res) {

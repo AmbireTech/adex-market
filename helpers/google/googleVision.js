@@ -17,4 +17,10 @@ const labelDetection = async imageBuffer => {
 	return result.labelAnnotations
 }
 
-module.exports = { webDetection, labelDetection }
+const textDetection = async imageBuffer => {
+	const client = new vision.ImageAnnotatorClient()
+	const [result] = await client.textDetection(imageBuffer)
+	return result.textAnnotations
+}
+
+module.exports = { webDetection, labelDetection, textDetection }
