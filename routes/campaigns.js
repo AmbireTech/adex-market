@@ -36,6 +36,11 @@ function getCampaignsQuery (query) {
 		findQuery['creator'] = query.byCreator
 	}
 
+	if (query.hasOwnProperty('limitForPublisher')) {
+		const queryClause = `status.lastApprovedBalances.${query.limitForPublisher}`
+		findQuery[queryClause] = { '$exists': true }
+	}
+
 	return findQuery
 }
 
