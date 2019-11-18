@@ -10,8 +10,7 @@ const classifyWebpage = async (URL) => {
 			type: 'HTML'
 		}
 		const client = new language.LanguageServiceClient()
-		const [result] = await client.classifyText({ document: document })
-		return result
+		return client.classifyText({ document: document })
 	} catch (error) {
 		console.log(error)
 		return false
@@ -25,8 +24,7 @@ const classifyText = async (text) => {
 			type: 'PLAIN_TEXT'
 		}
 		const client = new language.LanguageServiceClient()
-		const [result] = await client.classifyText({ document: document })
-		return result
+		return client.classifyText({ document: document })
 	} catch (error) {
 		console.log(error)
 		return false
