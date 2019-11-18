@@ -45,29 +45,17 @@ async function getImageCategories (req, res) {
 				[labelsSuggestions],
 				[[matchingPagesSuggestions]]
 			] = await Promise.all([
-				classifyWebpage(targetUrl).catch(e => {
-					console.log('Did not receive categories from target url')
-					return [null]
-				}),
-				getCategoriesFromLabels(textAnnotations).catch(e => {
-					console.log('Did not receive categories from image text')
-					return [null]
-				}),
-				getCategoriesFromLabels(labels).catch(e => {
-					console.log('Did not receive categories from labels')
-					return [null]
-				}),
-				getCategoriesFromPage(pagesWithMatchingImages).catch(e => {
-					console.log('Did not receive categories from matching pages')
-					return [[null]]
-				})
+				classifyWebpage(targetUrl),
+				getCategoriesFromLabels(textAnnotations),
+				getCategoriesFromLabels(labels),
+				getCategoriesFromPage(pagesWithMatchingImages)
 			])
 			const result = {
 				categories: [
-					...(targetUlrSuggestions || []).categories,
-					...(imageTextSuggestions || []).categories,
-					...(labelsSuggestions || []).categories,
-					...(matchingPagesSuggestions || []).categories
+					...((targetUlrSuggestions || []).categories || []),
+					...((imageTextSuggestions || []).categories || []),
+					...((labelsSuggestions || []).categories || []),
+					...((matchingPagesSuggestions || []).categories || [])
 				]
 			}
 			return res.json(result)
@@ -93,10 +81,10 @@ async function getCategoriesFromLabels (labels) {
 async function getCategoriesFromPage (pagesWithMatchingImages) {
 	const results = []
 	pagesWithMatchingImages &&
-    pagesWithMatchingImages.map(match => {
-    	results.push(classifyWebpage(match.url))
-    })
-	return Promise.all(results)
+	pagesWithMatchingImages.map(match => {
+		results.push(classifyWebpage(match.url))
+	})
+	return results.length > 0 ? Promise.all(results) : [[false]]
 }
 
 async function getWebsiteCategories (req, res) {

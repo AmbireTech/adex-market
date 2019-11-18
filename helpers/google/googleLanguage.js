@@ -10,10 +10,10 @@ const classifyWebpage = async (URL) => {
 			type: 'HTML'
 		}
 		const client = new language.LanguageServiceClient()
-		return client.classifyText({ document: document })
+		return await client.classifyText({ document: document })
 	} catch (error) {
 		console.log(error)
-		return false
+		return [false]
 	}
 }
 
@@ -24,10 +24,10 @@ const classifyText = async (text) => {
 			type: 'PLAIN_TEXT'
 		}
 		const client = new language.LanguageServiceClient()
-		return client.classifyText({ document: document })
+		return await client.classifyText({ document: document })
 	} catch (error) {
 		console.log(error)
-		return false
+		return [false]
 	}
 }
 
