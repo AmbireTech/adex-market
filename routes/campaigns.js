@@ -20,7 +20,7 @@ function getBalanceTree (validatorUrl, channelId) {
 		})
 }
 
-function getCampaignsQuery (query) {
+function getFindQuery (query) {
 	// Uses default statuses (active, ready) if none are requested
 	const status = query.status ? query.status.split(',') : ['Active', 'Ready']
 	// If request query has ?all it doesn't query for status
@@ -48,7 +48,7 @@ function getCampaigns (req, res) {
 	const campaignLimit = +req.query.limit || MAX_LIMIT
 	const publisherChannelLimit = req.query.publisherChannelLimit
 	const skip = +req.query.skip || 0
-	const mongoQuery = getCampaignsQuery(req.query)
+	const mongoQuery = getFindQuery(req.query)
 	const campaignsCol = db.getMongo().collection('campaigns')
 	campaignsCol
 		.find(
