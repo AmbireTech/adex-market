@@ -12,7 +12,7 @@ const classifyWebpage = async (URL) => {
 		const client = new language.LanguageServiceClient()
 		return await client.classifyText({ document: document })
 	} catch (error) {
-		console.log(error)
+		console.log(error.details)
 		return [false]
 	}
 }
@@ -26,7 +26,7 @@ const classifyText = async (text) => {
 		const client = new language.LanguageServiceClient()
 		return await client.classifyText({ document: document })
 	} catch (error) {
-		console.log(error)
+		console.log(error.details)
 		return [false]
 	}
 }
