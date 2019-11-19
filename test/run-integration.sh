@@ -14,6 +14,10 @@ sleep 6
 
 TEST_MARKET_URL=$TEST_MARKET_URL node ./test/integration/integration.js
 
+mongo $MONGO --eval 'db.dropDatabase()' >$MONGO_OUT
+
+TEST_MARKET_URL=$TEST_MARKET_URL node ./test/integration/campaignLimitTests.js
+
 exitCode=$?
 
 # end all processes

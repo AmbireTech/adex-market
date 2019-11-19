@@ -3,7 +3,7 @@ const tape = require('tape')
 const fetch = require('node-fetch')
 const marketUrl = process.env.TEST_MARKET_URL
 const fs = require('fs')
-const testData = require('../prep-db/seedDb').testData
+const { testData } = require('../prep-db/seedDb')
 const FormData = require('form-data')
 
 const identityAddr = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
