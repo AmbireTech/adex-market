@@ -3,10 +3,12 @@ const tape = require('tape')
 const fetch = require('node-fetch')
 const marketUrl = process.env.TEST_MARKET_URL
 const fs = require('fs')
-const { testData } = require('../prep-db/seedDb')
+const { testData, getCampaign } = require('../prep-db/seedDb')
 const FormData = require('form-data')
-
+const cfg = require('../../cfg')
+const BN = require('bn.js')
 const identityAddr = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
+const identityAddrFilter = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258666'
 const signerAddr = `0x2aecF52ABe359820c48986046959B4136AfDfbe2`
 // const earnerAddr = '0x712e40a78735af344f6ae3b79fa6952d698c3b37'
 
@@ -143,13 +145,7 @@ tape('GET /campaigns/:id', (t) => {
 		.then((res) => {
 			t.ok(Array.isArray(res), 'returns array with the element')
 			t.equals(res.length, 1, 'only one campaign is returned')
-
-			// LeaderBalanceTree: **exists**
-			// Test: /\_/|
-			//     Ϟ(๑ﾟoﾟ)Ϟ
-			t.ok(res[0].hasOwnProperty('leaderBalanceTree'), 'Returns leaderBalanceTree')
-
-			t.ok(res[0].hasOwnProperty('followerBalanceTree'), 'Returns followerBalanceTree')
+			t.ok(res[0].hasOwnProperty('balanceTree'), 'Returns the tree')
 			t.end()
 		})
 		.catch(err => t.fail(err))
@@ -241,9 +237,9 @@ tape('GET /stats', (t) => {
 			t.equals(res.advertiserCount, 1, 'advertiserCount is the right amount')
 			t.equals(res.anonPublisherCount, 0, 'anonPublisherCount is right amount')
 			t.equals(res.anonAdvertiserCount, 0, 'anonAdvertiserCount is of right amount')
-			t.equals(res.campaignCount, 2, 'campaignCount is of right amount')
-			t.equals(res.campaignsByStatus['Active'], 1, 'active status campaigns are the right amount')
-			t.equals(res.totalSpentFundsByAssetType[constants.DAI_ADDR], '010000000000000000002000000000000000000', 'funds are the right amount')
+			t.equals(res.campaignCount, testData.campaigns.length, 'campaignCount is of right amount')
+			t.equals(res.campaignsByStatus['Active'], testData.campaigns.filter(c => c.status.name === 'Active').length, 'active status campaigns are the right amount')
+			t.equals(res.totalSpentFundsByAssetType[constants.DAI_ADDR], '0100000000000000000000100000000000000000000100000000000000000000100000000000000000000', 'funds are the right amount')
 			t.end()
 		})
 		.catch(err => t.fail(err))
@@ -612,4 +608,45 @@ tape('GET /tags', (t) => {
 		t.ok(res.every((i) => typeof i['_id'] === 'string'), 'Every tag is a string')
 		t.end()
 	})
+})
+
+tape('GET /campaigns?limitForPublisher...  NO FILTERING', (t) => {
+	fetch(`${marketUrl}/campaigns?byEarner=${identityAddr}&limitForPublisher=${identityAddr}&status=Active,Ready`)
+	.then((res) => res.json())
+	.then((res) => {
+		t.ok(Array.isArray(res), 'returns array')
+		t.equals(
+			res.length,
+			2, // Campaigns with publisherAddr in balances and active/ready
+			'right amount of campaigns are returned'
+		)
+		t.ok(res.every((c) => c.status.name === 'Active' || c.status.name === 'Ready'), 'no Expired campaigns')
+		t.ok(res.every((c) => c.status.lastApprovedBalances.hasOwnProperty(identityAddr)), 'Each campaign contains identityAddr in balances')
+		t.end()
+	})
+	.catch(err => t.fail(err))
+})
+
+tape('GET /campaigns?limitForPublisher... FILTERING', (t) => {
+	fetch(`${marketUrl}/campaigns?byEarner=${identityAddr}&limitForPublisher=${identityAddr}&status=Active,Ready`)
+	.then((res) => res.json())
+	.then((res) => {
+		t.ok(Array.isArray(res), 'returns array')
+		t.equals(
+			res.length,
+			cfg.defaultChannelLimit,
+			'right amount of campaigns are returned'
+		)
+		t.ok(res.every((c) => c.status.name === 'Active' || c.status.name === 'Ready'), 'no Expired campaigns')
+		t.ok(res.every((c) => c.status.lastApprovedBalances.hasOwnProperty(identityAddr)), 'Each campaign contains identityAddr in balances')
+		let isSorted = res.every(
+			(c, i) => (i === 0 ||
+				new BN(c.status.lastApprovedBalances[identityAddr]).lte(
+					new BN(res[i - 1].status.lastApprovedBalances[identityAddr])
+				))
+		)
+		t.ok(isSorted, 'Array is sorted correctly')
+		t.end()
+	})
+	.catch(err => t.fail(err))
 })
