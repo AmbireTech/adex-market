@@ -1,6 +1,5 @@
 const express = require('express')
 const db = require('../db')
-const getRequest = require('../helpers/getRequest')
 const signatureCheck = require('../helpers/signatureCheck')
 const { noCache } = require('../helpers/cache')
 const { limitCampaigns } = require('../helpers/enforcePublisherLimits')
@@ -109,9 +108,9 @@ function getCampaignInfo (req, res, next) {
 			if (!result[0]) {
 				return res.send([{}])
 			}
-			getBalanceTree(id)
-				.then((tree) => {
-					return res.send(tree)
+			return getBalanceTree(id)
+				.then((balanceTree) => {
+					return res.send({ balanceTree })
 				})
 		})
 		.catch((err) => {
