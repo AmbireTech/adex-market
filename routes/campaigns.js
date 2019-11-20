@@ -13,11 +13,17 @@ router.get('/', limitCampaigns, getCampaigns)
 router.get('/by-owner', noCache, signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
 
-function getBalanceTree (validatorUrl, channelId) {
-	return getRequest(`${validatorUrl}/channel/${channelId}/tree`)
-		.catch((err) => {
-			return err
+function getBalanceTree (channelId) {
+	return db.getMongo().collection('campaigns')
+		.find({ 'id': channelId })
+		.toArray()
+		.then(campaigns => {
+			if (campaigns[0].status && campaigns[0].status.lastApprovedBalances) {
+				return campaigns[0].status.lastApprovedBalances
+			}
+			return {}
 		})
+		.catch((err) => console.error(err))
 }
 
 function getFindQuery (query) {
@@ -103,13 +109,9 @@ function getCampaignInfo (req, res, next) {
 			if (!result[0]) {
 				return res.send([{}])
 			}
-			const validators = result[0].spec.validators
-			const leaderBalanceTree = getBalanceTree(validators[0].url, id)
-			const followerBalanceTree = getBalanceTree(validators[1].url, id)
-
-			Promise.all([leaderBalanceTree, followerBalanceTree])
-				.then((trees) => {
-					return res.send([{ leaderBalanceTree: trees[0], followerBalanceTree: trees[1] }])
+			getBalanceTree(id)
+				.then((tree) => {
+					return res.send(tree)
 				})
 		})
 		.catch((err) => {

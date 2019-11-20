@@ -11,6 +11,11 @@ function getRequest (uri) {
 				throw new Error(`Fetch error at "${res.url}", status: [${res.status}] ${res.statusText}, err: ${text} `)
 			})
 		})
+		.catch((err) => {
+			console.error('=== ERROR IN GET REQUEST ===')
+			console.error(err)
+			throw new Error(err)
+		})
 }
 
 module.exports = getRequest
