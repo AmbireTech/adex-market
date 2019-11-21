@@ -16,9 +16,9 @@ function getBalanceTree (channelId) {
 	return db.getMongo().collection('campaigns')
 		.find({ 'id': channelId })
 		.toArray()
-		.then(campaigns => {
-			if (campaigns[0].status && campaigns[0].status.lastApprovedBalances) {
-				return campaigns[0].status.lastApprovedBalances
+		.then(campaign => {
+			if (campaign[0].status && campaign[0].status.lastApprovedBalances) {
+				return campaign[0].status.lastApprovedBalances
 			}
 			return {}
 		})
@@ -100,7 +100,7 @@ function getCampaignInfo (req, res, next) {
 	const campaignsCol = db.getMongo().collection('campaigns')
 
 	campaignsCol
-		.find({ '_id': id },
+		.find({ 'id': id },
 			{ projection: { _id: 0 } }
 		)
 		.toArray()
@@ -110,7 +110,7 @@ function getCampaignInfo (req, res, next) {
 			}
 			return getBalanceTree(id)
 				.then((balanceTree) => {
-					return res.send({ balanceTree })
+					return res.send([{ balanceTree }])
 				})
 		})
 		.catch((err) => {

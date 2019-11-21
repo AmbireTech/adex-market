@@ -140,7 +140,7 @@ tape('GET /campaigns?limit=1', (t) => {
 })
 
 tape('GET /campaigns/:id', (t) => {
-	fetch(`${marketUrl}/campaigns/${testData.campaigns[1]._id}`)
+	fetch(`${marketUrl}/campaigns/${testData.campaigns[0].id}`)
 		.then((res) => res.json())
 		.then((res) => {
 			t.ok(Array.isArray(res), 'returns array with the element')
@@ -283,242 +283,242 @@ tape('POST /media unauthorized', (t) => {
 	.catch(err => t.fail(err))
 })
 
-// tape('===== Authorized routes =====', (t) => {
-// 	fetch(`${marketUrl}/auth`, {
-// 		method: 'POST',
-// 		headers: {
-// 			'Content-type': 'application/json'
-// 		},
-// 		body: JSON.stringify(mockAuthObj)
-// 	})
-// 	.then(res => res.json())
-// 	.then((authResult) => {
-// 		const { status, identity, signature, expiryTime } = authResult
-// 		t.equals(status, 'OK', 'authentication is successful')
-// 		t.equals(typeof identity, 'string', 'Identity is a string')
-// 		t.ok(addrRegex40.test(identity), 'Identity is a real identity')
-// 		t.equals(typeof signature, 'string', 'Signature is a string')
-// 		t.ok(addrRegex130.test(signature), 'Signature is a real signature')
-// 		t.equals(typeof expiryTime, 'number', 'Expiry time is a number')
+tape('===== Authorized routes =====', (t) => {
+	fetch(`${marketUrl}/auth`, {
+		method: 'POST',
+		headers: {
+			'Content-type': 'application/json'
+		},
+		body: JSON.stringify(mockAuthObj)
+	})
+	.then(res => res.json())
+	.then((authResult) => {
+		const { status, identity, signature, expiryTime } = authResult
+		t.equals(status, 'OK', 'authentication is successful')
+		t.equals(typeof identity, 'string', 'Identity is a string')
+		t.ok(addrRegex40.test(identity), 'Identity is a real identity')
+		t.equals(typeof signature, 'string', 'Signature is a string')
+		t.ok(addrRegex130.test(signature), 'Signature is a real signature')
+		t.equals(typeof expiryTime, 'number', 'Expiry time is a number')
 
-// 		const form = new FormData()
-// 		form.append('media', fs.createReadStream(`${__dirname}/../resources/img.jpg`))
+		const form = new FormData()
+		form.append('media', fs.createReadStream(`${__dirname}/../resources/img.jpg`))
 
-// 		const getAdSlots = fetch(`${marketUrl}/slots`)
-// 		.then(res => res.json())
-// 		.then((res) => {
-// 			t.ok(Array.isArray(res), 'returns array')
-// 			t.equals(res.length, 1, 'returns right amount of slots')
-// 			t.ok(res[0].hasOwnProperty('type'), 'slot has property type')
-// 			t.ok(res[0].hasOwnProperty('fallbackUnit'), 'slot has property fallbackUnit')
-// 			t.ok(res[0].hasOwnProperty('tags'), 'slot has property tags')
-// 			t.ok(res[0].hasOwnProperty('owner'), 'slot has property owner')
-// 			t.ok(Array.isArray(res[0].tags), 'slot has tags')
-// 			t.equals(res[0].tags.length, 2, 'slot has right amount of tags')
-// 			t.ok(addrRegex40.test(res[0].owner), 'Owner is a real address')
-// 		})
-// 		.catch(err => t.fail(err))
+		const getAdSlots = fetch(`${marketUrl}/slots`)
+		.then(res => res.json())
+		.then((res) => {
+			t.ok(Array.isArray(res), 'returns array')
+			t.equals(res.length, 1, 'returns right amount of slots')
+			t.ok(res[0].hasOwnProperty('type'), 'slot has property type')
+			t.ok(res[0].hasOwnProperty('fallbackUnit'), 'slot has property fallbackUnit')
+			t.ok(res[0].hasOwnProperty('tags'), 'slot has property tags')
+			t.ok(res[0].hasOwnProperty('owner'), 'slot has property owner')
+			t.ok(Array.isArray(res[0].tags), 'slot has tags')
+			t.equals(res[0].tags.length, 2, 'slot has right amount of tags')
+			t.ok(addrRegex40.test(res[0].owner), 'Owner is a real address')
+		})
+		.catch(err => t.fail(err))
 
-// 		const getAdUnits = fetch(`${marketUrl}/units`)
-// 		.then(res => res.json())
-// 		.then((res) => {
-// 			t.ok(Array.isArray(res), 'returns array')
-// 			t.equals(res.length, 3, 'adunits are the right amount')
-// 			t.ok(res[0].hasOwnProperty('type'), 'adUnit has property type')
-// 			t.ok(res[0].hasOwnProperty('mediaUrl'), 'adUnit has property mediaUrl')
-// 			t.ok(res[0].hasOwnProperty('targetUrl'), 'adUnit has property targetUrl')
-// 			t.ok(res[0].hasOwnProperty('mediaMime'), 'adUnit has property mediaMime')
-// 			t.ok(res[0].hasOwnProperty('tags'), 'adUnit has property tags')
-// 			t.ok(res[0].hasOwnProperty('owner'), 'adUnit has property owner')
-// 			t.ok(addrRegex40.test(res[0].owner), 'Owner is a real address')
-// 			t.equals(res[0].owner, identityAddr, 'unit has correct owner')
-// 			t.ok(Array.isArray(res[0].tags))
-// 			t.ok(res[0].tags.length, 'unit has tags')
-// 		})
-// 		.catch(err => t.fail(err))
+		const getAdUnits = fetch(`${marketUrl}/units`)
+		.then(res => res.json())
+		.then((res) => {
+			t.ok(Array.isArray(res), 'returns array')
+			t.equals(res.length, 3, 'adunits are the right amount')
+			t.ok(res[0].hasOwnProperty('type'), 'adUnit has property type')
+			t.ok(res[0].hasOwnProperty('mediaUrl'), 'adUnit has property mediaUrl')
+			t.ok(res[0].hasOwnProperty('targetUrl'), 'adUnit has property targetUrl')
+			t.ok(res[0].hasOwnProperty('mediaMime'), 'adUnit has property mediaMime')
+			t.ok(res[0].hasOwnProperty('tags'), 'adUnit has property tags')
+			t.ok(res[0].hasOwnProperty('owner'), 'adUnit has property owner')
+			t.ok(addrRegex40.test(res[0].owner), 'Owner is a real address')
+			t.equals(res[0].owner, identityAddr, 'unit has correct owner')
+			t.ok(Array.isArray(res[0].tags))
+			t.ok(res[0].tags.length, 'unit has tags')
+		})
+		.catch(err => t.fail(err))
 
-// 		const postMedia = fetch(`${marketUrl}/media`, {
-// 			method: 'POST',
-// 			headers: {
-// 				'x-user-signature': signature
-// 			},
-// 			body: form
-// 		})
-// 		.then(res => res.json())
-// 		.then((res) => {
-// 			t.comment('POST on /media')
-// 			t.equals(typeof res, 'object', 'Something is returned')
-// 			t.ok(res.hasOwnProperty('ipfs'), 'Returns something called ipfs')
-// 			t.equals(typeof res.ipfs, 'string', 'IPFS is a string')
-// 		})
+		const postMedia = fetch(`${marketUrl}/media`, {
+			method: 'POST',
+			headers: {
+				'x-user-signature': signature
+			},
+			body: form
+		})
+		.then(res => res.json())
+		.then((res) => {
+			t.comment('POST on /media')
+			t.equals(typeof res, 'object', 'Something is returned')
+			t.ok(res.hasOwnProperty('ipfs'), 'Returns something called ipfs')
+			t.equals(typeof res.ipfs, 'string', 'IPFS is a string')
+		})
 
-// 		const postAdUnit = 	fetch(`${marketUrl}/units`, {
-// 			method: 'POST',
-// 			headers: {
-// 				'Content-type': 'application/json',
-// 				'x-user-signature': signature
-// 			},
-// 			identity: identityAddr,
-// 			body: JSON.stringify(mockAdUnit)
-// 		})
-// 		.then(res => {
-// 			t.comment('POST /units tests')
-// 			t.equals(res.status, 200, 'adunit submitted successfully')
-// 			return res.json()
-// 		})
-// 		.then((res) => {
-// 			fetch(`${marketUrl}/units/?identity=${identityAddr}`)
-// 				.then(getRes => getRes.json())
-// 				.then((getRes) => {
-// 					t.ok(Array.isArray(getRes), 'an array with units is returned')
-// 					t.equals(getRes.length, 4, 'new element is added') // 3 from test data + new one
-// 				})
-// 			fetch(`${marketUrl}/units/${res.ipfs}`, { headers: { 'x-user-signature': signature } })
-// 				.then(getRes => getRes.json())
-// 				.then((getRes) => {
-// 					t.equals(getRes.unit.ipfs, res.ipfs, 'returns item with correct ipfs hash')
-// 					fetch(`${marketUrl}/units/${res.ipfs}`, {
-// 						method: 'PUT',
-// 						headers: {
-// 							'Content-type': 'application/json',
-// 							'x-user-signature': signature
-// 						},
-// 						identity: identityAddr,
-// 						body: JSON.stringify({
-// 							title: 'Test slot 1',
-// 							description: 'Test description for test slot 1',
-// 							archived: true
-// 						})
-// 					})
-// 						.then((putRes) => {
-// 							t.comment('PUT /units/:id tests')
-// 							t.equals(putRes.status, 200, 'AdUnit edited successfully')
-// 							return putRes.json()
-// 						})
-// 						.then((putRes) => {
-// 							const updated = putRes.value
-// 							t.equals(updated.ipfs, res.ipfs, 'Returned unit is the same')
-// 							t.equals(updated.archived, true, 'Test unit archived successfully')
-// 							t.ok(updated.modified, 'Modified is not null anymore')
-// 						})
-// 				})
-// 		})
+		const postAdUnit = 	fetch(`${marketUrl}/units`, {
+			method: 'POST',
+			headers: {
+				'Content-type': 'application/json',
+				'x-user-signature': signature
+			},
+			identity: identityAddr,
+			body: JSON.stringify(mockAdUnit)
+		})
+		.then(res => {
+			t.comment('POST /units tests')
+			t.equals(res.status, 200, 'adunit submitted successfully')
+			return res.json()
+		})
+		.then((res) => {
+			fetch(`${marketUrl}/units/?identity=${identityAddr}`)
+				.then(getRes => getRes.json())
+				.then((getRes) => {
+					t.ok(Array.isArray(getRes), 'an array with units is returned')
+					t.equals(getRes.length, 4, 'new element is added') // 3 from test data + new one
+				})
+			fetch(`${marketUrl}/units/${res.ipfs}`, { headers: { 'x-user-signature': signature } })
+				.then(getRes => getRes.json())
+				.then((getRes) => {
+					t.equals(getRes.unit.ipfs, res.ipfs, 'returns item with correct ipfs hash')
+					fetch(`${marketUrl}/units/${res.ipfs}`, {
+						method: 'PUT',
+						headers: {
+							'Content-type': 'application/json',
+							'x-user-signature': signature
+						},
+						identity: identityAddr,
+						body: JSON.stringify({
+							title: 'Test slot 1',
+							description: 'Test description for test slot 1',
+							archived: true
+						})
+					})
+						.then((putRes) => {
+							t.comment('PUT /units/:id tests')
+							t.equals(putRes.status, 200, 'AdUnit edited successfully')
+							return putRes.json()
+						})
+						.then((putRes) => {
+							const updated = putRes.value
+							t.equals(updated.ipfs, res.ipfs, 'Returned unit is the same')
+							t.equals(updated.archived, true, 'Test unit archived successfully')
+							t.ok(updated.modified, 'Modified is not null anymore')
+						})
+				})
+		})
 
-// 		const postBadAdUnit = fetch(`${marketUrl}/units`, {
-// 			method: 'POST',
-// 			headers: {
-// 				'Content-type': 'application/json',
-// 				'x-user-signature': signature
-// 			},
-// 			body: JSON.stringify(brokenAdUnit)
-// 		})
-// 		.then((res) => {
-// 			t.comment('POST /units - bad data')
-// 			t.equals(res.status, 500, 'not allowed to submit broken data')
-// 		})
+		const postBadAdUnit = fetch(`${marketUrl}/units`, {
+			method: 'POST',
+			headers: {
+				'Content-type': 'application/json',
+				'x-user-signature': signature
+			},
+			body: JSON.stringify(brokenAdUnit)
+		})
+		.then((res) => {
+			t.comment('POST /units - bad data')
+			t.equals(res.status, 500, 'not allowed to submit broken data')
+		})
 
-// 		const postAdSlot = 	fetch(`${marketUrl}/slots`, {
-// 			method: 'POST',
-// 			headers: {
-// 				'Content-type': 'application/json',
-// 				'x-user-signature': signature
-// 			},
-// 			identity: identityAddr,
-// 			body: JSON.stringify(mockAdSlot)
-// 		})
-// 		.then(res => {
-// 			t.comment('POST /slots')
-// 			t.equals(res.status, 200, 'ad slot submitted successfully')
-// 			return res.json()
-// 		})
-// 		.then((res) => {
-// 			fetch(`${marketUrl}/slots/?identity=${identityAddr}`)
-// 				.then(getRes => getRes.json())
-// 				.then((getRes) => {
-// 					t.ok(Array.isArray(getRes), 'an array is returned')
-// 					t.equals(getRes.length, 2, 'new element is added')
-// 				})
-// 			fetch(`${marketUrl}/slots/${res.ipfs}`, { headers: { 'x-user-signature': signature } })
-// 				.then(getRes => getRes.json())
-// 				.then((getRes) => {
-// 					t.equals(getRes.slot.ipfs, res.ipfs, 'slot ipfs hash is correct')
-// 					t.equals(getRes.slot.owner, identityAddr, 'owner is correct')
-// 					fetch(`${marketUrl}/slots/${res.ipfs}`, {
-// 						method: 'PUT',
-// 						headers: {
-// 							'Content-type': 'application/json',
-// 							'x-user-signature': signature
-// 						},
-// 						identity: identityAddr,
-// 						body: JSON.stringify({
-// 							title: res.title,
-// 							description: res.description,
-// 							fallbackUnit: res.fallbackUnit,
-// 							minPerImpression: res.minPerImpression,
-// 							archived: true
-// 						})
-// 					})
-// 						.then((putRes) => {
-// 							t.comment('PUT /slots/:id tests')
-// 							t.equals(putRes.status, 200, 'AdSlot edited successfully')
-// 							return putRes.json()
-// 						})
-// 						.then((putRes) => {
-// 							const updated = putRes.value
-// 							t.equals(updated.ipfs, res.ipfs, 'Returned slot is the same')
-// 							t.equals(updated.archived, true, 'Test slot archived successfully')
-// 							t.ok(updated.modified, 'Modified is not null anymore')
-// 						})
-// 				})
-// 		})
-// 		.catch((err) => console.error(err))
+		const postAdSlot = 	fetch(`${marketUrl}/slots`, {
+			method: 'POST',
+			headers: {
+				'Content-type': 'application/json',
+				'x-user-signature': signature
+			},
+			identity: identityAddr,
+			body: JSON.stringify(mockAdSlot)
+		})
+		.then(res => {
+			t.comment('POST /slots')
+			t.equals(res.status, 200, 'ad slot submitted successfully')
+			return res.json()
+		})
+		.then((res) => {
+			fetch(`${marketUrl}/slots/?identity=${identityAddr}`)
+				.then(getRes => getRes.json())
+				.then((getRes) => {
+					t.ok(Array.isArray(getRes), 'an array is returned')
+					t.equals(getRes.length, 2, 'new element is added')
+				})
+			fetch(`${marketUrl}/slots/${res.ipfs}`, { headers: { 'x-user-signature': signature } })
+				.then(getRes => getRes.json())
+				.then((getRes) => {
+					t.equals(getRes.slot.ipfs, res.ipfs, 'slot ipfs hash is correct')
+					t.equals(getRes.slot.owner, identityAddr, 'owner is correct')
+					fetch(`${marketUrl}/slots/${res.ipfs}`, {
+						method: 'PUT',
+						headers: {
+							'Content-type': 'application/json',
+							'x-user-signature': signature
+						},
+						identity: identityAddr,
+						body: JSON.stringify({
+							title: res.title,
+							description: res.description,
+							fallbackUnit: res.fallbackUnit,
+							minPerImpression: res.minPerImpression,
+							archived: true
+						})
+					})
+						.then((putRes) => {
+							t.comment('PUT /slots/:id tests')
+							t.equals(putRes.status, 200, 'AdSlot edited successfully')
+							return putRes.json()
+						})
+						.then((putRes) => {
+							const updated = putRes.value
+							t.equals(updated.ipfs, res.ipfs, 'Returned slot is the same')
+							t.equals(updated.archived, true, 'Test slot archived successfully')
+							t.ok(updated.modified, 'Modified is not null anymore')
+						})
+				})
+		})
+		.catch((err) => console.error(err))
 
-// 		const postBadAdSlot = fetch(`${marketUrl}/slots`, {
-// 			method: 'POST',
-// 			headers: {
-// 				'Content-type': 'application/json',
-// 				'x-user-signature': signature
-// 			},
-// 			body: JSON.stringify(brokenAdSlot)
-// 		})
-// 		.then((res) => {
-// 			t.comment('/POST adslots - bad data')
-// 			t.equals(res.status, 500, 'broken adslots cant be submitted')
-// 		})
+		const postBadAdSlot = fetch(`${marketUrl}/slots`, {
+			method: 'POST',
+			headers: {
+				'Content-type': 'application/json',
+				'x-user-signature': signature
+			},
+			body: JSON.stringify(brokenAdSlot)
+		})
+		.then((res) => {
+			t.comment('/POST adslots - bad data')
+			t.equals(res.status, 500, 'broken adslots cant be submitted')
+		})
 
-// 		const session = fetch(`${marketUrl}/session`,
-// 		{
-// 			headers: {
-// 				'x-user-signature': signature
-// 			}
-// 		})
-// 		.then((res) => {
-// 			t.comment('GET /session')
-// 			t.equals(res.status, 200, 'Session retrieved successfully')
-// 			return res.json()
-// 		})
-// 		.then((res) => {
-// 			t.equals(typeof res, 'object', 'Returned object')
-// 			t.ok(res.hasOwnProperty('authenticated'), 'returns correct object')
-// 			t.equals(res.authenticated, true, 'User is authenticated')
-// 		})
+		const session = fetch(`${marketUrl}/session`,
+		{
+			headers: {
+				'x-user-signature': signature
+			}
+		})
+		.then((res) => {
+			t.comment('GET /session')
+			t.equals(res.status, 200, 'Session retrieved successfully')
+			return res.json()
+		})
+		.then((res) => {
+			t.equals(typeof res, 'object', 'Returned object')
+			t.ok(res.hasOwnProperty('authenticated'), 'returns correct object')
+			t.equals(res.authenticated, true, 'User is authenticated')
+		})
 
-// 		Promise.all([
-// 			postMedia,
-// 			postAdUnit,
-// 			postBadAdUnit,
-// 			postAdSlot,
-// 			postBadAdSlot,
-// 			getAdUnits,
-// 			getAdSlots,
-// 			session])
-// 			.then(() => {
-// 				t.end()
-// 			})
-// 			.catch(err => t.fail(err))
-// 	})
-// 	.catch(err => t.fail(err))
-// })
+		Promise.all([
+			postMedia,
+			postAdUnit,
+			postBadAdUnit,
+			postAdSlot,
+			postBadAdSlot,
+			getAdUnits,
+			getAdSlots,
+			session])
+			.then(() => {
+				t.end()
+			})
+			.catch(err => t.fail(err))
+	})
+	.catch(err => t.fail(err))
+})
 
 tape('POST /auth with bad data', (t) => {
 	fetch(`${marketUrl}/auth`, {
