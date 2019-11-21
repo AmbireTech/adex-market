@@ -1,7 +1,7 @@
 const BN = require('bn.js')
 
-function shouldWeLimitCampaigns (filteredCampaigns, limit) {
-	return filteredCampaigns.length > limit
+function shouldWeLimitCampaigns (campaigns, limit) {
+	return campaigns.length > limit
 }
 
 function filterCampaignsForPublisher (campaigns, limit, publisherAddr) {
