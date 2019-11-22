@@ -12,10 +12,10 @@ function getActiveUsers (users, role) {
 
 function getAnonPublishers (campaigns, users) {
 	const allUsersInCampaign = campaigns.map((c) => {
-		getRequest(`${c.spec.validators[0].url}/channels/${c.id}/tree`)
-			.then((result) => {
-				return Object.keys(result.balances)
-			})
+		if (c.status && c.status.lastApprovedBalances) {
+			return Object.keys(c.status.lastApprovedBalances)
+		}
+		return {}
 	})
 
 	return Promise.all(allUsersInCampaign)
