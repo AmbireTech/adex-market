@@ -36,11 +36,6 @@ function getFindQuery (query) {
 		findQuery['creator'] = query.byCreator
 	}
 
-	if (query.hasOwnProperty('limitForPublisher')) {
-		const queryClause = `status.lastApprovedBalances.${query.limitForPublisher}`
-		findQuery[queryClause] = { '$exists': true }
-	}
-
 	return findQuery
 }
 
@@ -60,7 +55,7 @@ function getCampaigns (req, res) {
 		.toArray()
 		.then((campaigns) => {
 			if (req.query.hasOwnProperty('limitForPublisher')) {
-				campaigns = filterCampaignsForPublisher(campaigns, publisherChannelLimit, req.query.limitForPublisher)
+				campaigns = filterCampaignsForPublisher(campaigns, publisherChannelLimit, req.query)
 			}
 			res.set('Cache-Control', 'public, max-age=60')
 			return res.send(campaigns)
