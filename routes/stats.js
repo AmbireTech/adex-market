@@ -1,6 +1,6 @@
 const express = require('express')
 const db = require('../db')
-const getRequest = require('../helpers/getRequest')
+const BN = require('bn.js')
 
 const router = express.Router()
 
@@ -77,18 +77,19 @@ function getStats (req, res, next) {
 					output.anonPublishers = anonPublishers
 					output.anonAdvertisers = getAnonAdvertisers(campaigns, users)
 
-					campaigns.map((c) => {
+					campaigns.map((c, i) => {
 						if (!output.campaignsByStatus[c.status.name]) {
 							output.campaignsByStatus[c.status.name] = 0
 						}
 						if (!output.totalSpentFundsByAssetType[c.depositAsset]) {
-							output.totalSpentFundsByAssetType[c.depositAsset] = 0
+							output.totalSpentFundsByAssetType[c.depositAsset] = new BN(0)
 						}
-
-						output.totalSpentFundsByAssetType[c.depositAsset] += c.depositAmount
+						output.totalSpentFundsByAssetType[c.depositAsset] = output.totalSpentFundsByAssetType[c.depositAsset].add(new BN(c.depositAmount))
 						output.campaignsByStatus[c.status.name]++
 					})
-
+					Object.keys(output.totalSpentFundsByAssetType).map((a) => {
+						output.totalSpentFundsByAssetType[a] = output.totalSpentFundsByAssetType[a].toString()
+					})
 					return res.send(output)
 				})
 				.catch((err) => {

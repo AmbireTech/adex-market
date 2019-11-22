@@ -239,7 +239,7 @@ tape('GET /stats', (t) => {
 			t.equals(res.anonAdvertiserCount, 0, 'anonAdvertiserCount is of right amount')
 			t.equals(res.campaignCount, testData.campaigns.length, 'campaignCount is of right amount')
 			t.equals(res.campaignsByStatus['Active'], testData.campaigns.filter(c => c.status.name === 'Active').length, 'active status campaigns are the right amount')
-			t.equals(res.totalSpentFundsByAssetType[constants.DAI_ADDR], '0100000000000000000000100000000000000000000100000000000000000000100000000000000000000', 'funds are the right amount')
+			t.equals(res.totalSpentFundsByAssetType[constants.DAI_ADDR], '3400000000000000000000', 'funds are the right amount')
 			t.end()
 		})
 		.catch(err => t.fail(err))
@@ -617,11 +617,10 @@ tape('GET /campaigns?limitForPublisher...  NO FILTERING', (t) => {
 		t.ok(Array.isArray(res), 'returns array')
 		t.equals(
 			res.length,
-			2, // Campaigns with publisherAddr in balances and active/ready
+			testData.campaigns.length - 1, // All campaigns except the expired one
 			'right amount of campaigns are returned'
 		)
 		t.ok(res.every((c) => c.status.name === 'Active' || c.status.name === 'Ready'), 'no Expired campaigns')
-		t.ok(res.every((c) => c.status.lastApprovedBalances.hasOwnProperty(identityAddr)), 'Each campaign contains identityAddr in balances')
 		t.end()
 	})
 	.catch(err => t.fail(err))
