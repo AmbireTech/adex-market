@@ -59,7 +59,8 @@ for (let i = 1; i <= cfg.defaultChannelLimit + 10; i++) {
 	}
 
 	campaignData.status.lastApprovedBalances[identityAddrFilter] = i + '000000000000000000' // will gradually increase with 1 DAI
-	campaignsAboveLimit.push(campaignData)
+	const campaign = getCampaign(campaignData)
+	campaignsAboveLimit.push(campaign)
 }
 
 const testData = {

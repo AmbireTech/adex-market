@@ -58,9 +58,9 @@ function getCampaigns (req, res) {
 		.skip(skip)
 		.limit(campaignLimit)
 		.toArray()
-		.then((campaigns) => {
+		.then(async (campaigns) => {
 			if (req.query.hasOwnProperty('limitForPublisher')) {
-				campaigns = filterCampaignsForPublisher(campaigns, publisherChannelLimit, req.query)
+				campaigns = await filterCampaignsForPublisher(campaigns, publisherChannelLimit, req.query)
 			}
 			res.set('Cache-Control', 'public, max-age=60')
 			return res.send(campaigns)
