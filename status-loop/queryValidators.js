@@ -26,12 +26,14 @@ const DAI_USD_PRICE = 1
 const DAI_DECIMALS = 18
 
 function getStatus (messagesFromAll, campaign, balanceTree) {
+	// Explaining the order
+	// generally we want to check more specific states first: if one state can be a subset of another, we check it first
 	if (isExpired(campaign)) {
 		return 'Expired'
-	} else if (isWithdraw(campaign)) {
-		return 'Withdraw'
 	} else if (isExhausted(campaign, balanceTree)) {
 		return 'Exhausted'
+	} else if (isWithdraw(campaign)) {
+		return 'Withdraw'
 	} else if (isInitializing(messagesFromAll)) {
 		return 'Initializing'
 	} else if (isOffline(messagesFromAll)) {
