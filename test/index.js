@@ -68,8 +68,8 @@ tape('isExhausted()', function (t) {
 })
 
 tape('isExpired()', function (t) {
-	t.equals(isExpired(vtm.expired.first), true, 'validUntil has passed returns true')
-	t.equals(isExpired(vtm.notExpired.first), false, 'validUntil has not passed returns false')
+	t.equals(isExpired(vtm.expired.first.campaign), true, 'validUntil has passed returns true')
+	t.equals(isExpired(vtm.notExpired.first.campaign), false, 'validUntil has not passed returns false')
 	t.end()
 })
 
