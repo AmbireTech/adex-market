@@ -82,16 +82,11 @@ function getCampaignInfo (req, res) {
 	const campaignsCol = db.getMongo().collection('campaigns')
 	campaignsCol
 		.findOne({ 'id': id })
-		// .then(res => res.json())
 		.then((campaign) => {
 			if (campaign && campaign.status && campaign.status.lastApprovedBalances) {
 				return res.send({ balanceTree: campaign.status.lastApprovedBalances })
 			}
 			return res.send({})
-			// return getBalanceTree(id)
-			// 	.then((balanceTree) => {
-			// 		return res.send({ balanceTree })
-			// 	})
 		})
 		.catch((err) => {
 			console.error('Error getting campaign info', err)
