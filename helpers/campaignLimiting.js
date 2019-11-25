@@ -27,7 +27,7 @@ async function filterCampaignsForPublisher (campaigns, limit, query, mongoQuery)
 			const c1Balance = new BN(c1.status.lastApprovedBalances[limitForPublisher])
 			const c2Balance = new BN(c2.status.lastApprovedBalances[limitForPublisher])
 			return c1Balance.gte(c2Balance) ? -1 : 1
-		}).splice(0, limit)
+		}).slice(0, limit)
 		return filtered
 	}
 	return campaigns
