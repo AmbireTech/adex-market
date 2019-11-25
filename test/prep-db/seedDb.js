@@ -37,7 +37,7 @@ const campaignLimitDataNoFiltering = [
 		{
 			'name': 'Expired',
 			'lastApprovedBalances': {
-				'0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65': '1000000000000000000'
+				[identityAddr]: '1000000000000000000'
 			}
 		}
 	})

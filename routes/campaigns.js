@@ -60,7 +60,7 @@ function getCampaigns (req, res) {
 		.toArray()
 		.then(async (campaigns) => {
 			if (req.query.hasOwnProperty('limitForPublisher')) {
-				campaigns = await filterCampaignsForPublisher(campaigns, publisherChannelLimit, req.query)
+				campaigns = await filterCampaignsForPublisher(campaigns, publisherChannelLimit, req.query, mongoQuery)
 			}
 			res.set('Cache-Control', 'public, max-age=60')
 			return res.send(campaigns)

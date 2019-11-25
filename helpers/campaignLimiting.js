@@ -1,24 +1,25 @@
 const BN = require('bn.js')
 const db = require('../db')
 
-async function getCampaignsEarningFrom (query) {
+async function getCampaignsEarningFrom (query, mongoQuery) {
 	const campaignsCol = db.getMongo().collection('campaigns')
 	const mongoQueryKey = `status.lastApprovedBalances.${query.limitForPublisher}`
-	const mongoQuery = {
+	const findQuery = {
+		...mongoQuery,
 		[mongoQueryKey]: {
 			'$exists': true
 		}
 	}
 	return campaignsCol
-		.find(mongoQuery)
+		.find(findQuery)
 		.toArray()
 		.then((campaigns) => {
 			return campaigns
 		})
 }
 
-async function filterCampaignsForPublisher (campaigns, limit, query) {
-	const campaignsEarningFrom = await getCampaignsEarningFrom(query)
+async function filterCampaignsForPublisher (campaigns, limit, query, mongoQuery) {
+	const campaignsEarningFrom = await getCampaignsEarningFrom(query, mongoQuery)
 	const { limitForPublisher } = query
 	if (campaignsEarningFrom.length > limit) {
 		// Sorting to get those with highest earning first if limit is exceeded
