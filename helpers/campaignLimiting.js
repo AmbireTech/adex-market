@@ -23,12 +23,11 @@ async function filterCampaignsForPublisher (campaigns, limit, query, mongoQuery)
 	const { limitForPublisher } = query
 	if (campaignsEarningFrom.length > limit) {
 		// Sorting to get those with highest earning first if limit is exceeded
-		const filtered = campaignsEarningFrom.sort((c1, c2) => {
+		return campaignsEarningFrom.sort((c1, c2) => {
 			const c1Balance = new BN(c1.status.lastApprovedBalances[limitForPublisher])
 			const c2Balance = new BN(c2.status.lastApprovedBalances[limitForPublisher])
 			return c1Balance.gte(c2Balance) ? -1 : 1
 		}).slice(0, limit)
-		return filtered
 	}
 	return campaigns
 }
