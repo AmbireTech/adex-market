@@ -12,19 +12,6 @@ router.get('/', limitCampaigns, getCampaigns)
 router.get('/by-owner', noCache, signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
 
-function getBalanceTree (channelId) {
-	return db.getMongo().collection('campaigns')
-		.find({ 'id': channelId })
-		.toArray()
-		.then(campaign => {
-			if (campaign[0].status && campaign[0].status.lastApprovedBalances) {
-				return campaign[0].status.lastApprovedBalances
-			}
-			return {}
-		})
-		.catch((err) => console.error(err))
-}
-
 function getFindQuery (query) {
 	// Uses default statuses (active, ready) if none are requested
 	const status = query.status ? query.status.split(',') : ['Active', 'Ready']
@@ -90,23 +77,21 @@ async function getCampaignsByOwner (req, res, next) {
 	}
 }
 
-function getCampaignInfo (req, res, next) {
+function getCampaignInfo (req, res) {
 	const id = req.params.id
 	const campaignsCol = db.getMongo().collection('campaigns')
-
 	campaignsCol
-		.find({ 'id': id },
-			{ projection: { _id: 0 } }
-		)
-		.toArray()
-		.then((result) => {
-			if (!result[0]) {
-				return res.send([{}])
+		.findOne({ 'id': id })
+		// .then(res => res.json())
+		.then((campaign) => {
+			if (campaign && campaign.status && campaign.status.lastApprovedBalances) {
+				return res.send({ balanceTree: campaign.status.lastApprovedBalances })
 			}
-			return getBalanceTree(id)
-				.then((balanceTree) => {
-					return res.send([{ balanceTree }])
-				})
+			return res.send({})
+			// return getBalanceTree(id)
+			// 	.then((balanceTree) => {
+			// 		return res.send({ balanceTree })
+			// 	})
 		})
 		.catch((err) => {
 			console.error('Error getting campaign info', err)
