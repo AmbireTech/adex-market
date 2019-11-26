@@ -41,3 +41,6 @@ npm start
 docker build . --tag=adexnetwork/market
 docker push adexnetwork/market
 ```
+
+## Query parmeters
+```GET /campaigns?limitForPublisher``` - Limits earnings for a specific publisher, used through the `adview-manager` currently. If query parameter is included, it will limit the amount of non-expired campaigns returned where the publisher has earnings (by looking up `campaign.status.lastApprovedBalances.[ADDR]`), to a limit specified in ```cfg.js```.
