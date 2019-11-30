@@ -27,8 +27,8 @@ function getTags (req, res) {
 
 async function getImageCategories (req, res) {
 	try {
+		const { targetUrl } = req.body
 		if (req.file) {
-			const { targetUrl } = req.body
 			const image = req.file.buffer
 			const [
 				{ pagesWithMatchingImages },
@@ -59,6 +59,15 @@ async function getImageCategories (req, res) {
 				]
 			}
 			return res.json(result)
+		} else if (targetUrl) {
+			// if only targetUrl provided ( for AdSlot )
+			const [[targetUlrSuggestions]] = await Promise.all([
+				classifyWebpage(targetUrl)
+			])
+			const result = {
+				categories: [...((targetUlrSuggestions || []).categories || [])]
+			}
+			return res.json(result)
 		} else {
 			throw new Error('NO FILE ATTACHED!')
 		}
@@ -81,9 +90,9 @@ async function getCategoriesFromLabels (labels) {
 async function getCategoriesFromPage (pagesWithMatchingImages) {
 	const results = []
 	pagesWithMatchingImages &&
-	pagesWithMatchingImages.map(match => {
-		results.push(classifyWebpage(match.url))
-	})
+		pagesWithMatchingImages.map(match => {
+			results.push(classifyWebpage(match.url))
+		})
 	return results.length > 0 ? Promise.all(results) : [[false]]
 }
 
