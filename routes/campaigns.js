@@ -1,9 +1,9 @@
 const express = require('express')
 const db = require('../db')
-const getRequest = require('../helpers/getRequest')
 const signatureCheck = require('../helpers/signatureCheck')
 const { noCache } = require('../helpers/cache')
 const { limitCampaigns } = require('../helpers/enforcePublisherLimits')
+const { filterCampaignsForPublisher } = require('../helpers/campaignLimiting')
 const router = express.Router()
 
 const MAX_LIMIT = 300
@@ -12,14 +12,7 @@ router.get('/', limitCampaigns, getCampaigns)
 router.get('/by-owner', noCache, signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
 
-function getBalanceTree (validatorUrl, channelId) {
-	return getRequest(`${validatorUrl}/channel/${channelId}/tree`)
-		.catch((err) => {
-			return err
-		})
-}
-
-function getCampaignsQuery (query) {
+function getFindQuery (query) {
 	// Uses default statuses (active, ready) if none are requested
 	const status = query.status ? query.status.split(',') : ['Active', 'Ready']
 	// If request query has ?all it doesn't query for status
@@ -35,31 +28,29 @@ function getCampaignsQuery (query) {
 		findQuery['creator'] = query.byCreator
 	}
 
-	if (query.hasOwnProperty('byEarner')) {
-		const queryClause = `status.lastApprovedBalances.${query.byEarner}`
-		findQuery[queryClause] = { '$exists': true }
-	}
-
 	return findQuery
 }
 
 function getCampaigns (req, res) {
-	const limit = +req.query.limit || MAX_LIMIT
+	const campaignLimit = +req.query.limit || MAX_LIMIT
+	const publisherChannelLimit = req.query.publisherChannelLimit
 	const skip = +req.query.skip || 0
-	const query = getCampaignsQuery(req.query)
+	const mongoQuery = getFindQuery(req.query)
 	const campaignsCol = db.getMongo().collection('campaigns')
-
 	campaignsCol
 		.find(
-			query,
+			mongoQuery,
 			{ projection: { _id: 0 } }
 		)
 		.skip(skip)
-		.limit(limit)
+		.limit(campaignLimit)
 		.toArray()
-		.then((result) => {
+		.then(async (campaigns) => {
+			if (req.query.hasOwnProperty('limitForPublisher')) {
+				campaigns = await filterCampaignsForPublisher(campaigns, publisherChannelLimit, req.query, mongoQuery)
+			}
 			res.set('Cache-Control', 'public, max-age=60')
-			return res.send(result)
+			return res.send(campaigns)
 		})
 		.catch((err) => {
 			console.error('Error getting campaigns', err)
@@ -86,27 +77,16 @@ async function getCampaignsByOwner (req, res, next) {
 	}
 }
 
-function getCampaignInfo (req, res, next) {
+function getCampaignInfo (req, res) {
 	const id = req.params.id
 	const campaignsCol = db.getMongo().collection('campaigns')
-
 	campaignsCol
-		.find({ '_id': id },
-			{ projection: { _id: 0 } }
-		)
-		.toArray()
-		.then((result) => {
-			if (!result[0]) {
-				return res.send([{}])
+		.findOne({ 'id': id })
+		.then((campaign) => {
+			if (campaign && campaign.status && campaign.status.lastApprovedBalances) {
+				return res.send({ balanceTree: campaign.status.lastApprovedBalances })
 			}
-			const validators = result[0].spec.validators
-			const leaderBalanceTree = getBalanceTree(validators[0].url, id)
-			const followerBalanceTree = getBalanceTree(validators[1].url, id)
-
-			Promise.all([leaderBalanceTree, followerBalanceTree])
-				.then((trees) => {
-					return res.send([{ leaderBalanceTree: trees[0], followerBalanceTree: trees[1] }])
-				})
+			return res.send({})
 		})
 		.catch((err) => {
 			console.error('Error getting campaign info', err)
