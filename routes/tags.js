@@ -1,5 +1,4 @@
 const express = require('express')
-const url = require('url')
 const {
 	webDetection,
 	labelDetection,
@@ -19,14 +18,13 @@ const router = express.Router()
 const MINIMUM_WORDS_NEEDED = 20
 
 router.get('/', getTags)
-router.post('/imageCategories', upload.single('media'), getImageCategories)
-router.post('/websiteCategories', getWebsiteCategories)
+router.post('/getCategories', upload.single('media'), getCategories)
 
 function getTags (req, res) {
 	return res.send(PredefinedTags)
 }
 
-async function getImageCategories (req, res) {
+async function getCategories (req, res) {
 	try {
 		const { targetUrl } = req.body
 		if (req.file) {
@@ -97,11 +95,5 @@ async function getCategoriesFromPage (pagesWithMatchingImages) {
 	return results.length > 0 ? Promise.all(results) : [[false]]
 }
 
-async function getWebsiteCategories (req, res) {
-	console.log('UNDER CONSTRUCTION')
-	// TODO: Do website / publisher side
-	// const categories = await classifyWebpage(url)
-	// return res.json(categories)
-}
 
 module.exports = router
