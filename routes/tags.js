@@ -1,4 +1,5 @@
 const express = require('express')
+const url = require('url')
 const {
 	webDetection,
 	labelDetection,
@@ -61,18 +62,18 @@ async function getImageCategories (req, res) {
 			return res.json(result)
 		} else if (targetUrl) {
 			// if only targetUrl provided ( for AdSlot )
+			const withHttp = url => !/^https?:\/\//i.test(url) ? `http://${url}` : url
 			const [[targetUlrSuggestions]] = await Promise.all([
-				classifyWebpage(targetUrl)
+				classifyWebpage(withHttp(targetUrl))
 			])
 			const result = {
 				categories: [...((targetUlrSuggestions || []).categories || [])]
 			}
 			return res.json(result)
 		} else {
-			throw new Error('NO FILE ATTACHED!')
+			throw new Error('NO FILE ATTACHED OR URL!')
 		}
 	} catch (error) {
-		console.error('Error getting category suggestions', error)
 		return res.status(500).send(error.toString())
 	}
 }
