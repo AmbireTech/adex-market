@@ -29,9 +29,9 @@ function getStatus (messagesFromAll, campaign, balanceTree) {
 	// Explaining the order
 	// generally we want to check more specific states first: if one state can be a subset of another, we check it first
 	if (isExpired(campaign)) {
-		return 'Expired'
+		return 'Completed'
 	} else if (isExhausted(campaign, balanceTree)) {
-		return 'Exhausted'
+		return 'Completed'
 	} else if (isWithdraw(campaign)) {
 		return 'Withdraw'
 	} else if (isInitializing(messagesFromAll)) {
