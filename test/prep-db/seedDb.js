@@ -133,7 +133,7 @@ const testData = {
 
 function seedDb (db) {
 	return Promise.all([
-		db.collection('campaigns').insertMany(testData.campaigns),
+		db.collection('campaigns-test').insertMany(testData.campaigns),
 		db.collection('validators').insertMany(testData.validators),
 		db.collection('users').insertOne(testData.user),
 		db.collection('adUnits').insertMany(testData.adUnits),
