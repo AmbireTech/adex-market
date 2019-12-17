@@ -11,6 +11,7 @@ const MAX_LIMIT = 300
 router.get('/', limitCampaigns, getCampaigns)
 router.get('/by-owner', noCache, signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
+router.post('/:id', signatureCheck, closeCampaign)
 
 function getFindQuery (query) {
 	// Uses default statuses (active, ready) if none are requested
@@ -92,6 +93,19 @@ function getCampaignInfo (req, res) {
 			console.error('Error getting campaign info', err)
 			return res.status(500).send(err.toString())
 		})
+}
+
+async function closeCampaign (req, res) {
+	try {
+		const id = req.params.id
+		const campaigns = db.getMongo().collection('campaigns')
+		const campaign = await campaigns
+			.findOneAndUpdate({ 'id': id }, { 'status.name': 'Closed' })
+		return res.send({ id, status: campaign.status.name })
+	} catch (err) {
+		console.error('Error updating campaign status', err)
+		return res.status(500).send(err.toString())
+	}
 }
 
 module.exports = router
