@@ -18,7 +18,8 @@ const {
 	isActive,
 	isExhausted,
 	isExpired,
-	isWithdraw
+	isWithdraw,
+	isClosed
 } = require('../lib/getStatus')
 
 const DAI_ADDRESS = '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359'
@@ -28,7 +29,9 @@ const DAI_DECIMALS = 18
 function getStatus (messagesFromAll, campaign, balanceTree) {
 	// Explaining the order
 	// generally we want to check more specific states first: if one state can be a subset of another, we check it first
-	if (isExpired(campaign)) {
+	if (isClosed(campaign)) {
+		return 'Closed'
+	} else if (isExpired(campaign)) {
 		return 'Completed'
 	} else if (isExhausted(campaign, balanceTree)) {
 		return 'Completed'
