@@ -35,7 +35,7 @@ function getAnonAdvertisers (campaigns, users) {
 
 function getData () {
 	const usersCol = db.getMongo().collection('users')
-	const campaignsCol = db.getMongo().collection('campaigns')
+	const campaignsCol = db.getMongo().collection('campaigns-test')
 
 	const getDataFromUsers = usersCol
 		.find()

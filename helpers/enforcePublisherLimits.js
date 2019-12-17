@@ -25,7 +25,7 @@ async function isAddrLimited (addr) {
 }
 
 async function getAccOutstandingBalance (addr) {
-	const campaignsCol = db.getMongo().collection('campaigns')
+	const campaignsCol = db.getMongo().collection('campaigns-test')
 
 	return campaignsCol
 		.find(
