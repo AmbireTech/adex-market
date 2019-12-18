@@ -102,7 +102,6 @@ async function closeCampaign (req, res) {
 		await campaigns
 			.findOneAndUpdate({ 'id': id }, { $set: { 'status.name': 'Closed' } })
 		const updatedCampaign = await campaigns.findOne({ 'id': id })
-		console.log(updatedCampaign)
 		return res.send({ id, status: updatedCampaign.status.name })
 	} catch (err) {
 		console.error('Error updating campaign status', err)

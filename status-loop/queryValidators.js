@@ -18,7 +18,8 @@ const {
 	isActive,
 	isExhausted,
 	isExpired,
-	isWithdraw
+	isWithdraw,
+	isClosed
 } = require('../lib/getStatus')
 
 const DAI_ADDRESS = '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359'
@@ -28,6 +29,9 @@ const DAI_DECIMALS = 18
 function getStatus (messagesFromAll, campaign, balanceTree) {
 	// Explaining the order
 	// generally we want to check more specific states first: if one state can be a subset of another, we check it first
+	if (isClosed(campaign)) {
+		return 'Closed'
+	}
 	if (isExpired(campaign)) {
 		return 'Completed'
 	} else if (isExhausted(campaign, balanceTree)) {
@@ -156,7 +160,7 @@ async function queryValidators () {
 
 	// If a campaign is in Expired, there's no way the state would ever change after that: so no point to update it
 	const campaigns = await campaignsCol
-		.find({ 'status.name': { '$nin': ['Expired', 'Closed'] } }).toArray()
+		.find({ 'status.name': { '$nin': ['Expired'] } }).toArray()
 
 	await Promise.all(campaigns
 		.map(c => getStatusOfCampaign(c)
@@ -171,10 +175,9 @@ async function queryValidators () {
 				const statusObj = {
 					...status,
 					lastChecked: Date.now(),
-					fundsDistributedRatio,
 					usdEstimate
 				}
-
+				if (status.name !== 'Closed') { statusObj.fundsDistributedRatio = fundsDistributedRatio }
 				if (status.verified) {
 					return updateCampaign(c, statusObj)
 						.then(() => console.log(`Status of campaign ${c._id} updated: ${status.name}`))
