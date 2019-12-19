@@ -18,8 +18,7 @@ const {
 	isActive,
 	isExhausted,
 	isExpired,
-	isWithdraw,
-	isClosed
+	isWithdraw
 } = require('../lib/getStatus')
 
 const DAI_ADDRESS = '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359'
@@ -29,13 +28,10 @@ const DAI_DECIMALS = 18
 function getStatus (messagesFromAll, campaign, balanceTree) {
 	// Explaining the order
 	// generally we want to check more specific states first: if one state can be a subset of another, we check it first
-	if (isClosed(campaign)) {
-		return 'Closed'
-	}
 	if (isExpired(campaign)) {
-		return 'Completed'
+		return 'Expired'
 	} else if (isExhausted(campaign, balanceTree)) {
-		return 'Completed'
+		return 'Exhausted'
 	} else if (isWithdraw(campaign)) {
 		return 'Withdraw'
 	} else if (isInitializing(messagesFromAll)) {
@@ -54,6 +50,28 @@ function getStatus (messagesFromAll, campaign, balanceTree) {
 		return (!campaign.spec.activeFrom || campaign.spec.activeFrom < Date.now()) ? 'Ready' : 'Waiting'
 	}
 	throw new Error('internal error: no status detected; should never happen')
+}
+
+function getHumanFriendlyName (status, campaign) {
+	if (campaign.status && campaign.status.humanFriendlyName === 'Closed') return 'Closed'
+	switch (status) {
+	case 'Active':
+	case 'Ready':
+	case 'Pending':
+	case 'Initializing':
+	case 'Waiting':
+	case 'Offline':
+	case 'Disconnected':
+	case 'Unhealthy':
+	case 'Invalid':
+		return 'Active'
+	case 'Expired':
+	case 'Exhausted':
+	case 'Withdraw':
+		return 'Completed'
+	default:
+		return 'N/A'
+	}
 }
 
 function hbByValidator (validatorId, hb) {
@@ -85,8 +103,10 @@ async function getStatusOfCampaign (campaign) {
 	const verified = verifyLastApproved(lastApproved, validators)
 	const lastApprovedSigs = lastApproved ? getLastSigs(lastApproved) : []
 	const lastApprovedBalances = lastApproved ? getLastBalances(lastApproved) : {}
+	const statusName = getStatus(messagesFromAll, campaign, lastApprovedBalances)
 	return {
-		name: getStatus(messagesFromAll, campaign, lastApprovedBalances),
+		name: statusName,
+		humanFriendlyName: getHumanFriendlyName(statusName, campaign),
 		lastHeartbeat: {
 			leader: getLasHeartbeatTimestamp(messagesFromAll.leaderHeartbeat[0]),
 			follower: getLasHeartbeatTimestamp(messagesFromAll.followerFromFollower[0])
@@ -177,7 +197,8 @@ async function queryValidators () {
 					lastChecked: Date.now(),
 					usdEstimate
 				}
-				if (status.name !== 'Closed') { statusObj.fundsDistributedRatio = fundsDistributedRatio }
+				// If the status was closed we don't want to update the funds distribution ratio as it will be 100%
+				if (status.humanFriendlyName !== 'Closed') { statusObj.fundsDistributedRatio = fundsDistributedRatio }
 				if (status.verified) {
 					return updateCampaign(c, statusObj)
 						.then(() => console.log(`Status of campaign ${c._id} updated: ${status.name}`))
