@@ -99,10 +99,9 @@ async function closeCampaign (req, res) {
 	try {
 		const id = req.params.id
 		const campaigns = db.getMongo().collection('campaigns-test')
-		await campaigns
-			.findOneAndUpdate({ 'id': id }, { $set: { 'status.name': 'Closed' } })
-		const updatedCampaign = await campaigns.findOne({ 'id': id })
-		return res.send({ id, status: updatedCampaign.status.name })
+		const updatedCampaign = await campaigns
+			.findOneAndUpdate({ id }, { $set: { 'status.humanFriendlyName': 'Closed' } }, { returnOriginal: false })
+		return res.send({ updatedCampaign })
 	} catch (err) {
 		console.error('Error updating campaign status', err)
 		return res.status(500).send(err.toString())
