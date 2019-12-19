@@ -173,7 +173,7 @@ async function getEstimateInUsd (campaign) {
 }
 
 async function queryValidators () {
-	const campaignsCol = db.getMongo().collection('campaigns-test')
+	const campaignsCol = db.getMongo().collection('campaigns')
 	const channels = await getChannels()
 
 	await channels.map(c => campaignsCol.updateOne({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
