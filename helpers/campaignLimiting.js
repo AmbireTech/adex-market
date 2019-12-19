@@ -2,7 +2,7 @@ const BN = require('bn.js')
 const db = require('../db')
 
 async function getCampaignsEarningFrom (query, mongoQuery) {
-	const campaignsCol = db.getMongo().collection('campaigns-test')
+	const campaignsCol = db.getMongo().collection('campaigns')
 	const mongoQueryKey = `status.lastApprovedBalances.${query.limitForPublisher}`
 	const findQuery = {
 		...mongoQuery,

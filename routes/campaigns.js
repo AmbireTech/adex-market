@@ -37,7 +37,7 @@ function getCampaigns (req, res) {
 	const publisherChannelLimit = req.query.publisherChannelLimit
 	const skip = +req.query.skip || 0
 	const mongoQuery = getFindQuery(req.query)
-	const campaignsCol = db.getMongo().collection('campaigns-test')
+	const campaignsCol = db.getMongo().collection('campaigns')
 	campaignsCol
 		.find(
 			mongoQuery,
@@ -62,7 +62,7 @@ function getCampaigns (req, res) {
 async function getCampaignsByOwner (req, res, next) {
 	try {
 		const identity = req.identity
-		const campaignsCol = db.getMongo().collection('campaigns-test')
+		const campaignsCol = db.getMongo().collection('campaigns')
 
 		const campaigns = await campaignsCol
 			.find(
@@ -80,7 +80,7 @@ async function getCampaignsByOwner (req, res, next) {
 
 function getCampaignInfo (req, res) {
 	const id = req.params.id
-	const campaignsCol = db.getMongo().collection('campaigns-test')
+	const campaignsCol = db.getMongo().collection('campaigns')
 	campaignsCol
 		.findOne({ 'id': id })
 		.then((campaign) => {
@@ -98,7 +98,7 @@ function getCampaignInfo (req, res) {
 async function closeCampaign (req, res) {
 	try {
 		const id = req.params.id
-		const campaigns = db.getMongo().collection('campaigns-test')
+		const campaigns = db.getMongo().collection('campaigns')
 		const updatedCampaign = await campaigns
 			.findOneAndUpdate({ id }, { $set: { 'status.humanFriendlyName': 'Closed' } }, { returnOriginal: false })
 		return res.send({ updatedCampaign })
