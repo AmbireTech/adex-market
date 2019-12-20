@@ -8,6 +8,13 @@ async function getWalletPrivileges (identityAddr = '', walletAddr) {
 	return identityRes[identityAddr.toLowerCase()]
 }
 
+async function isIdentityLimited (identityAddr) {
+	const url = `${RELAYER_HOST}/identity/${identityAddr}`
+	const identityRes = (await getRequest(url)) || {}
+	return identityRes.isLimitedVolume
+}
+
 module.exports = {
-	getWalletPrivileges
+	getWalletPrivileges,
+	isIdentityLimited
 }
