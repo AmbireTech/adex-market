@@ -1,9 +1,9 @@
 const BN = require('bn.js')
-const getRequest = require('../helpers/getRequest')
+const { isIdentityLimited } = require('../helpers/web3/utils')
+const { getERC20Contract } = require('../helpers/web3/ethers')
 const db = require('../db')
 const cfg = require('../cfg')
 
-const RELAYER_HOST = process.env.RELAYER_HOST
 const CHANNEL_LIMIT = cfg.defaultChannelLimit
 const EARNINGS_LIMIT = new BN(cfg.limitedIdentityEarningsLimit)
 
@@ -12,16 +12,6 @@ async function limitCampaigns (req, res, next) {
 		req.query.publisherChannelLimit = CHANNEL_LIMIT
 	}
 	return next()
-}
-
-async function isAddrLimited (addr) {
-	if (!addr) {
-		return false
-	}
-
-	const data = (await getRequest(`${RELAYER_HOST}/identity/is-limited/${addr}`)) || {}
-
-	return data.isLimited
 }
 
 async function getAccOutstandingBalance (addr) {
@@ -33,22 +23,24 @@ async function getAccOutstandingBalance (addr) {
 			{ projection: { [`status.lastApprovedBalances.${addr}`]: 1 } })
 		.toArray()
 		.then((campaigns) => {
-			const earningsBn = new BN(0)
+			const bigZero = new BN(0)
 			const addrBalances = campaigns.reduce((all, c) => {
 				if (!c.hasOwnProperty('status.lastApprovedBalances') || !c.lastApprovedBalances.hasOwnProperty(addr)) {
 					return all
 				}
-				return all.add(new BN(c.status.lastApprovedBalances[addr]))
-			}, earningsBn)
+				all[c.depositAsset] = (c.depositAsset || bigZero).add(new BN(c.status.lastApprovedBalances[addr]))
+
+				return all
+			}, {})
 
 			return addrBalances
 		})
 }
 
-async function getIdentityBalance (addr = '') {
-	const data = (await getRequest(`${RELAYER_HOST}/identity/balance/${addr}`)) || {}
+async function getIdentityBalances (token, identityAddr) {
+	const balance = await getERC20Contract(token).balanceOf(identityAddr)
 
-	return new BN(data.balance || 0)
+	return balance
 }
 
 async function enforceLimited (req, res, next) {
@@ -56,15 +48,19 @@ async function enforceLimited (req, res, next) {
 	return next()
 	try {
 		const publisherAddr = req.query.limitForPublisher
-		const isPublisherLimited = await isAddrLimited(publisherAddr)
+		const isPublisherLimited = await isIdentityLimited(publisherAddr)
 		if (!isPublisherLimited) {
 			return next()
 		}
 
-		const [outstanding, addrBalance] = await Promise
-			.all([getAccOutstandingBalance(publisherAddr), getIdentityBalance(publisherAddr)])
+		const outstanding =
+			await getAccOutstandingBalance(publisherAddr)
 
-		const total = outstanding.add(addrBalance)
+		// TODO: not correct sum all tokens as one (it works in current case as DAI and SAI has the same decimals and PRICE)
+		const total = await (Promise.all(Object.entries(outstanding).map(async ([key, value]) => {
+			const iddBalance = await getIdentityBalances(key, publisherAddr)
+			return value.add(iddBalance)
+		}))).reduce((sum, bal) => { return sum.add(bal) }, new BN(0))
 
 		if (total.gt(EARNINGS_LIMIT)) {
 			return res.status(403).send({ error: 'EXCEEDED_EARNINGS_LIMIT' })
