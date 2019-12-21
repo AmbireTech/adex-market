@@ -6,6 +6,9 @@ const cfg = require('../cfg')
 const CHANNEL_LIMIT = cfg.defaultChannelLimit
 const EARNINGS_LIMIT = new BN(cfg.limitedIdentityEarningsLimit)
 
+// Temporary hotfix
+const DISABLE_EARNINGS_LIMIT = true
+
 async function limitCampaigns (req, res, next) {
 	if (req.query.limitForPublisher) {
 		req.query.publisherChannelLimit = CHANNEL_LIMIT
@@ -37,8 +40,9 @@ async function getAccEarned (addr) {
 }
 
 async function enforceLimited (req, res, next) {
-	// TEMP hotfix
-	return next()
+	if (DISABLE_EARNINGS_LIMIT) {
+		return next()
+	}
 	try {
 		const publisherAddr = req.query.limitForPublisher
 		const isPublisherLimited = await isIdentityLimited(publisherAddr)
