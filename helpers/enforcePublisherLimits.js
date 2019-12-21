@@ -1,5 +1,5 @@
 const BN = require('bn.js')
-const { isIdentityLimited } = require('../helpers/web3/utils')
+const { isIdentityLimited } = require('../helpers/relayer')
 const db = require('../db')
 const cfg = require('../cfg')
 
@@ -38,6 +38,7 @@ async function getAccEarned (addr) {
 
 async function enforceLimited (req, res, next) {
 	// TEMP hotfix
+	return next()
 	try {
 		const publisherAddr = req.query.limitForPublisher
 		const isPublisherLimited = await isIdentityLimited(publisherAddr)
