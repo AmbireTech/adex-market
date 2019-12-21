@@ -1,6 +1,5 @@
 const BN = require('bn.js')
 const { isIdentityLimited } = require('../helpers/web3/utils')
-const { getERC20Contract } = require('../helpers/web3/ethers')
 const db = require('../db')
 const cfg = require('../cfg')
 
@@ -14,7 +13,7 @@ async function limitCampaigns (req, res, next) {
 	return next()
 }
 
-async function getAccOutstandingBalance (addr) {
+async function getAccEarned (addr) {
 	const campaignsCol = db.getMongo().collection('campaigns')
 
 	return campaignsCol
@@ -37,15 +36,8 @@ async function getAccOutstandingBalance (addr) {
 		})
 }
 
-async function getIdentityBalances (token, identityAddr) {
-	const balance = await getERC20Contract(token).balanceOf(identityAddr)
-
-	return balance
-}
-
 async function enforceLimited (req, res, next) {
 	// TEMP hotfix
-	return next()
 	try {
 		const publisherAddr = req.query.limitForPublisher
 		const isPublisherLimited = await isIdentityLimited(publisherAddr)
@@ -53,14 +45,10 @@ async function enforceLimited (req, res, next) {
 			return next()
 		}
 
-		const outstanding =
-			await getAccOutstandingBalance(publisherAddr)
+		const outstandingByToken = await getAccEarned(publisherAddr)
 
 		// TODO: not correct sum all tokens as one (it works in current case as DAI and SAI has the same decimals and PRICE)
-		const total = await (Promise.all(Object.entries(outstanding).map(async ([key, value]) => {
-			const iddBalance = await getIdentityBalances(key, publisherAddr)
-			return value.add(iddBalance)
-		}))).reduce((sum, bal) => { return sum.add(bal) }, new BN(0))
+		const total = Object.values(outstandingByToken).reduce((sum, bal) => { return sum.add(bal) }, new BN(0))
 
 		if (total.gt(EARNINGS_LIMIT)) {
 			return res.status(403).send({ error: 'EXCEEDED_EARNINGS_LIMIT' })
