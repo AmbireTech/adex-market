@@ -1,16 +1,20 @@
 const getRequest = require('./getRequest')
 const RELAYER_HOST = process.env.RELAYER_HOST
 
-async function getWalletPrivileges (identityAddr, walletAddr) {
-	const url = `${RELAYER_HOST}/identity/privileges?identityAddr=${identityAddr}&owner=${walletAddr}`
-	const identityRes = await getRequest(url)
-	if (!!identityRes && Array.isArray(identityRes.privileges) && identityRes.privileges.includes(walletAddr)) {
-		return 1
-	} else {
-		return 0
-	}
+async function getWalletPrivileges (identityAddr = '', walletAddr) {
+	const url = `${RELAYER_HOST}/identity/by-owner/${walletAddr}`
+	const identityRes = (await getRequest(url)) || {}
+
+	return identityRes[identityAddr.toLowerCase()]
+}
+
+async function isIdentityLimited (identityAddr) {
+	const url = `${RELAYER_HOST}/identity/${identityAddr}`
+	const identityRes = (await getRequest(url)) || {}
+	return identityRes.isLimitedVolume
 }
 
 module.exports = {
-	getWalletPrivileges
+	getWalletPrivileges,
+	isIdentityLimited
 }
