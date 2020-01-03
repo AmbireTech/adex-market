@@ -1,6 +1,6 @@
 const redisClient = require('../redisInit')
 
-function signatureCheck (req, res, next) {
+function signatureCheck(req, res, next) {
 	/*
 	 * NOTE: when use fetch first is sent OPTIONS req but it does not contains the values for the custom header (just as Access-Control-Request-Headers)
 	 * for some reason fetch mode 'cors' sends GET that acts like OPTIONS (no values for custom header)
@@ -18,11 +18,13 @@ function signatureCheck (req, res, next) {
 			}
 			if (reply) {
 				try {
-					req.identity = (JSON.parse(reply)).identity.toString()
+					req.identity = JSON.parse(reply).identity.toString()
 					return next()
 				} catch (err) {
 					console.error('Redis error: Unable to verify user signature')
-					return res.status(403).send({ error: 'Internal error verifying user signature' })
+					return res
+						.status(403)
+						.send({ error: 'Internal error verifying user signature' })
 				}
 			} else {
 				return res.status(403).send({ error: 'Authentication failed' })
