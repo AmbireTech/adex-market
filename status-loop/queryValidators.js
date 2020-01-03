@@ -1,6 +1,4 @@
 const { bigNumberify, formatUnits } = require('ethers').utils
-const Uniprice = require('uniprice')
-const { provider, getERC20Contract } = require('../helpers/web3/ethers')
 const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const cfg = require('../cfg')
@@ -21,9 +19,12 @@ const {
 	isWithdraw
 } = require('../lib/getStatus')
 
-const DAI_ADDRESS = '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359'
-const DAI_USD_PRICE = 1
-const DAI_DECIMALS = 18
+const usdPriceMapping = {
+	// SAI
+	'0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359': [1.0, 18],
+	// DAI
+	'0x6b175474e89094c44da98b954eedeac495271d0f': [1.0, 18]
+}
 
 function getStatus (messagesFromAll, campaign, balanceTree) {
 	// Explaining the order
@@ -117,35 +118,17 @@ async function getDistributedFunds (campaign, balanceTree) {
 	return +distributedFundsRatio.toString(10)
 }
 
-function getUsdAmount (wei, price, decimals) {
-	const weiAmount = bigNumberify(wei)
-		.mul(bigNumberify(price))
-		.toString()
-
-	const normalized = formatUnits(weiAmount, decimals)
-	const amount = parseFloat(normalized)
-
-	return amount
-}
-
+// TODO: use coinmarketcap/kraken price API
+// also, update the prices every few minutes in a separate function and just run this with the cached prices
 async function getEstimateInUsd (campaign) {
 	const { depositAsset, depositAmount } = campaign
+	// we normally use stablecoins so assume 1.0
+	const [ price, decimals ] = usdPriceMapping[depositAsset.toLowerCase()] || [1.0, 18]
 
-	if (depositAsset.toLowerCase() === DAI_ADDRESS.toLowerCase()) {
-		return getUsdAmount(depositAmount, DAI_USD_PRICE, DAI_DECIMALS)
-	}
-
-	try {
-		const uniprice = new Uniprice(provider)
-		const exchangeAddr = await uniprice.factory.getExchange(depositAsset)
-		const swap = uniprice.setExchange('TO-USD', exchangeAddr)
-		const price = await swap.getPrice() // might throw contract not deployed error
-		const decimals = await getERC20Contract(depositAsset).decimals()
-
-		return getUsdAmount(depositAmount, price, decimals)
-	} catch (err) {
-		return null
-	}
+	const unitsAmount = bigNumberify(depositAmount)
+		.mul(bigNumberify(price))
+		.toString()
+	return parseFloat(formatUnits(unitsAmount, decimals))
 }
 
 async function queryValidators () {
