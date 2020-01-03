@@ -40,6 +40,7 @@ redisClient.on('ready', function() {
 
 redisClient.on('error', function(err) {
 	console.error('Error connecting to Redis: ' + err)
+	// eslint-disable-next-line no-process-exit
 	process.exit(1)
 })
 

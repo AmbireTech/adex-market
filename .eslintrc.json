@@ -3,7 +3,7 @@
     "browser": true,
     "es6": true
   },
-  "extends": ["prettier"],
+  "extends": ["prettier", "plugin:node/recommended-script"],
   "plugins": ["prettier"],
   "parserOptions": {
     "ecmaVersion": 2018

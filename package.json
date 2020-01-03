@@ -3,6 +3,9 @@
   "version": "0.1.9",
   "description": "Adex Market",
   "main": "index.js",
+  "engines": {
+    "node": ">=8.3.0"
+  },
   "scripts": {
     "start": "node index",
     "dev-start": "nodemon index",
@@ -38,14 +41,15 @@
     "node-fetch": "^2.3.0",
     "redis": "^2.8.0",
     "request": "^2.88.0",
+    "tape": "^4.12.1",
     "uniprice": "0.0.1"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^6.0.0",
+    "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-prettier": "^3.1.0",
-    "prettier": "^1.18.2",
     "nodemon": "^1.18.10",
-    "tape": "^4.10.1"
+    "prettier": "^1.18.2"
   }
 }
