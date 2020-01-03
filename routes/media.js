@@ -8,12 +8,12 @@ const router = express.Router()
 
 router.post('/', upload.single('media'), postMedia)
 
-async function postMedia (req, res, next) {
+async function postMedia(req, res, next) {
 	return addDataToIpfs(req.file.buffer)
-		.then((hash) => {
+		.then(hash => {
 			return res.json({ ipfs: hash })
 		})
-		.catch((err) => {
+		.catch(err => {
 			console.error('Error adding media', err)
 			return res.status(500).send(err.toString())
 		})
