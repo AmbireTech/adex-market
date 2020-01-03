@@ -19,7 +19,7 @@ const getAddrFromEipTypedSignedMsg = async ({ signature, typedData }) => {
 	try {
 		const user = sigUtil.recoverTypedSignature({
 			data: typedData,
-			sig: signature
+			sig: signature,
 		})
 		return user
 	} catch (err) {
@@ -27,7 +27,7 @@ const getAddrFromEipTypedSignedMsg = async ({ signature, typedData }) => {
 	}
 }
 
-const getRsvFromSig = (sig) => {
+const getRsvFromSig = sig => {
 	sig = sig.slice(2)
 
 	var r = '0x' + sig.substring(0, 64)
@@ -40,9 +40,17 @@ const getRsvFromSig = (sig) => {
 const getAddrFromTrezorSignedMsg = async ({ signature, hash }) => {
 	try {
 		// TODO: use ethers
-		const msg = solidityKeccak256(['string', 'bytes32'], ['\x19Ethereum Signed Message:\n\x20', hash])
+		const msg = solidityKeccak256(
+			['string', 'bytes32'],
+			['\x19Ethereum Signed Message:\n\x20', hash]
+		)
 		const sig = getRsvFromSig(signature)
-		const pubKey = ecrecover(toBuffer(msg), sig.v, toBuffer(sig.r), toBuffer(sig.s))
+		const pubKey = ecrecover(
+			toBuffer(msg),
+			sig.v,
+			toBuffer(sig.r),
+			toBuffer(sig.s)
+		)
 		const addr = '0x' + pubToAddress(pubKey).toString('hex')
 
 		return addr
@@ -53,20 +61,27 @@ const getAddrFromTrezorSignedMsg = async ({ signature, hash }) => {
 
 const getAddrFromSignedMsg = ({ mode, signature, hash, typedData, msg }) => {
 	switch (mode) {
-	case SignatureModes.GETH:
-		// Ledger
-		return getAddrFromPersonalSignedMsg({ signature: signature, hash: hash, msg: msg })
-	case SignatureModes.EIP712:
-		// Metamask
-		return getAddrFromEipTypedSignedMsg({ signature: signature, typedData: typedData })
-	case SignatureModes.TREZOR:
-		// Trezor
-		// return getAddrFromPersonalSignedMsg({ signature: signature, hash: hash, msg: msg })
-		return getAddrFromTrezorSignedMsg({ signature: signature, hash: hash })
-	default:
-		return Promise.reject(new Error('Invalid signature mode!'))
+		case SignatureModes.GETH:
+			// Ledger
+			return getAddrFromPersonalSignedMsg({
+				signature: signature,
+				hash: hash,
+				msg: msg,
+			})
+		case SignatureModes.EIP712:
+			// Metamask
+			return getAddrFromEipTypedSignedMsg({
+				signature: signature,
+				typedData: typedData,
+			})
+		case SignatureModes.TREZOR:
+			// Trezor
+			// return getAddrFromPersonalSignedMsg({ signature: signature, hash: hash, msg: msg })
+			return getAddrFromTrezorSignedMsg({ signature: signature, hash: hash })
+		default:
+			return Promise.reject(new Error('Invalid signature mode!'))
 	}
 }
 module.exports = {
-	getAddrFromSignedMsg: getAddrFromSignedMsg
+	getAddrFromSignedMsg: getAddrFromSignedMsg,
 }
