@@ -55,6 +55,29 @@ function getStatus(messagesFromAll, campaign, balanceTree) {
 	throw new Error('internal error: no status detected; should never happen')
 }
 
+function getHumanFriendlyName(status, campaign) {
+	if (campaign.status && campaign.status.humanFriendlyName === 'Closed')
+		return 'Closed'
+	switch (status) {
+		case 'Active':
+		case 'Ready':
+		case 'Pending':
+		case 'Initializing':
+		case 'Waiting':
+		case 'Offline':
+		case 'Disconnected':
+		case 'Unhealthy':
+		case 'Invalid':
+			return 'Active'
+		case 'Expired':
+		case 'Exhausted':
+		case 'Withdraw':
+			return 'Completed'
+		default:
+			return 'N/A'
+	}
+}
+
 function hbByValidator(validatorId, hb) {
 	return hb.from === validatorId
 }
@@ -99,8 +122,10 @@ async function getStatusOfCampaign(campaign) {
 	const verified = verifyLastApproved(lastApproved, validators)
 	const lastApprovedSigs = lastApproved ? getLastSigs(lastApproved) : []
 	const lastApprovedBalances = lastApproved ? getLastBalances(lastApproved) : {}
+	const statusName = getStatus(messagesFromAll, campaign, lastApprovedBalances)
 	return {
-		name: getStatus(messagesFromAll, campaign, lastApprovedBalances),
+		name: statusName,
+		humanFriendlyName: getHumanFriendlyName(statusName, campaign),
 		lastHeartbeat: {
 			leader: getLasHeartbeatTimestamp(messagesFromAll.leaderHeartbeat[0]),
 			follower: getLasHeartbeatTimestamp(
@@ -199,10 +224,12 @@ async function queryValidators() {
 				const statusObj = {
 					...status,
 					lastChecked: Date.now(),
-					fundsDistributedRatio,
 					usdEstimate,
 				}
-
+				// If the status was closed we don't want to update the funds distribution ratio as it will be 100%
+				if (status.humanFriendlyName !== 'Closed') {
+					statusObj.fundsDistributedRatio = fundsDistributedRatio
+				}
 				if (status.verified) {
 					return updateCampaign(c, statusObj).then(() =>
 						console.log(`Status of campaign ${c._id} updated: ${status.name}`)

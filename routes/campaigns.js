@@ -13,6 +13,7 @@ const MAX_LIMIT = 300
 router.get('/', limitCampaigns, getCampaigns)
 router.get('/by-owner', noCache, signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
+router.put('/:id/close', signatureCheck, closeCampaign)
 router.put(
 	'/:id',
 	signatureCheck,
@@ -100,6 +101,22 @@ function getCampaignInfo(req, res) {
 			console.error('Error getting campaign info', err)
 			return res.status(500).send(err.toString())
 		})
+}
+
+async function closeCampaign(req, res) {
+	try {
+		const id = req.params.id
+		const campaigns = db.getMongo().collection('campaigns')
+		const updatedCampaign = await campaigns.findOneAndUpdate(
+			{ id },
+			{ $set: { 'status.humanFriendlyName': 'Closed' } },
+			{ returnOriginal: false }
+		)
+		return res.send({ updatedCampaign })
+	} catch (err) {
+		console.error('Error updating campaign status', err)
+		return res.status(500).send(err.toString())
+	}
 }
 
 function updateCampaign(req, res) {
