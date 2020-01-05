@@ -4,6 +4,8 @@ const signatureCheck = require('../helpers/signatureCheck')
 const { noCache } = require('../helpers/cache')
 const { limitCampaigns } = require('../helpers/enforcePublisherLimits')
 const { filterCampaignsForPublisher } = require('../helpers/campaignLimiting')
+const { schemas, Campaign } = require('adex-models')
+const { celebrate } = require('celebrate')
 const router = express.Router()
 
 const MAX_LIMIT = 300
@@ -12,6 +14,12 @@ router.get('/', limitCampaigns, getCampaigns)
 router.get('/by-owner', noCache, signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
 router.put('/:id/close', signatureCheck, closeCampaign)
+router.put(
+	'/:id',
+	signatureCheck,
+	celebrate({ body: schemas.campaignPut }),
+	updateCampaign
+)
 
 function getFindQuery(query) {
 	// Uses default statuses (active, ready) if none are requested
@@ -109,6 +117,27 @@ async function closeCampaign(req, res) {
 		console.error('Error updating campaign status', err)
 		return res.status(500).send(err.toString())
 	}
+}
+
+function updateCampaign(req, res) {
+	const id = req.params.id
+	const campaign = new Campaign(req.body)
+	const campaignsCol = db.getMongo().collection('campaigns')
+
+	return campaignsCol.findOneAndUpdate(
+		{ id },
+		{
+			$set: campaign.marketDbUpdate,
+		},
+		{ returnOriginal: false },
+		(err, result) => {
+			if (err) {
+				console.error('Error updating campaign', err)
+				return res.status(500).send(err.toString())
+			}
+			return res.status(200).send({ campaign: result.value })
+		}
+	)
 }
 
 module.exports = router
