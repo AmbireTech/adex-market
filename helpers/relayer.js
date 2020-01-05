@@ -5,7 +5,8 @@ async function getWalletPrivileges (identityAddr = '', walletAddr) {
 	const url = `${RELAYER_HOST}/identity/by-owner/${walletAddr}`
 	const identityRes = (await getRequest(url)) || {}
 
-	return identityRes[identityAddr.toLowerCase()]
+	return Object.entries(identityRes)
+		.some(([k, v]) => k.toLowerCase() === identityAddr.toLowerCase() && v)
 }
 
 async function isIdentityLimited (identityAddr) {
