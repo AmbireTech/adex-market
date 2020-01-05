@@ -5,7 +5,7 @@ const providerUrl = process.env.WEB3_NODE_URL
 
 const provider = new ethers.providers.JsonRpcProvider(providerUrl)
 
-function getERC20Contract (address) {
+function getERC20Contract(address) {
 	const contract = new ethers.Contract(address, ERC20Abi, provider)
 	return contract
 }
@@ -13,5 +13,5 @@ function getERC20Contract (address) {
 module.exports = {
 	provider,
 	ethers,
-	getERC20Contract
+	getERC20Contract,
 }

@@ -5,7 +5,7 @@ const router = express.Router()
 
 router.get('/', getTags)
 
-function getTags (req, res) {
+function getTags(req, res) {
 	return res.send(PredefinedTags)
 }
 
