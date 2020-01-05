@@ -51,6 +51,7 @@ function getStatus(messagesFromAll, campaign, balanceTree) {
 			? 'Ready'
 			: 'Waiting'
 	}
+
 	throw new Error('internal error: no status detected; should never happen')
 }
 
