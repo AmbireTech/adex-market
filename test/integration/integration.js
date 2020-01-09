@@ -610,7 +610,7 @@ tape('GET /tags', (t) => {
 })
 
 tape('GET /campaigns?limitForPublisher...  NO FILTERING', (t) => {
-	fetch(`${marketUrl}/campaigns?byEarner=${identityAddr}&limitForPublisher=${identityAddr}&status=Active,Ready`)
+	fetch(`${marketUrl}/campaigns?limitForPublisher=${identityAddr}&status=Active,Ready`)
 	.then((res) => res.json())
 	.then((res) => {
 		t.ok(Array.isArray(res), 'returns array')
@@ -625,8 +625,8 @@ tape('GET /campaigns?limitForPublisher...  NO FILTERING', (t) => {
 	.catch(err => t.fail(err))
 })
 
-tape('GET /campaigns?limitForPublisher... FILTERING', (t) => {
-	fetch(`${marketUrl}/campaigns?byEarner=${identityAddrFilter}&limitForPublisher=${identityAddrFilter}&status=Active,Ready`)
+tape('GET /campaigns?limitForPublisher...', (t) => {
+	fetch(`${marketUrl}/campaigns?&limitForPublisher=${identityAddrFilter}&status=Active,Ready`)
 	.then((res) => res.json())
 	.then((res) => {
 		t.ok(Array.isArray(res), 'returns array')
@@ -647,4 +647,20 @@ tape('GET /campaigns?limitForPublisher... FILTERING', (t) => {
 		t.end()
 	})
 	.catch(err => t.fail(err))
+})
+
+tape('GET /campaigns?byEarner', (t) => {
+	fetch(`${marketUrl}/campaigns?status=Active,Ready&byEarner=${identityAddr}`)
+		.then((res) => res.json())
+		.then((res) => {
+			t.ok(Array.isArray(res), 'returns array')
+			t.equals(
+				res.length,
+				2, // Non-expired campaigns with identityAddr in lastApprovedBalances
+				'right amount of campaigns are returned'
+			)
+			t.ok(res.every((c) => c.status.name === 'Active' || c.status.name === 'Ready'), 'no Expired campaigns')
+			t.ok(res.every((c) => c.status.lastApprovedBalances.hasOwnProperty(identityAddr)), 'Each campaign contains identityAddr in balances')
+			t.end()
+		})
 })
