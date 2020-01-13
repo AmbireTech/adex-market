@@ -32,9 +32,12 @@ app.use(headerParser)
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
-app.use(function (req, res, next) {
+app.use(function(req, res, next) {
 	res.header('Access-Control-Allow-Origin', '*')
-	res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, X-User-Signature, X-User-Address, X-Auth-Token, Cache-Control, Expires, Pragma')
+	res.header(
+		'Access-Control-Allow-Headers',
+		'Origin, X-Requested-With, Content-Type, Accept, X-User-Signature, X-User-Address, X-Auth-Token, Cache-Control, Expires, Pragma'
+	)
 	res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS')
 	next()
 })
@@ -64,7 +67,7 @@ db.connect()
 	.then(() => {
 		app.listen(port, () => console.log(`Magic happens on ${port}`))
 	})
-	.catch((err) => {
+	.catch(err => {
 		console.error('Error when starting app', err)
 		throw new Error(err)
 	})
