@@ -8,27 +8,32 @@ const { schemas } = require('adex-models')
 const router = express.Router()
 
 router.get('/', getValidators)
-router.post('/', signatureCheck, celebrate({ body: schemas.validator }), postValidator)
+router.post(
+	'/',
+	signatureCheck,
+	celebrate({ body: schemas.validator }),
+	postValidator
+)
 
-function getValidators (req, res) {
+function getValidators(req, res) {
 	const validatorsCol = db.getMongo().collection('validators')
 	const { status, addr } = req.query
 
-	const query = status ? { 'status': status } : addr ? { 'addr': addr } : {}
+	const query = status ? { status: status } : addr ? { addr: addr } : {}
 
 	return validatorsCol
 		.find(query)
 		.toArray()
-		.then((result) => {
+		.then(result => {
 			return res.send(result)
 		})
-		.catch((err) => {
+		.catch(err => {
 			console.error('Error getting validators', err)
 			return res.status(500).send(err.toString())
 		})
 }
 
-function postValidator (req, res) {
+function postValidator(req, res) {
 	const validatorsCol = db.getMongo().collection('validators')
 	const validator = req.body
 

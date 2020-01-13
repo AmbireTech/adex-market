@@ -21,13 +21,17 @@ async function getAccEarned (addr) {
 
 	return campaignsCol
 		.find(
-			{ [`status.lastApprovedBalances.${addr}`]: { '$exists': true } },
-			{ projection: { [`status.lastApprovedBalances.${addr}`]: 1 } })
+			{ [`status.lastApprovedBalances.${addr}`]: { $exists: true } },
+			{ projection: { [`status.lastApprovedBalances.${addr}`]: 1 } }
+		)
 		.toArray()
 		.then((campaigns) => {
 			const bigZero = new BN(0)
 			const addrBalances = campaigns.reduce((all, c) => {
-				if (!c.hasOwnProperty('status.lastApprovedBalances') || !c.lastApprovedBalances.hasOwnProperty(addr)) {
+				if (
+					!c.hasOwnProperty('status.lastApprovedBalances') ||
+					!c.lastApprovedBalances.hasOwnProperty(addr)
+				) {
 					return all
 				}
 				all[c.depositAsset] = (c.depositAsset || bigZero).add(new BN(c.status.lastApprovedBalances[addr]))
