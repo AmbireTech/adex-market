@@ -9,14 +9,14 @@ const EARNINGS_LIMIT = new BN(cfg.limitedIdentityEarningsLimit)
 // Temporary hotfix
 const DISABLE_EARNINGS_LIMIT = true
 
-async function limitCampaigns (req, res, next) {
+async function limitCampaigns(req, res, next) {
 	if (req.query.limitForPublisher) {
 		req.query.publisherChannelLimit = CHANNEL_LIMIT
 	}
 	return next()
 }
 
-async function getAccEarned (addr) {
+async function getAccEarned(addr) {
 	const campaignsCol = db.getMongo().collection('campaigns')
 
 	return campaignsCol
@@ -25,7 +25,7 @@ async function getAccEarned (addr) {
 			{ projection: { [`status.lastApprovedBalances.${addr}`]: 1 } }
 		)
 		.toArray()
-		.then((campaigns) => {
+		.then(campaigns => {
 			const bigZero = new BN(0)
 			const addrBalances = campaigns.reduce((all, c) => {
 				if (
@@ -34,7 +34,9 @@ async function getAccEarned (addr) {
 				) {
 					return all
 				}
-				all[c.depositAsset] = (c.depositAsset || bigZero).add(new BN(c.status.lastApprovedBalances[addr]))
+				all[c.depositAsset] = (c.depositAsset || bigZero).add(
+					new BN(c.status.lastApprovedBalances[addr])
+				)
 
 				return all
 			}, {})
@@ -43,7 +45,7 @@ async function getAccEarned (addr) {
 		})
 }
 
-async function enforceLimited (req, res, next) {
+async function enforceLimited(req, res, next) {
 	if (DISABLE_EARNINGS_LIMIT) {
 		return next()
 	}
@@ -57,7 +59,9 @@ async function enforceLimited (req, res, next) {
 		const outstandingByToken = await getAccEarned(publisherAddr)
 
 		// TODO: not correct sum all tokens as one (it works in current case as DAI and SAI has the same decimals and PRICE)
-		const total = Object.values(outstandingByToken).reduce((sum, bal) => { return sum.add(bal) }, new BN(0))
+		const total = Object.values(outstandingByToken).reduce((sum, bal) => {
+			return sum.add(bal)
+		}, new BN(0))
 
 		if (total.gt(EARNINGS_LIMIT)) {
 			return res.status(403).send({ error: 'EXCEEDED_EARNINGS_LIMIT' })

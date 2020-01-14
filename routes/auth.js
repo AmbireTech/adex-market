@@ -8,7 +8,7 @@ const router = express.Router()
 
 router.post('/', authUser)
 
-async function authUser (req, res, next) {
+async function authUser(req, res, next) {
 	try {
 		const {
 			identity,
@@ -38,7 +38,8 @@ async function authUser (req, res, next) {
 		if (privileges) {
 			const sessionExpiryTime = Date.now() + cfg.sessionExpiryTime
 
-			redisClient.set('session:' + signature,
+			redisClient.set(
+				'session:' + signature,
 				JSON.stringify({
 					address: recoveredAddr,
 					authToken: authToken,

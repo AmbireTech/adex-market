@@ -23,7 +23,7 @@ const usdPriceMapping = {
 	// SAI
 	'0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359': [1.0, 18],
 	// DAI
-	'0x6b175474e89094c44da98b954eedeac495271d0f': [1.0, 18]
+	'0x6b175474e89094c44da98b954eedeac495271d0f': [1.0, 18],
 }
 
 function getStatus(messagesFromAll, campaign, balanceTree) {
@@ -173,10 +173,13 @@ async function getDistributedFunds(campaign, balanceTree) {
 
 // TODO: use coinmarketcap/kraken price API
 // also, update the prices every few minutes in a separate function and just run this with the cached prices
-async function getEstimateInUsd (campaign) {
+async function getEstimateInUsd(campaign) {
 	const { depositAsset, depositAmount } = campaign
 	// we normally use stablecoins so assume 1.0
-	const [ price, decimals ] = usdPriceMapping[depositAsset.toLowerCase()] || [1.0, 18]
+	const [price, decimals] = usdPriceMapping[depositAsset.toLowerCase()] || [
+		1.0,
+		18,
+	]
 
 	const unitsAmount = bigNumberify(depositAmount)
 		.mul(bigNumberify(price))
