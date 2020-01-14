@@ -37,6 +37,10 @@ function getFindQuery(query) {
 		findQuery['creator'] = query.byCreator
 	}
 
+	if (query.hasOwnProperty('byEarner')) {
+		const queryString = `status.lastApprovedBalances.${query.byEarner}`
+		findQuery[queryString] = { $exists: true, $ne: null }
+	}
 	return findQuery
 }
 
