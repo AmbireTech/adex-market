@@ -2,24 +2,11 @@ const express = require('express')
 const redisClient = require('../redisInit')
 const { getAddrFromSignedMsg } = require('../helpers/web3/utils')
 const cfg = require('../cfg')
-const { provider, ethers } = require('../helpers/web3/ethers')
-const identityAbi = require('../helpers/web3/abi/Identity')
 const { getWalletPrivileges } = require('../helpers/relayer')
 
 const router = express.Router()
 
 router.post('/', authUser)
-
-async function checkWalletPrivileges(identity, walletAddr) {
-	try {
-		const contract = new ethers.Contract(identity, identityAbi, provider)
-		const privileges = await contract.privileges(walletAddr)
-		return privileges
-	} catch (err) {
-		const privileges = await getWalletPrivileges(identity, walletAddr)
-		return privileges
-	}
-}
 
 async function authUser(req, res, next) {
 	try {
@@ -46,11 +33,11 @@ async function authUser(req, res, next) {
 			return res.status(400).send('Invalid signature')
 		}
 
-		const privileges =
-			(await checkWalletPrivileges(identity, recoveredAddr, true)) || 0
+		const privileges = await getWalletPrivileges(identity, recoveredAddr)
 
-		const sessionExpiryTime = Date.now() + cfg.sessionExpiryTime
 		if (privileges) {
+			const sessionExpiryTime = Date.now() + cfg.sessionExpiryTime
+
 			redisClient.set(
 				'session:' + signature,
 				JSON.stringify({
