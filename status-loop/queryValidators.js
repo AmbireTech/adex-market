@@ -16,17 +16,17 @@ const {
 	isActive,
 	isExhausted,
 	isExpired,
-	isWithdraw
+	isWithdraw,
 } = require('../lib/getStatus')
 
 const usdPriceMapping = {
 	// SAI
 	'0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359': [1.0, 18],
 	// DAI
-	'0x6b175474e89094c44da98b954eedeac495271d0f': [1.0, 18]
+	'0x6b175474e89094c44da98b954eedeac495271d0f': [1.0, 18],
 }
 
-function getStatus (messagesFromAll, campaign, balanceTree) {
+function getStatus(messagesFromAll, campaign, balanceTree) {
 	// Explaining the order
 	// generally we want to check more specific states first: if one state can be a subset of another, we check it first
 	if (isExpired(campaign)) {
@@ -48,35 +48,52 @@ function getStatus (messagesFromAll, campaign, balanceTree) {
 	} else if (isActive(messagesFromAll)) {
 		return 'Active'
 	} else if (isReady(messagesFromAll)) {
-		return (!campaign.spec.activeFrom || campaign.spec.activeFrom < Date.now()) ? 'Ready' : 'Waiting'
+		return !campaign.spec.activeFrom || campaign.spec.activeFrom < Date.now()
+			? 'Ready'
+			: 'Waiting'
 	}
 	throw new Error('internal error: no status detected; should never happen')
 }
 
-function hbByValidator (validatorId, hb) {
+function hbByValidator(validatorId, hb) {
 	return hb.from === validatorId
 }
 
-async function getStatusOfCampaign (campaign) {
+async function getStatusOfCampaign(campaign) {
 	const validators = campaign.spec.validators
 	const leader = validators[0]
 	const follower = validators[1]
 
-	const callLeader = getRequest(`${leader.url}/channel/${campaign.id}/last-approved?withHeartbeat=true`)
-	const callFollower = getRequest(`${follower.url}/channel/${campaign.id}/last-approved?withHeartbeat=true`)
+	const callLeader = getRequest(
+		`${leader.url}/channel/${campaign.id}/last-approved?withHeartbeat=true`
+	)
+	const callFollower = getRequest(
+		`${follower.url}/channel/${campaign.id}/last-approved?withHeartbeat=true`
+	)
 
-	const [ dataLeader, dataFollower ] = await Promise.all([callLeader, callFollower])
+	const [dataLeader, dataFollower] = await Promise.all([
+		callLeader,
+		callFollower,
+	])
 
 	const lastApproved = dataLeader.lastApproved
 	const leaderHeartbeats = dataLeader.heartbeats || []
 	const followerHeartbeats = dataFollower.heartbeats || []
 	const messagesFromAll = {
-		leaderHeartbeat: leaderHeartbeats.filter(hbByValidator.bind(this, leader.id)),
-		followerHeartbeat: followerHeartbeats.filter(hbByValidator.bind(this, leader.id)),
-		followerFromLeader: leaderHeartbeats.filter(hbByValidator.bind(this, follower.id)),
-		followerFromFollower: followerHeartbeats.filter(hbByValidator.bind(this, follower.id)),
+		leaderHeartbeat: leaderHeartbeats.filter(
+			hbByValidator.bind(this, leader.id)
+		),
+		followerHeartbeat: followerHeartbeats.filter(
+			hbByValidator.bind(this, leader.id)
+		),
+		followerFromLeader: leaderHeartbeats.filter(
+			hbByValidator.bind(this, follower.id)
+		),
+		followerFromFollower: followerHeartbeats.filter(
+			hbByValidator.bind(this, follower.id)
+		),
 		newStateLeader: lastApproved ? [lastApproved.newState] : [],
-		approveStateFollower: lastApproved ? [lastApproved.approveState] : []
+		approveStateFollower: lastApproved ? [lastApproved.approveState] : [],
 	}
 
 	const verified = verifyLastApproved(lastApproved, validators)
@@ -86,23 +103,28 @@ async function getStatusOfCampaign (campaign) {
 		name: getStatus(messagesFromAll, campaign, lastApprovedBalances),
 		lastHeartbeat: {
 			leader: getLasHeartbeatTimestamp(messagesFromAll.leaderHeartbeat[0]),
-			follower: getLasHeartbeatTimestamp(messagesFromAll.followerFromFollower[0])
+			follower: getLasHeartbeatTimestamp(
+				messagesFromAll.followerFromFollower[0]
+			),
 		},
 		lastApprovedSigs,
 		lastApprovedBalances,
-		verified
+		verified,
 	}
 }
 
-function getLastSigs (lastApproved) {
-	return [lastApproved.newState.msg.signature, lastApproved.approveState.msg.signature]
+function getLastSigs(lastApproved) {
+	return [
+		lastApproved.newState.msg.signature,
+		lastApproved.approveState.msg.signature,
+	]
 }
 
-function getLastBalances (lastApproved) {
+function getLastBalances(lastApproved) {
 	return lastApproved.newState.msg.balances
 }
 
-function getLasHeartbeatTimestamp (msg) {
+function getLasHeartbeatTimestamp(msg) {
 	if (msg && msg.msg) {
 		return msg.msg.timestamp
 	} else {
@@ -110,20 +132,28 @@ function getLasHeartbeatTimestamp (msg) {
 	}
 }
 
-async function getDistributedFunds (campaign, balanceTree) {
-	const totalBalances = Object.values(balanceTree).reduce((total, val) => total.add(bigNumberify(val)), bigNumberify(0))
+async function getDistributedFunds(campaign, balanceTree) {
+	const totalBalances = Object.values(balanceTree).reduce(
+		(total, val) => total.add(bigNumberify(val)),
+		bigNumberify(0)
+	)
 	const depositAmount = bigNumberify(campaign.depositAmount)
-	const distributedFundsRatio = totalBalances.mul(bigNumberify(1000)).div(depositAmount) // in promiles
+	const distributedFundsRatio = totalBalances
+		.mul(bigNumberify(1000))
+		.div(depositAmount) // in promiles
 
 	return +distributedFundsRatio.toString(10)
 }
 
 // TODO: use coinmarketcap/kraken price API
 // also, update the prices every few minutes in a separate function and just run this with the cached prices
-async function getEstimateInUsd (campaign) {
+async function getEstimateInUsd(campaign) {
 	const { depositAsset, depositAmount } = campaign
 	// we normally use stablecoins so assume 1.0
-	const [ price, decimals ] = usdPriceMapping[depositAsset.toLowerCase()] || [1.0, 18]
+	const [price, decimals] = usdPriceMapping[depositAsset.toLowerCase()] || [
+		1.0,
+		18,
+	]
 
 	const unitsAmount = bigNumberify(depositAmount)
 		.mul(bigNumberify(price))
@@ -131,42 +161,45 @@ async function getEstimateInUsd (campaign) {
 	return parseFloat(formatUnits(unitsAmount, decimals))
 }
 
-async function queryValidators () {
+async function queryValidators() {
 	const campaignsCol = db.getMongo().collection('campaigns')
 	const channels = await getChannels()
 
-	await channels.map(c => campaignsCol.updateOne({ _id: c.id }, { $setOnInsert: c }, { upsert: true }))
+	await channels.map(c =>
+		campaignsCol.updateOne({ _id: c.id }, { $setOnInsert: c }, { upsert: true })
+	)
 
 	// If a campaign is in Expired, there's no way the state would ever change after that: so no point to update it
 	const campaigns = await campaignsCol
-		.find({ 'status.name': { '$nin': ['Expired'] } }).toArray()
+		.find({ 'status.name': { $nin: ['Expired'] } })
+		.toArray()
 
-	await Promise.all(campaigns
-		.map(c => getStatusOfCampaign(c)
-			.then(async (status) => {
-				const [
-					fundsDistributedRatio,
-					usdEstimate
-				] = await Promise.all([
+	await Promise.all(
+		campaigns.map(c =>
+			getStatusOfCampaign(c).then(async status => {
+				const [fundsDistributedRatio, usdEstimate] = await Promise.all([
 					getDistributedFunds(c, status.lastApprovedBalances),
-					getEstimateInUsd(c)
+					getEstimateInUsd(c),
 				])
 				const statusObj = {
 					...status,
 					lastChecked: Date.now(),
 					fundsDistributedRatio,
-					usdEstimate
+					usdEstimate,
 				}
 
 				if (status.verified) {
-					return updateCampaign(c, statusObj)
-						.then(() => console.log(`Status of campaign ${c._id} updated: ${status.name}`))
+					return updateCampaign(c, statusObj).then(() =>
+						console.log(`Status of campaign ${c._id} updated: ${status.name}`)
+					)
 				}
 				return Promise.resolve()
-			})))
+			})
+		)
+	)
 }
 
-function startStatusLoop () {
+function startStatusLoop() {
 	queryValidators()
 	setInterval(queryValidators, cfg.statusLoopTick)
 }
