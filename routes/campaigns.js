@@ -8,7 +8,7 @@ const { schemas, Campaign } = require('adex-models')
 const { celebrate } = require('celebrate')
 const router = express.Router()
 
-const MAX_LIMIT = 300
+const MAX_LIMIT = 500
 
 router.get('/', limitCampaigns, getCampaigns)
 router.get('/by-owner', noCache, signatureCheck, getCampaignsByOwner)
