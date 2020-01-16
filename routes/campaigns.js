@@ -24,11 +24,7 @@ router.put(
 
 function getByCreatorQuery(creator) {
 	return {
-		$or: [
-			{ creator: creator },
-			{ creator: creator.toLowerCase() },
-			{ creator: getAddress(creator) },
-		],
+		$or: [{ creator: creator.toLowerCase() }, { creator: getAddress(creator) }],
 	}
 }
 
