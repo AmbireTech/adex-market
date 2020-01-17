@@ -298,9 +298,10 @@ tape('GET /stats', t => {
 		.then(res => res.json())
 		.then(res => {
 			t.ok(res.hasOwnProperty('publisherCount'), 'stats has publisherCount')
-			t.ok(res.hasOwnProperty('advertiserCount', 'stats has advertiserCount'))
+			t.ok(res.hasOwnProperty('advertiserCount'), 'stats has advertiserCount')
 			t.ok(
-				res.hasOwnProperty('anonPublisherCount', 'stats has anonPublisherCount')
+				res.hasOwnProperty('anonPublisherCount'),
+				'stats has anonPublisherCount'
 			)
 			t.ok(
 				res.hasOwnProperty('anonAdvertiserCount'),
@@ -885,6 +886,32 @@ tape('GET /campaigns?byEarner', t => {
 					c.status.lastApprovedBalances.hasOwnProperty(identityAddr)
 				),
 				'Each campaign contains identityAddr in balances'
+			)
+			t.end()
+		})
+})
+
+tape('GET /campaigns?byEarner&limitForPublisher', t => {
+	fetch(
+		`${marketUrl}/campaigns?status=Active,Ready&byEarner=${identityAddrFilter}&limitForPublisher=${identityAddrFilter}`
+	)
+		.then(res => res.json())
+		.then(res => {
+			t.ok(Array.isArray(res), 'returns array')
+			t.equals(
+				res.length,
+				20, // Non-expired campaigns with identityAddrFilter in lastApprovedBalances, limited for publisher
+				'right amount of campaigns are returned'
+			)
+			t.ok(
+				res.every(c => c.status.name === 'Active' || c.status.name === 'Ready'),
+				'no Expired campaigns'
+			)
+			t.ok(
+				res.every(c =>
+					c.status.lastApprovedBalances.hasOwnProperty(identityAddrFilter)
+				),
+				'Each campaign contains identityAddrFilter in balances'
 			)
 			t.end()
 		})
