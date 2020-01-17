@@ -6,9 +6,10 @@ const { limitCampaigns } = require('../helpers/enforcePublisherLimits')
 const { filterCampaignsForPublisher } = require('../helpers/campaignLimiting')
 const { schemas, Campaign } = require('adex-models')
 const { celebrate } = require('celebrate')
+const { getAddress } = require('ethers/utils')
 const router = express.Router()
 
-const MAX_LIMIT = 300
+const MAX_LIMIT = 500
 
 router.get('/', limitCampaigns, getCampaigns)
 router.get('/by-owner', noCache, signatureCheck, getCampaignsByOwner)
@@ -21,11 +22,17 @@ router.put(
 	updateCampaign
 )
 
+function getByCreatorQuery(creator) {
+	return {
+		$or: [{ creator: creator.toLowerCase() }, { creator: getAddress(creator) }],
+	}
+}
+
 function getFindQuery(query) {
 	// Uses default statuses (active, ready) if none are requested
 	const status = query.status ? query.status.split(',') : ['Active', 'Ready']
 	// If request query has ?all it doesn't query for status
-	const findQuery = query.hasOwnProperty('all')
+	let findQuery = query.hasOwnProperty('all')
 		? {}
 		: { 'status.name': { $in: status } }
 
@@ -34,9 +41,13 @@ function getFindQuery(query) {
 	}
 
 	if (query.hasOwnProperty('byCreator')) {
-		findQuery['creator'] = query.byCreator
+		findQuery = { ...findQuery, ...getByCreatorQuery(query.byCreator) }
 	}
 
+	if (query.hasOwnProperty('byEarner')) {
+		const queryString = `status.lastApprovedBalances.${query.byEarner}`
+		findQuery[queryString] = { $exists: true, $ne: null }
+	}
 	return findQuery
 }
 
@@ -76,7 +87,7 @@ async function getCampaignsByOwner(req, res, next) {
 
 		const campaigns =
 			(await campaignsCol
-				.find({ creator: identity }, { projection: { _id: 0 } })
+				.find(getByCreatorQuery(identity), { projection: { _id: 0 } })
 				.toArray()) || []
 
 		return res.json(campaigns)
