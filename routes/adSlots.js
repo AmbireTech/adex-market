@@ -1,6 +1,7 @@
 const express = require('express')
 const { celebrate } = require('celebrate')
 const { schemas, AdSlot } = require('adex-models')
+const { getAddress } = require('ethers/utils')
 
 const db = require('../db')
 const addDataToIpfs = require('../helpers/ipfs')
@@ -25,14 +26,17 @@ router.post(
 
 function getAdSlots(req, res) {
 	const identity = req.query.identity
-	const limit = +req.query.limit || 100
+	const limit = +req.query.limit || (identity ? 0 : 100)
 	const skip = +req.query.skip || 0
 	const adSlotsCol = db.getMongo().collection('adSlots')
 
 	const query = {}
 
 	if (identity) {
-		query['owner'] = identity
+		query['$or'] = [
+			{ owner: identity.toLowerCase() },
+			{ owner: getAddress(identity) },
+		]
 	}
 
 	return adSlotsCol
