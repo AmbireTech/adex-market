@@ -2,6 +2,7 @@ const express = require('express')
 
 const { celebrate } = require('celebrate')
 const { schemas, AdUnit } = require('adex-models')
+const { getAddress } = require('ethers/utils')
 
 const db = require('../db')
 const addDataToIpfs = require('../helpers/ipfs')
@@ -26,14 +27,17 @@ router.put(
 
 function getAdUnits(req, res) {
 	const identity = req.query.identity
-	const limit = +req.query.limit || 100
+	const limit = +req.query.limit || (identity ? 0 : 100)
 	const skip = +req.query.skip || 0
 	const adUnitCol = db.getMongo().collection('adUnits')
 
 	const query = { passback: { $ne: true } }
 
 	if (identity) {
-		query['owner'] = identity
+		query['$or'] = [
+			{ owner: identity.toLowerCase() },
+			{ owner: getAddress(identity) },
+		]
 	}
 
 	return adUnitCol
