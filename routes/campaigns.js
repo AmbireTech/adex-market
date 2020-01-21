@@ -24,7 +24,7 @@ router.put(
 
 function getByCreatorQuery(creator) {
 	return {
-		$or: [{ creator: creator.toLowerCase() }, { creator: getAddress(creator) }],
+		creator: { $in: [creator.toLowerCase(), getAddress(creator)] },
 	}
 }
 
@@ -45,8 +45,16 @@ function getFindQuery(query) {
 	}
 
 	if (query.hasOwnProperty('byEarner')) {
-		const queryString = `status.lastApprovedBalances.${query.byEarner}`
-		findQuery[queryString] = { $exists: true, $ne: null }
+		const cond = { $exists: true, $ne: null }
+		findQuery = {
+			...findQuery,
+			$or: [
+				{
+					[`status.lastApprovedBalances.${query.byEarner.toLowerCase()}`]: cond,
+				},
+				{ [`status.lastApprovedBalances.${getAddress(query.byEarner)}`]: cond },
+			],
+		}
 	}
 	return findQuery
 }
