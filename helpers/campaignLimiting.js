@@ -1,9 +1,10 @@
 const BN = require('bn.js')
 const db = require('../db')
+const cfg = require('../cfg')
 
-async function getCampaignsEarningFrom(query, mongoQuery) {
+async function getCampaignsEarningFrom(limitForPublisher, mongoQuery) {
 	const campaignsCol = db.getMongo().collection('campaigns')
-	const mongoQueryKey = `status.lastApprovedBalances.${query.limitForPublisher}`
+	const mongoQueryKey = `status.lastApprovedBalances.${limitForPublisher}`
 	const findQuery = {
 		...mongoQuery,
 		[mongoQueryKey]: {
@@ -18,11 +19,17 @@ async function getCampaignsEarningFrom(query, mongoQuery) {
 		})
 }
 
-async function filterCampaignsForPublisher(campaigns, query, mongoQuery) {
-	const { publisherChannelLimit, limitForPublisher } = query
-	if (isNaN(publisherChannelLimit)) return campaigns
-	const limit = parseInt(publisherChannelLimit, 10)
-	const campaignsEarningFrom = await getCampaignsEarningFrom(query, mongoQuery)
+async function filterCampaignsForPublisher(
+	campaigns,
+	limitForPublisher,
+	mongoQuery
+) {
+	if (!limitForPublisher) return campaigns
+	const limit = cfg.defaultChannelLimit
+	const campaignsEarningFrom = await getCampaignsEarningFrom(
+		limitForPublisher,
+		mongoQuery
+	)
 	if (campaignsEarningFrom.length > limit) {
 		// Sorting to get those with highest earning first if limit is exceeded
 		return campaignsEarningFrom
