@@ -35,6 +35,7 @@ async function getAccEarned(addr) {
 }
 
 async function enforceLimited(req, res, next) {
+	if (!req.query.limitForPublisher) return next()
 	try {
 		const publisherAddr = req.query.limitForPublisher
 		const isPublisherLimited = await isIdentityLimited(publisherAddr)
