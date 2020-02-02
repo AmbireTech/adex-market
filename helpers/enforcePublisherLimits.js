@@ -26,7 +26,7 @@ async function getAccEarned(addr) {
 				) {
 					return all
 				}
-				all[c.depositAsset] = (c.depositAsset || bigZero).add(
+				all[c.depositAsset] = (all[c.depositAsset] || bigZero).add(
 					new BN(c.status.lastApprovedBalances[addr])
 				)
 
