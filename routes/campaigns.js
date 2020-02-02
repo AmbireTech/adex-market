@@ -12,6 +12,7 @@ const router = express.Router()
 const MAX_LIMIT = 500
 
 router.get('/', limitCampaigns, getCampaigns)
+// router.get('/with-targeting', limitCampaigns, getCampaignsWithTargeting)
 router.get('/by-owner', noCache, signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
 router.put('/:id/close', signatureCheck, closeCampaign)
@@ -59,33 +60,39 @@ function getFindQuery(query) {
 	return findQuery
 }
 
-function getCampaigns(req, res) {
-	const campaignLimit = +req.query.limit || MAX_LIMIT
-	const publisherChannelLimit = req.query.publisherChannelLimit
-	const skip = +req.query.skip || 0
-	const mongoQuery = getFindQuery(req.query)
+async function getCampaignsFromQuery(query) {
+	const campaignLimit = +query.limit || MAX_LIMIT
+	const publisherChannelLimit = query.publisherChannelLimit
+	const skip = +query.skip || 0
+	const mongoQuery = getFindQuery(query)
 	const campaignsCol = db.getMongo().collection('campaigns')
-	campaignsCol
+	const campaigns = await campaignsCol
 		.find(mongoQuery, { projection: { _id: 0 } })
 		.skip(skip)
 		.limit(campaignLimit)
 		.toArray()
-		.then(async campaigns => {
-			if (req.query.hasOwnProperty('limitForPublisher')) {
-				campaigns = await filterCampaignsForPublisher(
-					campaigns,
-					publisherChannelLimit,
-					req.query,
-					mongoQuery
-				)
-			}
-			res.set('Cache-Control', 'public, max-age=60')
-			return res.send(campaigns)
-		})
-		.catch(err => {
-			console.error('Error getting campaigns', err)
-			return res.status(500).send(err.toString())
-		})
+
+	if (query.hasOwnProperty('limitForPublisher')) {
+		return await filterCampaignsForPublisher(
+			campaigns,
+			publisherChannelLimit,
+			query,
+			mongoQuery
+		)
+	}
+
+	return campaigns
+}
+
+async function getCampaigns(req, res) {
+	try {
+		const campaigns = await getCampaignsFromQuery(req.query)
+		res.set('Cache-Control', 'public, max-age=60')
+		return res.send(campaigns)
+	} catch (e) {
+		console.error('Error getting campaigns', err)
+		return res.status(500).send(err.toString())
+	}
 }
 
 async function getCampaignsByOwner(req, res, next) {
