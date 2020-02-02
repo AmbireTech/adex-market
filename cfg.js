@@ -11,4 +11,5 @@ module.exports = {
 	sessionExpiryTime: Date.now() + 1000 * 60 * 60 * 24 * 30, // 1 month
 	maxChannelsEarningFrom: 25,
 	limitedIdentityEarningsLimit: '100000000000000000000', // 100 DAI/TST
+	limitedIdentityEnabled: false,
 }

@@ -1,14 +1,18 @@
 const express = require('express')
 const db = require('../db')
+const cfg = require('../cfg')
 const signatureCheck = require('../helpers/signatureCheck')
 const { noCache } = require('../helpers/cache')
 const { filterCampaignsForPublisher } = require('../helpers/campaignLimiting')
+const { isIdentityLimited } = require('../helpers/relayer')
 const { schemas, Campaign } = require('adex-models')
 const { celebrate } = require('celebrate')
 const { getAddress } = require('ethers/utils')
+const BN = require('bn.js')
 const router = express.Router()
 
 const MAX_LIMIT = 500
+const EARNINGS_LIMIT = new BN(cfg.limitedIdentityEarningsLimit)
 
 router.get('/', getCampaigns)
 router.get('/with-targeting', getCampaignsWithTargeting)
@@ -64,21 +68,27 @@ async function getCampaignsFromQuery(query) {
 	const skip = +query.skip || 0
 	const mongoQuery = getFindQuery(query)
 	const campaignsCol = db.getMongo().collection('campaigns')
-	const campaigns = await campaignsCol
+	const allCampaigns = await campaignsCol
 		.find(mongoQuery, { projection: { _id: 0 } })
 		.skip(skip)
 		.limit(campaignLimit)
 		.toArray()
 
 	if (query.hasOwnProperty('limitForPublisher')) {
-		return filterCampaignsForPublisher(
-			campaigns,
-			getAddress(query.limitForPublisher),
+		const publisher = getAddress(query.limitForPublisher)
+		const { campaigns, totalEarned } = await filterCampaignsForPublisher(
+			allCampaigns,
+			publisher,
 			mongoQuery
 		)
+		if (cfg.limitedIdentityEnabled) {
+			const isLimited = await isIdentityLimited(publisher)
+			if (isLimited && totalEarned.gte(EARNINGS_LIMIT)) return []
+		}
+		return campaigns
 	}
 
-	return campaigns
+	return allCampaigns
 }
 
 async function getCampaigns(req, res) {
