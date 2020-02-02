@@ -1,6 +1,6 @@
 {
   "name": "adex-market",
-  "version": "0.1.11",
+  "version": "0.1.14",
   "description": "Adex Market",
   "main": "index.js",
   "engines": {
@@ -11,8 +11,8 @@
     "dev-start": "nodemon index",
     "test": "node test/index.js",
     "test-integration": "./test/run-integration.sh",
-    "lint": "eslint . --ext .js && echo Linting check finished",
-    "lint:fix": "eslint --fix . --ext .js && echo Linting fix finished",
+    "lint": "eslint . && echo Linting check finished",
+    "lint:fix": "eslint --fix . && echo Linting fix finished",
     "eslint-check": "eslint --print-config src/App.js | eslint-config-prettier-check"
   },
   "keywords": [

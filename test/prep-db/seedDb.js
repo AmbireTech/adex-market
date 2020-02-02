@@ -45,7 +45,7 @@ const campaignLimitDataNoFiltering = [
 
 const campaignsAboveLimit = []
 
-for (let i = 1; i <= cfg.defaultChannelLimit + 10; i++) {
+for (let i = 1; i <= cfg.maxChannelsEarningFrom + 10; i++) {
 	const campaignData = {
 		status: {
 			name: 'Active',

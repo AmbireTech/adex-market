@@ -6,7 +6,6 @@ const startStatusLoop = require('./status-loop/queryValidators').startStatusLoop
 const fillInitialValidators = require('./helpers/fillInitialValidators')
 
 const signatureCheck = require('./helpers/signatureCheck')
-const { enforceLimited } = require('./helpers/enforcePublisherLimits')
 const campaignsRoutes = require('./routes/campaigns')
 const statsRoutes = require('./routes/stats')
 const usersRoutes = require('./routes/users')
@@ -42,7 +41,7 @@ app.use(function(req, res, next) {
 	next()
 })
 
-app.use('/campaigns', enforceLimited, campaignsRoutes)
+app.use('/campaigns', campaignsRoutes)
 app.use('/stats', statsRoutes)
 app.use('/users', usersRoutes)
 app.use('/validators', validatorsRoutes)

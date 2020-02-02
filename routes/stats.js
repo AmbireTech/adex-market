@@ -82,17 +82,15 @@ function getStats(req, res, next) {
 					if (!output.totalSpentFundsByAssetType[c.depositAsset]) {
 						output.totalSpentFundsByAssetType[c.depositAsset] = new BN(0)
 					}
-					output.totalSpentFundsByAssetType[
-						c.depositAsset
-					] = output.totalSpentFundsByAssetType[c.depositAsset].add(
+					const byAssetType = output.totalSpentFundsByAssetType[c.depositAsset]
+					output.totalSpentFundsByAssetType[c.depositAsset] = byAssetType.add(
 						new BN(c.depositAmount)
 					)
 					output.campaignsByStatus[c.status.name]++
 				})
 				Object.keys(output.totalSpentFundsByAssetType).map(a => {
-					output.totalSpentFundsByAssetType[
-						a
-					] = output.totalSpentFundsByAssetType[a].toString()
+					const byAssetType = output.totalSpentFundsByAssetType[a].toString()
+					output.totalSpentFundsByAssetType[a] = byAssetType
 				})
 				return res.send(output)
 			})
