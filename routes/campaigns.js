@@ -12,7 +12,7 @@ const router = express.Router()
 const MAX_LIMIT = 500
 
 router.get('/', limitCampaigns, getCampaigns)
-// router.get('/with-targeting', limitCampaigns, getCampaignsWithTargeting)
+router.get('/with-targeting', limitCampaigns, getCampaignsWithTargeting)
 router.get('/by-owner', noCache, signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
 router.put('/:id/close', signatureCheck, closeCampaign)
@@ -111,6 +111,18 @@ async function getCampaignsByOwner(req, res, next) {
 		return res.status(500).send(err.toString())
 	}
 }
+
+async function getCampaignsWithTargeting(req, res) {
+	try {
+		const campaigns = await getCampaignsFromQuery(req.query)
+		res.set('Cache-Control', 'public, max-age=60')
+		return res.send({ campaigns, targeting: [] })
+	} catch (e) {
+		console.error('Error getting campaigns', err)
+		return res.status(500).send(err.toString())
+	}
+}
+
 
 function getCampaignInfo(req, res) {
 	const id = req.params.id
