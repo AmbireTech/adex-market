@@ -18,11 +18,7 @@ async function getCampaignsEarningFrom(query, mongoQuery) {
 		})
 }
 
-async function filterCampaignsForPublisher(
-	campaigns,
-	query,
-	mongoQuery
-) {
+async function filterCampaignsForPublisher(campaigns, query, mongoQuery) {
 	const { publisherChannelLimit, limitForPublisher } = query
 	if (!publisherChannelLimit) return campaigns
 	const campaignsEarningFrom = await getCampaignsEarningFrom(query, mongoQuery)

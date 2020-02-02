@@ -71,11 +71,7 @@ async function getCampaignsFromQuery(query) {
 		.toArray()
 
 	if (query.hasOwnProperty('limitForPublisher')) {
-		return await filterCampaignsForPublisher(
-			campaigns,
-			query,
-			mongoQuery
-		)
+		return await filterCampaignsForPublisher(campaigns, query, mongoQuery)
 	}
 
 	return campaigns
@@ -113,7 +109,9 @@ async function getCampaignsWithTargeting(req, res) {
 	try {
 		const campaigns = await getCampaignsFromQuery(req.query)
 		const country = req.headers['cf-ipcountry']
-		const targeting = country ? [{ tag: `location_${country.toUpperCase()}`, score: 50 }] : []
+		const targeting = country
+			? [{ tag: `location_${country.toUpperCase()}`, score: 50 }]
+			: []
 		res.set('Cache-Control', 'public, max-age=60')
 		return res.send({ campaigns, targeting })
 	} catch (e) {
@@ -121,7 +119,6 @@ async function getCampaignsWithTargeting(req, res) {
 		return res.status(500).send(err.toString())
 	}
 }
-
 
 function getCampaignInfo(req, res) {
 	const id = req.params.id
