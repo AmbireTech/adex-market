@@ -116,7 +116,7 @@ async function getCampaignsWithTargeting(req, res) {
 	try {
 		const campaigns = await getCampaignsFromQuery(req.query)
 		const country = req.headers['cf-ipcountry']
-		const targeting = country ? [`location_${country.toUpperCase()}`] : []
+		const targeting = country ? [{ tag: `location_${country.toUpperCase()}`, score: 50 }] : []
 		res.set('Cache-Control', 'public, max-age=60')
 		return res.send({ campaigns, targeting })
 	} catch (e) {
