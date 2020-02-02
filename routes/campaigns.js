@@ -71,7 +71,11 @@ async function getCampaignsFromQuery(query) {
 		.toArray()
 
 	if (query.hasOwnProperty('limitForPublisher')) {
-		return filterCampaignsForPublisher(campaigns, query, mongoQuery)
+		return filterCampaignsForPublisher(
+			campaigns,
+			getAddress(query.limitForPublisher),
+			mongoQuery
+		)
 	}
 
 	return campaigns

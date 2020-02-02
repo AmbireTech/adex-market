@@ -9,6 +9,6 @@ module.exports = {
 	recency: 1000 * 60 * 4, // 4 min TODO: Add seperate for heartbeat, newState and approveState if needed
 	statusLoopTick: 1000 * 30, // 30 secs
 	sessionExpiryTime: Date.now() + 1000 * 60 * 60 * 24 * 30, // 1 month
-	defaultChannelLimit: 20,
+	defaultChannelLimit: 25,
 	limitedIdentityEarningsLimit: '100000000000000000000', // 100 DAI/TST
 }
