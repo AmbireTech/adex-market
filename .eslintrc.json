@@ -1,9 +1,8 @@
 {
   "env": {
-    "browser": true,
     "es6": true
   },
-  "extends": ["prettier", "plugin:node/recommended-script"],
+  "extends": ["standard", "prettier"],
   "plugins": ["prettier"],
   "parserOptions": {
     "ecmaVersion": 2018

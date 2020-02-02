@@ -1,14 +1,18 @@
 const express = require('express')
 const db = require('../db')
+const cfg = require('../cfg')
 const signatureCheck = require('../helpers/signatureCheck')
 const { noCache } = require('../helpers/cache')
 const { filterCampaignsForPublisher } = require('../helpers/campaignLimiting')
+const { isIdentityLimited } = require('../helpers/relayer')
 const { schemas, Campaign } = require('adex-models')
 const { celebrate } = require('celebrate')
 const { getAddress } = require('ethers/utils')
+const BN = require('bn.js')
 const router = express.Router()
 
 const MAX_LIMIT = 500
+const EARNINGS_LIMIT = new BN(cfg.limitedIdentityEarningsLimit)
 
 router.get('/', getCampaigns)
 router.get('/with-targeting', getCampaignsWithTargeting)
@@ -64,21 +68,27 @@ async function getCampaignsFromQuery(query) {
 	const skip = +query.skip || 0
 	const mongoQuery = getFindQuery(query)
 	const campaignsCol = db.getMongo().collection('campaigns')
-	const campaigns = await campaignsCol
+	const allCampaigns = await campaignsCol
 		.find(mongoQuery, { projection: { _id: 0 } })
 		.skip(skip)
 		.limit(campaignLimit)
 		.toArray()
 
 	if (query.hasOwnProperty('limitForPublisher')) {
-		return await filterCampaignsForPublisher(
-			campaigns,
-			query,
+		const publisher = getAddress(query.limitForPublisher)
+		const { campaigns, totalEarned } = await filterCampaignsForPublisher(
+			allCampaigns,
+			publisher,
 			mongoQuery
 		)
+		if (cfg.limitedIdentityEnabled) {
+			const isLimited = await isIdentityLimited(publisher)
+			if (isLimited && totalEarned.gte(EARNINGS_LIMIT)) return []
+		}
+		return campaigns
 	}
 
-	return campaigns
+	return allCampaigns
 }
 
 async function getCampaigns(req, res) {
@@ -86,7 +96,7 @@ async function getCampaigns(req, res) {
 		const campaigns = await getCampaignsFromQuery(req.query)
 		res.set('Cache-Control', 'public, max-age=60')
 		return res.send(campaigns)
-	} catch (e) {
+	} catch (err) {
 		console.error('Error getting campaigns', err)
 		return res.status(500).send(err.toString())
 	}
@@ -113,15 +123,16 @@ async function getCampaignsWithTargeting(req, res) {
 	try {
 		const campaigns = await getCampaignsFromQuery(req.query)
 		const country = req.headers['cf-ipcountry']
-		const targeting = country ? [{ tag: `location_${country.toUpperCase()}`, score: 50 }] : []
+		const targeting = country
+			? [{ tag: `location_${country.toUpperCase()}`, score: 50 }]
+			: []
 		res.set('Cache-Control', 'public, max-age=60')
 		return res.send({ campaigns, targeting })
-	} catch (e) {
+	} catch (err) {
 		console.error('Error getting campaigns', err)
 		return res.status(500).send(err.toString())
 	}
 }
-
 
 function getCampaignInfo(req, res) {
 	const id = req.params.id
