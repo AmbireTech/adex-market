@@ -71,7 +71,7 @@ async function getCampaignsFromQuery(query) {
 		.toArray()
 
 	if (query.hasOwnProperty('limitForPublisher')) {
-		return await filterCampaignsForPublisher(campaigns, query, mongoQuery)
+		return filterCampaignsForPublisher(campaigns, query, mongoQuery)
 	}
 
 	return campaigns
@@ -82,7 +82,7 @@ async function getCampaigns(req, res) {
 		const campaigns = await getCampaignsFromQuery(req.query)
 		res.set('Cache-Control', 'public, max-age=60')
 		return res.send(campaigns)
-	} catch (e) {
+	} catch (err) {
 		console.error('Error getting campaigns', err)
 		return res.status(500).send(err.toString())
 	}
@@ -114,7 +114,7 @@ async function getCampaignsWithTargeting(req, res) {
 			: []
 		res.set('Cache-Control', 'public, max-age=60')
 		return res.send({ campaigns, targeting })
-	} catch (e) {
+	} catch (err) {
 		console.error('Error getting campaigns', err)
 		return res.status(500).send(err.toString())
 	}

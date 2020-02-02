@@ -3,7 +3,6 @@ const { isIdentityLimited } = require('../helpers/relayer')
 const db = require('../db')
 const cfg = require('../cfg')
 
-const CHANNEL_LIMIT = cfg.defaultChannelLimit
 const EARNINGS_LIMIT = new BN(cfg.limitedIdentityEarningsLimit)
 
 async function getAccEarned(addr) {
