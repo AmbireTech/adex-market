@@ -25,7 +25,7 @@ async function filterCampaignsForPublisher(
 	mongoQuery
 ) {
 	if (!limitForPublisher) return campaigns
-	const limit = cfg.defaultChannelLimit
+	const limit = cfg.maxChannelsEarningFrom
 	const campaignsEarningFrom = await getCampaignsEarningFrom(
 		limitForPublisher,
 		mongoQuery
