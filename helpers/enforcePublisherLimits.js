@@ -9,13 +9,6 @@ const EARNINGS_LIMIT = new BN(cfg.limitedIdentityEarningsLimit)
 // Temporary hotfix
 const DISABLE_EARNINGS_LIMIT = true
 
-async function limitCampaigns(req, res, next) {
-	if (req.query.limitForPublisher) {
-		req.query.publisherChannelLimit = CHANNEL_LIMIT
-	}
-	return next()
-}
-
 async function getAccEarned(addr) {
 	const campaignsCol = db.getMongo().collection('campaigns')
 
@@ -74,4 +67,4 @@ async function enforceLimited(req, res, next) {
 	}
 }
 
-module.exports = { enforceLimited, limitCampaigns }
+module.exports = { enforceLimited }

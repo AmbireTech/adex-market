@@ -2,7 +2,6 @@ const express = require('express')
 const db = require('../db')
 const signatureCheck = require('../helpers/signatureCheck')
 const { noCache } = require('../helpers/cache')
-const { limitCampaigns } = require('../helpers/enforcePublisherLimits')
 const { filterCampaignsForPublisher } = require('../helpers/campaignLimiting')
 const { schemas, Campaign } = require('adex-models')
 const { celebrate } = require('celebrate')
@@ -11,8 +10,8 @@ const router = express.Router()
 
 const MAX_LIMIT = 500
 
-router.get('/', limitCampaigns, getCampaigns)
-router.get('/with-targeting', limitCampaigns, getCampaignsWithTargeting)
+router.get('/', getCampaigns)
+router.get('/with-targeting', getCampaignsWithTargeting)
 router.get('/by-owner', noCache, signatureCheck, getCampaignsByOwner)
 router.get('/:id', getCampaignInfo)
 router.put('/:id/close', signatureCheck, closeCampaign)

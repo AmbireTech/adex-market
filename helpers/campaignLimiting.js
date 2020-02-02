@@ -23,10 +23,9 @@ async function filterCampaignsForPublisher(
 	query,
 	mongoQuery
 ) {
-	const limit = query.publisherChannelLimit
-	if (!limit) return campaigns
+	const { publisherChannelLimit, limitForPublisher } = query
+	if (!publisherChannelLimit) return campaigns
 	const campaignsEarningFrom = await getCampaignsEarningFrom(query, mongoQuery)
-	const { limitForPublisher } = query
 	if (campaignsEarningFrom.length > limit) {
 		// Sorting to get those with highest earning first if limit is exceeded
 		return campaignsEarningFrom
