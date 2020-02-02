@@ -115,8 +115,10 @@ async function getCampaignsByOwner(req, res, next) {
 async function getCampaignsWithTargeting(req, res) {
 	try {
 		const campaigns = await getCampaignsFromQuery(req.query)
+		const country = req.headers['cf-ipcountry']
+		const targeting = country ? [`location_${country.toUpperCase()}`] : []
 		res.set('Cache-Control', 'public, max-age=60')
-		return res.send({ campaigns, targeting: [] })
+		return res.send({ campaigns, targeting })
 	} catch (e) {
 		console.error('Error getting campaigns', err)
 		return res.status(500).send(err.toString())
