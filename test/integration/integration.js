@@ -841,7 +841,7 @@ tape('GET /campaigns?limitForPublisher... FILTERING', t => {
 			t.ok(Array.isArray(res), 'returns array')
 			t.equals(
 				res.length,
-				cfg.defaultChannelLimit,
+				cfg.maxChannelsEarningFrom,
 				'right amount of campaigns are returned'
 			)
 			t.ok(
