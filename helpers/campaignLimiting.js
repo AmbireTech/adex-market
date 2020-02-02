@@ -20,10 +20,11 @@ async function getCampaignsEarningFrom(query, mongoQuery) {
 
 async function filterCampaignsForPublisher(
 	campaigns,
-	limit,
 	query,
 	mongoQuery
 ) {
+	const limit = query.publisherChannelLimit
+	if (!limit) return campaigns
 	const campaignsEarningFrom = await getCampaignsEarningFrom(query, mongoQuery)
 	const { limitForPublisher } = query
 	if (campaignsEarningFrom.length > limit) {
