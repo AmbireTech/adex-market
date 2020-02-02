@@ -62,7 +62,6 @@ function getFindQuery(query) {
 
 async function getCampaignsFromQuery(query) {
 	const campaignLimit = +query.limit || MAX_LIMIT
-	const publisherChannelLimit = query.publisherChannelLimit
 	const skip = +query.skip || 0
 	const mongoQuery = getFindQuery(query)
 	const campaignsCol = db.getMongo().collection('campaigns')
@@ -75,7 +74,6 @@ async function getCampaignsFromQuery(query) {
 	if (query.hasOwnProperty('limitForPublisher')) {
 		return await filterCampaignsForPublisher(
 			campaigns,
-			publisherChannelLimit,
 			query,
 			mongoQuery
 		)
