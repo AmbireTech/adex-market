@@ -158,9 +158,7 @@ async function closeCampaign(req, res) {
 		const updatedCampaign = await campaigns.findOneAndUpdate(
 			{ id },
 			{
-				$currentDate: {
-					'status.closeDate': { $type: 'timestamp' },
-				},
+				$set: { 'status.endDate': new Date().valueOf() },
 				$set: { 'status.humanFriendlyName': 'Closed' },
 			},
 			{ returnOriginal: false }
