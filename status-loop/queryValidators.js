@@ -126,7 +126,7 @@ async function getStatusOfCampaign(campaign) {
 	const statusName = getStatus(messagesFromAll, campaign, lastApprovedBalances)
 	return {
 		name: statusName,
-		endDate: campaign.status.endDate,
+		endDate: campaign.status ? campaign.status.endDate : null,
 		humanFriendlyName: getHumanFriendlyName(statusName, campaign),
 		lastHeartbeat: {
 			leader: getLasHeartbeatTimestamp(messagesFromAll.leaderHeartbeat[0]),
