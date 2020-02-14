@@ -155,16 +155,12 @@ async function closeCampaign(req, res) {
 	try {
 		const id = req.params.id
 		const campaigns = db.getMongo().collection('campaigns')
-		const campaign = await campaigns.findOne({ id: id })
 		const updatedCampaign = await campaigns.findOneAndUpdate(
 			{ id },
 			{
 				$set: {
-					status: {
-						...campaign.status,
-						humanFriendlyName: 'Closed',
-						endDate: Date.now(),
-					},
+					'status.humanFriendlyName': 'Closed',
+					'status.endDate': Date.now(),
 				},
 			},
 			{ returnOriginal: false }
