@@ -2,7 +2,6 @@ const { bigNumberify, formatUnits } = require('ethers').utils
 const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const cfg = require('../cfg')
-const updateCampaign = require('./updateCampaign')
 const { verifyLastApproved } = require('./verifyMessages')
 const getChannels = require('./getChannels')
 
@@ -224,8 +223,8 @@ async function queryValidators() {
 
 				if (status.verified) {
 					console.log(`Status of campaign ${c._id} updated: ${status.name}`)
-					return campaignCol.updateOne(
-						{ _id: campaign._id },
+					return campaignsCol.updateOne(
+						{ _id: c._id },
 						{ $set: { status: statusObj } }
 					)
 				}
