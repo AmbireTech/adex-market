@@ -213,6 +213,7 @@ async function queryValidators() {
 						getEstimateInUsd(c),
 					])
 					const statusObj = {
+						...c.status,
 						...status,
 						lastChecked: Date.now(),
 						usdEstimate,
@@ -227,8 +228,10 @@ async function queryValidators() {
 					}
 
 					if (status.verified) {
-						return updateCampaign(c, statusObj).then(() =>
-							console.log(`Status of campaign ${c._id} updated: ${status.name}`)
+						console.log(`Status of campaign ${c._id} updated: ${status.name}`)
+						return campaignCol.updateOne(
+							{ _id: campaign._id },
+							{ $set: { status: statusObj } }
 						)
 					}
 					return Promise.resolve()
