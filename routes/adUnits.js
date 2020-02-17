@@ -81,7 +81,7 @@ function postAdUnit(req, res) {
 	return addDataToIpfs(Buffer.from(JSON.stringify(adUnit.spec))).then(
 		dataHash => {
 			adUnit['ipfs'] = dataHash
-			return adUnitCol.insertOne(adUnit.marketDbAdd, (err, result) => {
+			return adUnitCol.insertOne(adUnit.marketDbAdd, err => {
 				if (err) {
 					console.error(new Error('error adding adUnit', err))
 					return res.status(500).send(err.toString())

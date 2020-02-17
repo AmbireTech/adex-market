@@ -102,7 +102,7 @@ async function getCampaigns(req, res) {
 	}
 }
 
-async function getCampaignsByOwner(req, res, next) {
+async function getCampaignsByOwner(req, res) {
 	try {
 		const identity = req.identity
 		const campaignsCol = db.getMongo().collection('campaigns')
@@ -157,7 +157,12 @@ async function closeCampaign(req, res) {
 		const campaigns = db.getMongo().collection('campaigns')
 		const updatedCampaign = await campaigns.findOneAndUpdate(
 			{ id },
-			{ $set: { 'status.humanFriendlyName': 'Closed' } },
+			{
+				$set: {
+					'status.humanFriendlyName': 'Closed',
+					'status.closedDate': Date.now(),
+				},
+			},
 			{ returnOriginal: false }
 		)
 		return res.send({ updatedCampaign })

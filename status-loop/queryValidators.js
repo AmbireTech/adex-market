@@ -2,7 +2,6 @@ const { bigNumberify, formatUnits } = require('ethers').utils
 const db = require('../db')
 const getRequest = require('../helpers/getRequest')
 const cfg = require('../cfg')
-const updateCampaign = require('./updateCampaign')
 const { verifyLastApproved } = require('./verifyMessages')
 const getChannels = require('./getChannels')
 
@@ -126,6 +125,7 @@ async function getStatusOfCampaign(campaign) {
 	const statusName = getStatus(messagesFromAll, campaign, lastApprovedBalances)
 	return {
 		name: statusName,
+		closedDate: campaign.status ? campaign.status.closedDate : null,
 		humanFriendlyName: getHumanFriendlyName(statusName, campaign),
 		lastHeartbeat: {
 			leader: getLasHeartbeatTimestamp(messagesFromAll.leaderHeartbeat[0]),
@@ -190,7 +190,6 @@ async function getEstimateInUsd(campaign) {
 async function queryValidators() {
 	const campaignsCol = db.getMongo().collection('campaigns')
 	const channels = await getChannels()
-
 	await channels.map(c =>
 		campaignsCol.updateOne({ _id: c.id }, { $setOnInsert: c }, { upsert: true })
 	)
@@ -208,6 +207,7 @@ async function queryValidators() {
 					getEstimateInUsd(c),
 				])
 				const statusObj = {
+					...c.status,
 					...status,
 					lastChecked: Date.now(),
 					usdEstimate,
@@ -216,9 +216,16 @@ async function queryValidators() {
 				if (status.humanFriendlyName !== 'Closed') {
 					statusObj.fundsDistributedRatio = fundsDistributedRatio
 				}
+
+				if (status.humanFriendlyName === 'Completed' && !statusObj.closedDate) {
+					statusObj.closedDate = Date.now()
+				}
+
 				if (status.verified) {
-					return updateCampaign(c, statusObj).then(() =>
-						console.log(`Status of campaign ${c._id} updated: ${status.name}`)
+					console.log(`Status of campaign ${c._id} updated: ${status.name}`)
+					return campaignsCol.updateOne(
+						{ _id: c._id },
+						{ $set: { status: statusObj } }
 					)
 				}
 				return Promise.resolve()

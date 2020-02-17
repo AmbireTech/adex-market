@@ -8,7 +8,7 @@ const router = express.Router()
 
 router.post('/', authUser)
 
-async function authUser(req, res, next) {
+async function authUser(req, res) {
 	try {
 		const {
 			identity,
@@ -47,7 +47,7 @@ async function authUser(req, res, next) {
 					identity: identity,
 					privileges: res.privileges,
 				}),
-				(err, result) => {
+				err => {
 					if (err != null) {
 						console.error(
 							'Error saving session data for user ' + recoveredAddr + ' :' + err
