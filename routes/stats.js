@@ -53,7 +53,7 @@ function getData() {
 	return Promise.all([getDataFromUsers, getDataFromCampaigns])
 }
 
-function getStats(req, res, next) {
+function getStats(req, res) {
 	const output = {
 		publisherCount: 0,
 		advertiserCount: 0,
@@ -75,7 +75,7 @@ function getStats(req, res, next) {
 				output.anonPublishers = anonPublishers
 				output.anonAdvertisers = getAnonAdvertisers(campaigns, users)
 
-				campaigns.map((c, i) => {
+				campaigns.map(c => {
 					if (!output.campaignsByStatus[c.status.name]) {
 						output.campaignsByStatus[c.status.name] = 0
 					}

@@ -37,7 +37,7 @@ function postValidator(req, res) {
 	const validatorsCol = db.getMongo().collection('validators')
 	const validator = req.body
 
-	return validatorsCol.insertOne(validator, (err, result) => {
+	return validatorsCol.insertOne(validator, err => {
 		if (err) {
 			console.error('Err adding validator!', err)
 			return res.status(500).send(err.toString())

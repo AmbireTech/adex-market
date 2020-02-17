@@ -82,7 +82,7 @@ function postAdSlot(req, res) {
 		dataHash => {
 			adSlot['ipfs'] = dataHash
 
-			return adSlotsCol.insertOne(adSlot.marketDbAdd, (err, result) => {
+			return adSlotsCol.insertOne(adSlot.marketDbAdd, err => {
 				if (err) {
 					console.error('Error adding adSlot', err)
 					return res.status(500).send(err.toString())

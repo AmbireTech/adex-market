@@ -9,7 +9,7 @@ const router = express.Router()
 router.post('/', celebrate({ body: schemas.user }), postUser)
 router.get('/list', getUserList)
 
-function postUser(req, res, next) {
+function postUser(req, res) {
 	const usersCol = db.getMongo().collection('users')
 	const user = req.body
 	// Assuming user has properties:
@@ -19,7 +19,7 @@ function postUser(req, res, next) {
 	usersCol.insertOne(user).then(() => res.send({ success: true }))
 }
 
-function getUserList(req, res, next) {
+function getUserList(req, res) {
 	const usersCol = db.getMongo().collection('users')
 	const hasInteracted = req.query.hasInteracted
 	let query = {}

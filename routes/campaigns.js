@@ -102,7 +102,7 @@ async function getCampaigns(req, res) {
 	}
 }
 
-async function getCampaignsByOwner(req, res, next) {
+async function getCampaignsByOwner(req, res) {
 	try {
 		const identity = req.identity
 		const campaignsCol = db.getMongo().collection('campaigns')
