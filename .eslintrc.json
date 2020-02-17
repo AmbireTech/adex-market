@@ -1,13 +1,15 @@
 {
   "env": {
-    "es6": true
+    "es6": true,
+    "node": true
   },
-  "extends": ["standard", "prettier"],
+  "extends": ["eslint:recommended", "prettier"],
   "plugins": ["prettier"],
   "parserOptions": {
     "ecmaVersion": 2018
   },
   "rules": {
+    "no-console": "off",
     "no-tabs": "off",
     "prettier/prettier": [
       "error",
