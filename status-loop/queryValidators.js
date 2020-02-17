@@ -126,7 +126,7 @@ async function getStatusOfCampaign(campaign) {
 	const statusName = getStatus(messagesFromAll, campaign, lastApprovedBalances)
 	return {
 		name: statusName,
-		endDate: campaign.status ? campaign.status.endDate : null,
+		closedDate: campaign.status ? campaign.status.closedDate : null,
 		humanFriendlyName: getHumanFriendlyName(statusName, campaign),
 		lastHeartbeat: {
 			leader: getLasHeartbeatTimestamp(messagesFromAll.leaderHeartbeat[0]),
@@ -218,8 +218,8 @@ async function queryValidators() {
 					statusObj.fundsDistributedRatio = fundsDistributedRatio
 				}
 
-				if (status.humanFriendlyName === 'Completed' && !statusObj.endDate) {
-					statusObj.endDate = Date.now()
+				if (status.humanFriendlyName === 'Completed' && !statusObj.closedDate) {
+					statusObj.closedDate = Date.now()
 				}
 
 				if (status.verified) {

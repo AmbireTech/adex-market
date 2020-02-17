@@ -160,7 +160,7 @@ async function closeCampaign(req, res) {
 			{
 				$set: {
 					'status.humanFriendlyName': 'Closed',
-					'status.endDate': Date.now(),
+					'status.closedDate': Date.now(),
 				},
 			},
 			{ returnOriginal: false }
