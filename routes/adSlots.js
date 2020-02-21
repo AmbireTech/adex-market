@@ -63,6 +63,7 @@ function getAdSlotById(req, res) {
 			if (!result) {
 				return res.status(404).send('Ad Slot not found') // TODO? replace with code to add to translations
 			}
+			res.set('Cache-Control', 'public, max-age=3600')
 			return res.send({
 				slot: result,
 			})
