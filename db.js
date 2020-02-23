@@ -4,7 +4,7 @@ const { MongoClient } = require('mongodb')
 const url = process.env.DB_MONGO_URL || 'mongodb://localhost:27017'
 const dbName = process.env.DB_MONGO_NAME || 'adexMarket'
 
-let mongoClient = null
+let db = null
 
 function getMongoOptions(options) {
 	const mongoUseTls = process.env['DB_MONGO_USE_TLS'] || false
@@ -44,13 +44,18 @@ function connect() {
 
 	return MongoClient.connect(url, options).then(function(client) {
 		console.log(`Great success - mongo connected to ${dbName}`)
-		mongoClient = client
+		db = client.db(dbName)
+		createIndexes(db)
 	})
 }
 
 function getMongo() {
-	if (mongoClient) return mongoClient.db(dbName)
+	if (db) return db
 	else return null
+}
+
+function createIndexes(db) {
+	db.collection('adSlots').createIndex({ ipfs: 1 })
 }
 
 module.exports = { connect, getMongo }
