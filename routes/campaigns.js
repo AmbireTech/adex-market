@@ -94,7 +94,7 @@ async function getCampaignsFromQuery(query) {
 async function getCampaigns(req, res) {
 	try {
 		const campaigns = await getCampaignsFromQuery(req.query)
-		res.set('Cache-Control', 'public, max-age=90')
+		res.set('Cache-Control', 'public, max-age=300')
 		return res.send(campaigns)
 	} catch (err) {
 		console.error('Error getting campaigns', err)
