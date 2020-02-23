@@ -56,6 +56,8 @@ function getMongo() {
 
 function createIndexes(db) {
 	db.collection('adSlots').createIndex({ ipfs: 1 })
+	db.collection('adUnits').createIndex({ ipfs: 1 })
+	db.collection('campaigns').createIndex({ 'status.name': 1 })
 }
 
 module.exports = { connect, getMongo }
