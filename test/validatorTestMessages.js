@@ -113,12 +113,19 @@ const approveStateMessageUnhealthy = generateMessage({
 	healthy: false,
 })
 
+const rejectStateMessage =  generateMessage({
+	type: 'RejectState',
+	timestamp: nowDate,
+	reason: 'TooLowHealth',
+})
+
 // Empty messages
 const initializingMessages1 = {
 	leaderHeartbeat: [],
 	followerHeartbeat: [],
 	newStateLeader: [],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 const initializingMessages2 = {
@@ -126,6 +133,7 @@ const initializingMessages2 = {
 	followerHeartbeat: [],
 	newStateLeader: [],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 const initializingMessages3 = {
@@ -133,6 +141,7 @@ const initializingMessages3 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 // Not empty messages
@@ -141,6 +150,7 @@ const notInitializingMessages = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 // No recent heartbeat on both
@@ -149,6 +159,7 @@ const offlineMessages1 = {
 	followerFromLeader: [heartbeatMessageOldDate],
 	newStateLeader: [],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 // No recent heartbeat on second
@@ -157,6 +168,7 @@ const offlineMessages2 = {
 	followerFromLeader: [heartbeatMessageOldDate],
 	newStateLeader: [],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 // No recent heartbeat on first
@@ -165,6 +177,7 @@ const offlineMessages3 = {
 	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 // Recent heartbeat on both
@@ -173,6 +186,7 @@ const notOfflineMessages = {
 	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 // No recent heartbeat messages on both sides
@@ -181,6 +195,7 @@ const disconnectedMessages1 = {
 	followerFromLeader: [],
 	newStateLeader: [],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 // No recent leader heartbeat messages on follower
@@ -189,6 +204,7 @@ const disconnectedMessages2 = {
 	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 // No recent follower heartbeat messages on leader
@@ -197,6 +213,7 @@ const disconnectedMessages3 = {
 	followerFromLeader: [],
 	newStateLeader: [],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 // Both validators has recent heartbeat messages
@@ -205,6 +222,7 @@ const notDisconnectedMessages1 = {
 	followerFromLeader: [heartbeatMessageNowDate2],
 	newStateLeader: [],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 // Recent newstate but no approvestate
@@ -213,6 +231,7 @@ const invalidMessages = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 // Recent newstate and approvestate
@@ -221,6 +240,7 @@ const notInvalidMessages1 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [approveStateMessageHealthy],
+	rejectStateFollower: [],
 }
 
 // No approvestate but also no recent newstate
@@ -229,6 +249,7 @@ const notInvalidMessages2 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 // Approvestate but no recent newstate
@@ -237,6 +258,7 @@ const notInvalidMessages3 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [approveStateMessageHealthy],
+	rejectStateFollower: [],
 }
 
 // 0 newstate messages and no approvestate
@@ -245,6 +267,7 @@ const notInvalidMessages4 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 // Recent heartbeat and newstate but approvestate reports unhealthy
@@ -253,6 +276,7 @@ const unhealthyMessages = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [approveStateMessageUnhealthy],
+	rejectStateFollower: [],
 }
 
 // Recent heartbeat and newstate and approvestate reports healthy
@@ -261,6 +285,7 @@ const notUnhealthyMessages1 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [approveStateMessageHealthy],
+	rejectStateFollower: [],
 }
 
 // No newstate messages but everything else is ok
@@ -269,6 +294,7 @@ const notUnhealthyMessages2 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [approveStateMessageUnhealthy],
+	rejectStateFollower: [],
 }
 
 // recent heartbeat but newstate not emitted
@@ -277,6 +303,7 @@ const readyMessages1 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 // recent heartbeat but newstate is emitted
@@ -285,6 +312,7 @@ const notReadyMessages1 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 // one heartbeat not recent and new state emitted
@@ -293,6 +321,7 @@ const notReadyMessages2 = {
 	followerHeartbeat: [heartbeatMessageOldDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 // no newstate emitted but one heartbeat is not recent
@@ -301,6 +330,7 @@ const notReadyMessages3 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 /*
@@ -319,6 +349,7 @@ const activeMessages = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [approveStateMessageHealthy],
+	rejectStateFollower: [],
 }
 
 // Working example but we switch isHealthy to false
@@ -327,6 +358,7 @@ const notActiveMessages1 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [approveStateMessageUnhealthy],
+	rejectStateFollower: [],
 }
 
 //  No newState
@@ -335,6 +367,7 @@ const notActiveMessages2 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [approveStateMessageHealthy],
+	rejectStateFollower: [],
 }
 
 // one Heartbeat is not recent
@@ -343,6 +376,7 @@ const notActiveMessages3 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [approveStateMessageHealthy],
+	rejectStateFollower: [],
 }
 
 // Total balances is more than depositAmount
