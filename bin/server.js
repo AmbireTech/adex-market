@@ -2,8 +2,6 @@ require('dotenv').config()
 const express = require('express')
 const headerParser = require('header-parser')
 const bodyParser = require('body-parser')
-// const startStatusLoop = require('./status-loop/queryValidators').startStatusLoop
-// const fillInitialValidators = require('./helpers/fillInitialValidators')
 
 const signatureCheck = require('../helpers/signatureCheck')
 const campaignsRoutes = require('../routes/campaigns')
@@ -23,8 +21,6 @@ const app = express()
 const db = require('../db')
 
 const port = process.env.PORT || 3012
-
-// console.log(`Initial validators:`, cfg.initialValidators)
 
 app.use(headerParser)
 app.use(bodyParser.urlencoded({ extended: false }))

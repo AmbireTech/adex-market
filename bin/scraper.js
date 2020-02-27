@@ -2,8 +2,6 @@ require('dotenv').config()
 const startStatusLoop = require('../status-loop/queryValidators').startStatusLoop
 const fillInitialValidators = require('../helpers/fillInitialValidators')
 
-// const seedDb = require('../test/prep-db/seedDb').seedDb
-
 const db = require('../db')
 
 const cfg = require('../cfg')
