@@ -23,4 +23,4 @@ ADD . .
 
 RUN npm install --production
 
-CMD PORT=${PORT} node index.js 
+CMD PORT=${PORT} node bin/server.js
