@@ -1,5 +1,6 @@
 require('dotenv').config()
-const startStatusLoop = require('../status-loop/queryValidators').startStatusLoop
+const startStatusLoop = require('../status-loop/queryValidators')
+	.startStatusLoop
 const fillInitialValidators = require('../helpers/fillInitialValidators')
 
 const db = require('../db')
