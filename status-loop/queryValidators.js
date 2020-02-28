@@ -9,6 +9,7 @@ const {
 	isInitializing,
 	isOffline,
 	isDisconnected,
+	isRejected,
 	isInvalid,
 	isUnhealthy,
 	isReady,
@@ -40,6 +41,8 @@ function getStatus(messagesFromAll, campaign, balanceTree) {
 		return 'Offline'
 	} else if (isDisconnected(messagesFromAll)) {
 		return 'Disconnected'
+	} else if (isRejected(messagesFromAll)) {
+		return 'Rejected'
 	} else if (isInvalid(messagesFromAll)) {
 		return 'Invalid'
 	} else if (isUnhealthy(messagesFromAll)) {
@@ -67,6 +70,7 @@ function getHumanFriendlyName(status, campaign) {
 		case 'Offline':
 		case 'Disconnected':
 		case 'Unhealthy':
+		case 'Rejected':
 		case 'Invalid':
 			return 'Active'
 		case 'Expired':
