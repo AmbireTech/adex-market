@@ -12,6 +12,7 @@
     "dev-start": "nodemon index",
     "test": "node test/index.js",
     "test-integration": "./test/run-integration.sh",
+    "benchmark": "./test/benchmark/benchmark.sh",
     "lint": "eslint . && echo Linting check finished",
     "lint:fix": "eslint --fix . && echo Linting fix finished",
     "eslint-check": "eslint --print-config src/App.js | eslint-config-prettier-check"
@@ -48,6 +49,7 @@
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^6.0.0",
     "eslint-plugin-prettier": "^3.1.0",
+    "loadtest": "^4.1.0",
     "nodemon": "^1.18.10",
     "prettier": "^1.18.2"
   }

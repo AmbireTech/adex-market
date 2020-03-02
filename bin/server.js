@@ -2,6 +2,7 @@ require('dotenv').config()
 const express = require('express')
 const headerParser = require('header-parser')
 const bodyParser = require('body-parser')
+const fs = require('fs')
 
 const signatureCheck = require('../helpers/signatureCheck')
 const campaignsRoutes = require('../routes/campaigns')
@@ -62,6 +63,16 @@ function start() {
 			if (process.env.NODE_ENV === 'test') {
 				console.log('Seeding DB for tests', process.env.DB_MONGO_NAME)
 				await seedDb(db.getMongo())
+			}
+			if (process.env.NODE_ENV === 'benchmark') {
+				const rawBenchmarkData = await fs.readFile(
+					'../test/benchmark/testData.json'
+				)
+				const benchmarkData = JSON.parse(rawBenchmarkData)
+				await db
+					.getMongo()
+					.collection('campaigns')
+					.insertMany(benchmarkData)
 			}
 			app.listen(port, () => console.log(`Magic happens on ${port}`))
 		})
