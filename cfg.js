@@ -12,5 +12,4 @@ module.exports = {
 	maxChannelsEarningFrom: 25,
 	limitedIdentityEarningsLimit: '100000000000000000000', // 100 DAI/TST
 	limitedIdentityEnabled: false,
-	clustered: true,
 }
