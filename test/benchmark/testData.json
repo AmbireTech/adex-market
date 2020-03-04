@@ -494,7 +494,9 @@
 				"follower": null
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1573825413324,
 			"fundsDistributedRatio": 0,
@@ -552,7 +554,9 @@
 				"follower": null
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1573825413256,
 			"fundsDistributedRatio": 0,
@@ -670,7 +674,9 @@
 				"follower": null
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1573825413279,
 			"fundsDistributedRatio": 0,
@@ -728,7 +734,9 @@
 				"follower": null
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1573825413312,
 			"fundsDistributedRatio": 0,
@@ -786,7 +794,9 @@
 				"follower": null
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1573825413288,
 			"fundsDistributedRatio": 0,
@@ -844,7 +854,9 @@
 				"follower": null
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1573825413343,
 			"fundsDistributedRatio": 0,
@@ -902,7 +914,9 @@
 				"follower": null
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1573825413333,
 			"fundsDistributedRatio": 0,
@@ -960,7 +974,9 @@
 				"follower": null
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1573825413297,
 			"fundsDistributedRatio": 0,
@@ -1369,7 +1385,9 @@
 				"follower": "2019-11-15T15:08:51.271Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1573830569948,
 			"fundsDistributedRatio": 0,
@@ -1428,7 +1446,9 @@
 				"follower": "2019-11-15T16:53:56.487Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1573836844113,
 			"fundsDistributedRatio": 0,
@@ -1548,7 +1568,9 @@
 				"follower": "2019-11-19T15:16:37.732Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1574176629313,
 			"fundsDistributedRatio": 0,
@@ -1607,7 +1629,9 @@
 				"follower": "2019-11-19T15:19:48.958Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1574176809494,
 			"fundsDistributedRatio": 0,
@@ -1775,7 +1799,9 @@
 				"follower": "2019-11-19T17:38:48.479Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1574185140751,
 			"fundsDistributedRatio": 0,
@@ -3085,7 +3111,9 @@
 				"follower": "2019-11-26T11:21:58.416Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1574767324958,
 			"fundsDistributedRatio": 0,
@@ -3144,7 +3172,9 @@
 				"follower": "2019-11-27T20:59:46.086Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1575385930980,
 			"fundsDistributedRatio": 0,
@@ -3236,7 +3266,9 @@
 				"follower": null
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1575727467661,
 			"fundsDistributedRatio": 0,
@@ -3328,7 +3360,9 @@
 				"follower": null
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1575727467606,
 			"fundsDistributedRatio": 0,
@@ -3387,7 +3421,9 @@
 				"follower": null
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1575738269070,
 			"fundsDistributedRatio": 0,
@@ -4736,7 +4772,9 @@
 				"follower": "2019-12-22T15:10:27.397Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1578306497685,
 			"fundsDistributedRatio": 0,
@@ -4808,7 +4846,9 @@
 				"follower": "2019-12-22T15:10:33.434Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1578306495210,
 			"fundsDistributedRatio": 0,
@@ -4944,7 +4984,9 @@
 				"follower": "2019-12-22T15:10:34.384Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1578306500242,
 			"fundsDistributedRatio": 0,
@@ -5655,7 +5697,9 @@
 				"follower": "2019-12-22T15:10:11.422Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1578306502742,
 			"fundsDistributedRatio": 0,
@@ -5784,7 +5828,9 @@
 				"follower": "2019-12-22T15:10:32.405Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1578306500228,
 			"fundsDistributedRatio": 0,
@@ -5856,7 +5902,9 @@
 				"follower": "2019-12-22T15:10:24.417Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1578306497751,
 			"fundsDistributedRatio": 0,
@@ -6704,7 +6752,9 @@
 				"follower": "2019-12-22T15:10:24.403Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1578306497765,
 			"fundsDistributedRatio": 0,
@@ -6833,7 +6883,9 @@
 				"follower": "2019-12-22T15:10:11.419Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1578306497767,
 			"fundsDistributedRatio": 0,
@@ -6898,7 +6950,9 @@
 				"follower": "2019-12-22T15:10:34.414Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1578306500250,
 			"fundsDistributedRatio": 0,
@@ -6957,7 +7011,9 @@
 				"follower": "2019-12-22T15:10:18.370Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1578306502736,
 			"fundsDistributedRatio": 0,
@@ -7022,7 +7078,9 @@
 				"follower": "2019-12-22T15:10:15.385Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1578306502725,
 			"fundsDistributedRatio": 0,
@@ -7358,7 +7416,9 @@
 				"follower": "2019-12-22T15:10:15.405Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1578306500211,
 			"fundsDistributedRatio": 0,
@@ -7417,7 +7477,9 @@
 				"follower": "2019-12-22T15:10:27.392Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1578306502741,
 			"fundsDistributedRatio": 0,
@@ -7476,7 +7538,9 @@
 				"follower": "2019-12-22T15:10:28.392Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1578306502755,
 			"fundsDistributedRatio": 0,
@@ -7536,7 +7600,9 @@
 				"follower": "2019-12-22T15:10:34.411Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1578306502760,
 			"fundsDistributedRatio": 0,
@@ -7729,7 +7795,9 @@
 				"follower": "2019-12-22T15:10:24.410Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1578306497768,
 			"fundsDistributedRatio": 0,
@@ -7932,7 +8000,9 @@
 				"follower": "2020-01-27T09:34:31.670Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1580117719393,
 			"usdEstimate": 1,
@@ -8265,7 +8335,9 @@
 				"follower": "2020-02-13T17:39:35.053Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1581615627808,
 			"usdEstimate": 1,
@@ -8338,7 +8410,9 @@
 				"follower": "2020-02-15T16:46:48.122Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1581785244252,
 			"usdEstimate": 1,
@@ -8411,7 +8485,9 @@
 				"follower": "2020-02-14T18:58:52.457Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1581706753140,
 			"usdEstimate": 4,
@@ -8476,7 +8552,9 @@
 				"follower": "2020-02-20T23:01:39.455Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1582239748122,
 			"usdEstimate": 1,
@@ -9238,7 +9316,9 @@
 				"follower": "2020-03-02T11:33:32.840Z"
 			},
 			"lastApprovedSigs": [],
-			"lastApprovedBalances": {},
+			"lastApprovedBalances": {
+				"0x99d162298ffc4ecd949bf574c2959130c8d2d8f8": "100000000000000000000"
+			},
 			"verified": true,
 			"lastChecked": 1583148814022,
 			"usdEstimate": 10,
