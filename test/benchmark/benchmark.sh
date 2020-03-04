@@ -12,6 +12,10 @@ TEST_MARKET_URL="http://localhost:$PORT"
 PORT=$PORT DB_MONGO_NAME=$MONGO NODE_ENV="benchmark" npm start &
 sleep 6
 
+# -c is for concurrency, --rps is request per second
+# -t is ax number of seconds to wait until requests no longer go out.
+# -k open connections using keep-alive: use header 'Connection: Keep-alive' instead of 'Connection: Close'.
+
 echo "Testing /campaigns?all"
 loadtest -c 10 --rps 10000 -t 20 -k "$TEST_MARKET_URL/campaigns?all"
 echo "Testing /campaigns  (will get only Active/~Ready)"
