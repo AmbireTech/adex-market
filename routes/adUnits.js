@@ -77,6 +77,7 @@ function postAdUnit(req, res) {
 	const identity = req.identity
 	const adUnit = new AdUnit(req.body)
 	adUnit.owner = identity
+	adUnit.created = new Date()
 	const adUnitCol = db.getMongo().collection('adUnits')
 	return addDataToIpfs(Buffer.from(JSON.stringify(adUnit.spec))).then(
 		dataHash => {
