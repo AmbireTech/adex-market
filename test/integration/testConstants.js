@@ -1,4 +1,4 @@
-const testData = require('../prep-db/seedDb').testData
+const { testData } = require('../prep-db/seedDb')
 
 module.exports = {
 	ACTIVE_CAMPAIGNS: testData.campaigns.filter(c => c.status.name === 'Active')
