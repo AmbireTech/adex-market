@@ -50,7 +50,7 @@ app.use('/slots', adSlotsRoutes)
 app.use('/units', adUnitsRoutes)
 app.use('/media', signatureCheck, mediaRoutes)
 
-if (cfg.clustered) {
+if (process.env.CLUSTERED) {
 	createCluster(start)
 } else {
 	start()
