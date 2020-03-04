@@ -3,6 +3,8 @@ const express = require('express')
 const headerParser = require('header-parser')
 const bodyParser = require('body-parser')
 const fs = require('fs')
+const util = require('util')
+const readFile = util.promisify(fs.readFile)
 
 const signatureCheck = require('../helpers/signatureCheck')
 const campaignsRoutes = require('../routes/campaigns')
@@ -65,14 +67,20 @@ function start() {
 				await seedDb(db.getMongo())
 			}
 			if (process.env.NODE_ENV === 'benchmark') {
-				const rawBenchmarkData = await fs.readFile(
-					'../test/benchmark/testData.json'
+				await readFile(
+					`${__dirname}/../test/benchmark/testData.json`,
+					{ encoding: 'utf8' },
+					async (err, res) => {
+						if (err) {
+							console.error('ERROR GETTING DATA', err)
+						}
+						const benchmarkData = JSON.parse(res)
+						await db
+							.getMongo()
+							.collection('campaigns')
+							.insertMany(benchmarkData.campaigns)
+					}
 				)
-				const benchmarkData = JSON.parse(rawBenchmarkData)
-				await db
-					.getMongo()
-					.collection('campaigns')
-					.insertMany(benchmarkData)
 			}
 			app.listen(port, () => console.log(`Magic happens on ${port}`))
 		})
