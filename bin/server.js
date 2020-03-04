@@ -15,10 +15,13 @@ const authRoutes = require('../routes/auth')
 const sessionRoutes = require('../routes/session')
 const tagsRoutes = require('../routes/tags')
 
+const createCluster = require('../helpers/cluster')
+
 const seedDb = require('../test/prep-db/seedDb').seedDb
 
 const app = express()
 const db = require('../db')
+const cfg = require('../cfg')
 
 const port = process.env.PORT || 3012
 
@@ -47,15 +50,23 @@ app.use('/slots', adSlotsRoutes)
 app.use('/units', adUnitsRoutes)
 app.use('/media', signatureCheck, mediaRoutes)
 
-db.connect()
-	.then(async () => {
-		if (process.env.NODE_ENV === 'test') {
-			console.log('Seeding DB for tests', process.env.DB_MONGO_NAME)
-			await seedDb(db.getMongo())
-		}
-		app.listen(port, () => console.log(`Magic happens on ${port}`))
-	})
-	.catch(err => {
-		console.error('Error when starting server', err)
-		throw new Error(err)
-	})
+if (process.env.CLUSTERED) {
+	createCluster(start)
+} else {
+	start()
+}
+
+function start() {
+	db.connect()
+		.then(async () => {
+			if (process.env.NODE_ENV === 'test') {
+				console.log('Seeding DB for tests', process.env.DB_MONGO_NAME)
+				await seedDb(db.getMongo())
+			}
+			app.listen(port, () => console.log(`Magic happens on ${port}`))
+		})
+		.catch(err => {
+			console.error('Error when starting server', err)
+			throw new Error(err)
+		})
+}
