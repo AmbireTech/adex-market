@@ -63,7 +63,7 @@ function start() {
 				await seedDb(db.getMongo())
 			}
 			if (process.env.NODE_ENV === 'benchmark') {
-				await seedDbBenchmarking(db.getMongo())
+				// await seedDbBenchmarking(db.getMongo())
 			}
 			app.listen(port, () => console.log(`Magic happens on ${port}`))
 		})
