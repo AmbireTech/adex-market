@@ -2,9 +2,6 @@ require('dotenv').config()
 const express = require('express')
 const headerParser = require('header-parser')
 const bodyParser = require('body-parser')
-const fs = require('fs')
-const util = require('util')
-const readFile = util.promisify(fs.readFile)
 
 const signatureCheck = require('../helpers/signatureCheck')
 const campaignsRoutes = require('../routes/campaigns')
@@ -20,7 +17,7 @@ const tagsRoutes = require('../routes/tags')
 
 const createCluster = require('../helpers/cluster')
 
-const seedDb = require('../test/prep-db/seedDb').seedDb
+const { seedDb, seedDbBenchmarking } = require('../test/prep-db/seedDb')
 
 const app = express()
 const db = require('../db')
@@ -66,20 +63,7 @@ function start() {
 				await seedDb(db.getMongo())
 			}
 			if (process.env.NODE_ENV === 'benchmark') {
-				await readFile(
-					`${__dirname}/../test/benchmark/testData.json`,
-					{ encoding: 'utf8' },
-					async (err, res) => {
-						if (err) {
-							console.error('ERROR GETTING DATA', err)
-						}
-						const benchmarkData = JSON.parse(res)
-						await db
-							.getMongo()
-							.collection('campaigns')
-							.insertMany(benchmarkData.campaigns)
-					}
-				)
+				await seedDbBenchmarking(db.getMongo())
 			}
 			app.listen(port, () => console.log(`Magic happens on ${port}`))
 		})
