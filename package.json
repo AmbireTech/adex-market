@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node ./bin/server.js",
     "start-scraper": "node ./bin/scraper.js",
-    "dev-start": "nodemon index",
+    "dev-start": "nodemon ./bin/server.js",
     "test": "node test/index.js",
     "test-integration": "./test/run-integration.sh",
     "benchmark": "./test/benchmark/benchmark.sh",

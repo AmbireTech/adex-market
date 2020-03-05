@@ -185,7 +185,7 @@ function seedDbBenchmarking(db) {
 			return db.collection('campaigns').insertMany(benchmarkData.campaigns)
 		})
 		.catch(err => {
-			return Promisew.reject(err)
+			return Promise.reject(err)
 		})
 }
 
