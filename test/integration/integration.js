@@ -10,6 +10,7 @@ const BN = require('bn.js')
 const identityAddr = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
 const identityAddrFilter = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258666'
 const signerAddr = `0x2aecF52ABe359820c48986046959B4136AfDfbe2`
+const { bigNumberify } = require('ethers/utils')
 // const earnerAddr = '0x712e40a78735af344f6ae3b79fa6952d698c3b37'
 
 const constants = require('./testConstants')
@@ -17,6 +18,12 @@ const constants = require('./testConstants')
 const addrRegex40 = /^0x[0-9A-Fa-f]{40}$/
 const addrRegex64 = /^0x[0-9A-Fa-f]{64}$/
 const addrRegex130 = /^0x[0-9A-Fa-f]{130}$/
+const TOTAL_SPENT_DAI = testData.campaigns
+	.filter(c => c.depositAsset === constants.DAI_ADDR)
+	.reduce((total, c) => {
+		return total.add(c.depositAmount)
+	}, bigNumberify(0))
+	.toString()
 
 const mockAuthObj = {
 	identity: identityAddr,
@@ -374,7 +381,7 @@ tape('GET /stats', t => {
 			)
 			t.equals(
 				res.totalSpentFundsByAssetType[constants.DAI_ADDR],
-				'3400000000000000000000',
+				TOTAL_SPENT_DAI,
 				'funds are the right amount'
 			)
 			t.end()
