@@ -69,7 +69,13 @@ async function getAcceptedReferrers(slot) {
 		const website = await websitesCol.findOne({ hostname })
 		// @TODO: consider allowing everything if it's not verified yet (if !website)
 		// @TODO .owner is lowercase for some records... consider
-		return website && website.publisher === slot.owner ? [`${protocol}//${hostname}`] : []
+		return website &&
+			website.publisher === slot.owner &&
+			(website.verifiedIntegration ||
+				website.verifiedOwnership ||
+				website.verifiedForce)
+			? [`${protocol}//${hostname}`]
+			: []
 	} else {
 		// no website is set: legacy mode: check if there are any verifications for this pub
 		// @TODO: bug: multiple pubs could have verified one site... and we only need to allow the first one to use it
@@ -92,7 +98,7 @@ function getAdSlotById(req, res) {
 			res.set('Cache-Control', 'public, max-age=10000')
 			res.send({
 				slot: result,
-				acceptedReferrers: await getAcceptedReferrers(slot)
+				acceptedReferrers: await getAcceptedReferrers(result),
 			})
 		})
 		.catch(err => {
