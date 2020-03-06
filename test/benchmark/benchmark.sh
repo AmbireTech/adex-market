@@ -30,7 +30,7 @@ wrk2 -t1 -c100 -d30s -R2000 --latency "$TEST_MARKET_URL/campaigns?all&limitForPu
 echo "Testing /campaigns?limitForPublisher unreached limit"
 wrk2 -t1 -c100 -d30s -R2000 --latency "$TEST_MARKET_URL/campaigns?all&limitForPublisher=$ADDR_UNREACHED_LIMIT"
 echo "Testing /campaigns?byCreator"
-wrk2 -t1 -c100 -d30s -R2000 --latency "$TEST_MARKET_URL/campaigns?byCreator=0xC9Bc591734f8f1b9A9491ffB6eFaEc8F2cFE0440"
+wrk2 -t1 -c100 -d30s -R2000 --latency "$TEST_MARKET_URL/campaigns?all&byCreator=0xC9Bc591734f8f1b9A9491ffB6eFaEc8F2cFE0440"
 echo "Testing /campaigns?byEarner"
 wrk2 -t1 -c100 -d30s -R2000 --latency "$TEST_MARKET_URL/campaigns?byEarner=$ADDR_REACHED_LIMIT"
 echo "Testing getting active/ready campaigns with byEarner, limitForPublisher - reached limit"
