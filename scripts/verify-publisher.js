@@ -20,7 +20,7 @@ async function run() {
 	const websitesCol = db.getMongo().collection('websites')
 	await websitesCol.updateOne(
 		{ publisher: result.publisher, hostname: result.hostname },
-		{ $set: result },
+		{ $set: result, $setOnInsert: { created: new Date() } },
 		{ upsert: true }
 	)
 
