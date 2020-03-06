@@ -193,8 +193,7 @@ function getCampaign(options) {
 	return {
 		creator: options.creator || '0x712e40a78735af344f6ae3b79fa6952d698c3b37',
 		depositAmount: options.depositAmount || '100000000000000000000',
-		depositAsset:
-			options.depositAsset || '0x7af963cF6D228E564e2A0aA0DdBF06210B38615D',
+		depositAsset: options.depositAsset || '0x7af963cF6D228E564e2A0aA0DdBF06210B38615D',
 		id:
 			options.id ||
 			'0x443db27d965a4efc0c39ffa7ec2fa33d4ab113e1c2ac81cad6883a1efe23cec3',
