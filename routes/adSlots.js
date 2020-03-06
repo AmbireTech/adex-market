@@ -1,4 +1,5 @@
 const express = require('express')
+const url = require('url')
 const { celebrate } = require('celebrate')
 const { schemas, AdSlot } = require('adex-models')
 const { getAddress } = require('ethers/utils')
@@ -53,19 +54,45 @@ function getAdSlots(req, res) {
 		})
 }
 
+// returning `null` means "everything"
+// returning an empty array means "nothing"
+async function getAcceptedReferrers(slot) {
+	// @TODO consdier unifying the two cases by making a fn that returns all valid
+	// verification records for a publisher
+	if (slot.website) {
+		const websitesCol = db.getMongo().collection('websites')
+		// website is set: check if there is a verification
+		const { hostname, protocol } = url.parse(slot.website)
+		// Additional HTTPS safety check
+		if (protocol !== 'https:') return []
+		// Find the first record
+		const website = await websitesCol.findOne({ hostname })
+		// @TODO: consider allowing everything if it's not verified yet (if !website)
+		// @TODO .owner is lowercase for some records... consider
+		return website && website.publisher === slot.owner ? [`${protocol}//${hostname}`] : []
+	} else {
+		// no website is set: legacy mode: check if there are any verifications for this pub
+		// @TODO: bug: multiple pubs could have verified one site... and we only need to allow the first one to use it
+		// @TODO implemen this
+		return null
+	}
+}
+
 function getAdSlotById(req, res) {
 	const ipfs = req.params['id']
 	const adSlotsCol = db.getMongo().collection('adSlots')
 
 	return adSlotsCol
 		.findOne({ ipfs }, { projection: { _id: 0 } })
-		.then(result => {
+		.then(async result => {
 			if (!result) {
-				return res.status(404).send('Ad Slot not found') // TODO? replace with code to add to translations
+				res.status(404).send('Ad Slot not found') // TODO? replace with code to add to translations
+				return
 			}
 			res.set('Cache-Control', 'public, max-age=10000')
-			return res.send({
+			res.send({
 				slot: result,
+				acceptedReferrers: await getAcceptedReferrers(slot)
 			})
 		})
 		.catch(err => {
