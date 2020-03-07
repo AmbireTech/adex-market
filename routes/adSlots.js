@@ -56,33 +56,37 @@ function getAdSlots(req, res) {
 
 // returning `null` means "everything"
 // returning an empty array means "nothing"
-// @TODO test for this
-// @TODO figure out how to make this fn safe...
-// ...perhaps take all records as an input, process them purely so it can be tested
 async function getAcceptedReferrers(slot) {
 	const validQuery = [
 		{ verifiedIntegration: true },
 		{ verifiedOwnership: true },
 		{ verifiedForce: true },
 	]
-	// @TODO consider unifying the two cases by making a fn that returns all valid
-	// verification records for a publisher
 	const websitesCol = db.getMongo().collection('websites')
 	if (slot.website) {
 		// website is set: check if there is a verification
 		const { hostname } = url.parse(slot.website)
-		// Find the first valid record
+		// A single website may have been verified by multiple publishers; in this case, we allow the earliest
+		// valid verification: this is why we get the first record and check whether publisher == owner
 		const website = await websitesCol.findOne({ hostname, $or: validQuery })
 		// @TODO: consider allowing everything if it's not verified yet (if !website)
 		return website && website.publisher === slot.owner
 			? [`https://${hostname}`]
 			: []
 	} else {
-		//const websites = await websitesCol.findOne({  })
-		// no website is set: legacy mode: check if there are any verifications for this pub
-		// @TODO: bug: multiple pubs could have verified one site... and we only need to allow the first one to use it
-		// @TODO implemen this
-		return null
+		// A single website may have been verified by multiple publishers
+		const websites = await websitesCol
+			.find({ publisher: slot.owner, $or: validQuery })
+			.toArray()
+		const websitesDupes = await websitesCol.find({
+			hostname: { $in: websites.map(x => x.hostname) },
+			publisher: { $ne: slot.owner },
+			$or: validQuery,
+		}).toArray()
+		const websitesWithNoDupes = websites.filter(
+			x => !websitesDupes.find(y => x.hostname === y.hostname && y._id < x._id)
+		)
+		return websitesWithNoDupes.map(x => `https://${x.hostname}`)
 	}
 }
 
