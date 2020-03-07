@@ -67,18 +67,18 @@ async function getAcceptedReferrers(slot) {
 	]
 	// @TODO consider unifying the two cases by making a fn that returns all valid
 	// verification records for a publisher
+	const websitesCol = db.getMongo().collection('websites')
 	if (slot.website) {
-		const websitesCol = db.getMongo().collection('websites')
 		// website is set: check if there is a verification
 		const { hostname } = url.parse(slot.website)
-		// Find the first record
+		// Find the first valid record
 		const website = await websitesCol.findOne({ hostname, $or: validQuery })
 		// @TODO: consider allowing everything if it's not verified yet (if !website)
-		// @TODO .owner is lowercase for some records... consider
 		return website && website.publisher === slot.owner
 			? [`https://${hostname}`]
 			: []
 	} else {
+		//const websites = await websitesCol.findOne({  })
 		// no website is set: legacy mode: check if there are any verifications for this pub
 		// @TODO: bug: multiple pubs could have verified one site... and we only need to allow the first one to use it
 		// @TODO implemen this
