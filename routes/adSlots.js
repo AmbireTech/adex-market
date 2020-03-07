@@ -56,25 +56,27 @@ function getAdSlots(req, res) {
 
 // returning `null` means "everything"
 // returning an empty array means "nothing"
+// @TODO test for this
+// @TODO figure out how to make this fn safe...
+// ...perhaps take all records as an input, process them purely so it can be tested
 async function getAcceptedReferrers(slot) {
-	// @TODO consdier unifying the two cases by making a fn that returns all valid
+	const validQuery = [
+		{ verifiedIntegration: true },
+		{ verifiedOwnership: true },
+		{ verifiedForce: true },
+	]
+	// @TODO consider unifying the two cases by making a fn that returns all valid
 	// verification records for a publisher
 	if (slot.website) {
 		const websitesCol = db.getMongo().collection('websites')
 		// website is set: check if there is a verification
-		const { hostname, protocol } = url.parse(slot.website)
-		// Additional HTTPS safety check
-		if (protocol !== 'https:') return []
+		const { hostname } = url.parse(slot.website)
 		// Find the first record
-		const website = await websitesCol.findOne({ hostname })
+		const website = await websitesCol.findOne({ hostname, $or: validQuery })
 		// @TODO: consider allowing everything if it's not verified yet (if !website)
 		// @TODO .owner is lowercase for some records... consider
-		return website &&
-			website.publisher === slot.owner &&
-			(website.verifiedIntegration ||
-				website.verifiedOwnership ||
-				website.verifiedForce)
-			? [`${protocol}//${hostname}`]
+		return website && website.publisher === slot.owner
+			? [`https://${hostname}`]
 			: []
 	} else {
 		// no website is set: legacy mode: check if there are any verifications for this pub
