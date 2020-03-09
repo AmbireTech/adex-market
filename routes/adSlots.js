@@ -73,7 +73,7 @@ async function getAcceptedReferrers(slot) {
 		// @XXX: .extraReferrers is only permitted in the new mode (if .website is set)
 		return website && website.publisher === slot.owner
 			? [`https://${hostname}`].concat(
-					Array.isArray(slot.extraReferrers) ? slot.extraReferrers : []
+					Array.isArray(website.extraReferrers) ? website.extraReferrers : []
 			  )
 			: []
 	} else {
