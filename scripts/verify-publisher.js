@@ -2,6 +2,9 @@
 const verifyPublisher = require('../lib/publisherVerification')
 const db = require('../db')
 
+// import env
+require('dotenv').config()
+
 async function run() {
 	await db.connect()
 	const argv = process.argv.slice(2)
