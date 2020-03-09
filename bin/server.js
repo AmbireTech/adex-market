@@ -21,7 +21,6 @@ const seedDb = require('../test/prep-db/seedDb').seedDb
 
 const app = express()
 const db = require('../db')
-const cfg = require('../cfg')
 
 const port = process.env.PORT || 3012
 
