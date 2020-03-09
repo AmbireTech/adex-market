@@ -32,4 +32,7 @@ async function run() {
 	process.exit(0)
 }
 
-run()
+run().catch(e => {
+	console.error(e)
+	process.exit(1)
+})
