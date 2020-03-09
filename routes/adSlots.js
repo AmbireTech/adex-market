@@ -78,11 +78,13 @@ async function getAcceptedReferrers(slot) {
 		const websites = await websitesCol
 			.find({ publisher: slot.owner, $or: validQuery })
 			.toArray()
-		const websitesDupes = await websitesCol.find({
-			hostname: { $in: websites.map(x => x.hostname) },
-			publisher: { $ne: slot.owner },
-			$or: validQuery,
-		}).toArray()
+		const websitesDupes = await websitesCol
+			.find({
+				hostname: { $in: websites.map(x => x.hostname) },
+				publisher: { $ne: slot.owner },
+				$or: validQuery,
+			})
+			.toArray()
 		const websitesWithNoDupes = websites.filter(
 			x => !websitesDupes.find(y => x.hostname === y.hostname && y._id < x._id)
 		)
