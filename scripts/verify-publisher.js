@@ -18,6 +18,8 @@ async function run() {
 		force: argv[2] === '--force',
 	})
 
+	if (argv[3] === '--extra') result.extraReferrers = argv.slice(4)
+
 	console.log('Verification results:', result)
 
 	const websitesCol = db.getMongo().collection('websites')
