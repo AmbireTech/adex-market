@@ -1,4 +1,5 @@
 const express = require('express')
+const url = require('url')
 const { celebrate } = require('celebrate')
 const { schemas, AdSlot } = require('adex-models')
 const { getAddress } = require('ethers/utils')
@@ -53,19 +54,57 @@ function getAdSlots(req, res) {
 		})
 }
 
+// returning `null` means "everything"
+// returning an empty array means "nothing"
+async function getAcceptedReferrers(slot) {
+	const validQuery = [
+		{ verifiedIntegration: true },
+		{ verifiedOwnership: true },
+		{ verifiedForce: true },
+	]
+	const websitesCol = db.getMongo().collection('websites')
+	if (slot.website) {
+		// website is set: check if there is a verification
+		const { hostname } = url.parse(slot.website)
+		// A single website may have been verified by multiple publishers; in this case, we allow the earliest
+		// valid verification: this is why we get the first record and check whether publisher == owner
+		const website = await websitesCol.findOne({ hostname, $or: validQuery })
+		// @TODO: consider allowing everything if it's not verified yet (if !website)
+		return website && website.publisher === slot.owner
+			? [`https://${hostname}`]
+			: []
+	} else {
+		// A single website may have been verified by multiple publishers
+		const websites = await websitesCol
+			.find({ publisher: slot.owner, $or: validQuery })
+			.toArray()
+		const websitesDupes = await websitesCol.find({
+			hostname: { $in: websites.map(x => x.hostname) },
+			publisher: { $ne: slot.owner },
+			$or: validQuery,
+		}).toArray()
+		const websitesWithNoDupes = websites.filter(
+			x => !websitesDupes.find(y => x.hostname === y.hostname && y._id < x._id)
+		)
+		return websitesWithNoDupes.map(x => `https://${x.hostname}`)
+	}
+}
+
 function getAdSlotById(req, res) {
 	const ipfs = req.params['id']
 	const adSlotsCol = db.getMongo().collection('adSlots')
 
 	return adSlotsCol
 		.findOne({ ipfs }, { projection: { _id: 0 } })
-		.then(result => {
+		.then(async result => {
 			if (!result) {
-				return res.status(404).send('Ad Slot not found') // TODO? replace with code to add to translations
+				res.status(404).send('Ad Slot not found') // TODO? replace with code to add to translations
+				return
 			}
 			res.set('Cache-Control', 'public, max-age=10000')
-			return res.send({
+			res.send({
 				slot: result,
+				acceptedReferrers: await getAcceptedReferrers(result),
 			})
 		})
 		.catch(err => {
