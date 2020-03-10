@@ -17,7 +17,7 @@ const tagsRoutes = require('../routes/tags')
 
 const createCluster = require('../helpers/cluster')
 
-const seedDb = require('../test/prep-db/seedDb').seedDb
+const { seedDb, seedDbBenchmarking } = require('../test/prep-db/seedDb')
 
 const app = express()
 const db = require('../db')
@@ -61,6 +61,9 @@ function start() {
 			if (process.env.NODE_ENV === 'test') {
 				console.log('Seeding DB for tests', process.env.DB_MONGO_NAME)
 				await seedDb(db.getMongo())
+			}
+			if (process.env.NODE_ENV === 'benchmark') {
+				await seedDbBenchmarking(db.getMongo())
 			}
 			app.listen(port, () => console.log(`Magic happens on ${port}`))
 		})
