@@ -9,9 +9,10 @@
   "scripts": {
     "start": "node ./bin/server.js",
     "start-scraper": "node ./bin/scraper.js",
-    "dev-start": "nodemon index",
+    "dev-start": "nodemon ./bin/server.js",
     "test": "node test/index.js",
     "test-integration": "./test/run-integration.sh",
+    "benchmark": "./test/benchmark/benchmark.sh",
     "lint": "eslint . && echo Linting check finished",
     "lint:fix": "eslint --fix . && echo Linting fix finished",
     "eslint-check": "eslint --print-config src/App.js | eslint-config-prettier-check"

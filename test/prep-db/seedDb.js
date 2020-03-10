@@ -3,6 +3,9 @@ const { AdSlot, AdUnit } = require('adex-models')
 const identityAddr = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
 const identityAddrFilter = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258666'
 const cfg = require('../../cfg')
+const fs = require('fs')
+const util = require('util')
+const readFile = util.promisify(fs.readFile)
 
 const activeCampaignData = {
 	status: {
@@ -168,6 +171,24 @@ function seedDb(db) {
 	])
 }
 
+function callback(err, res) {
+	return res
+}
+
+function seedDbBenchmarking(db) {
+	return readFile(`${__dirname}/../benchmark/testData.json`, {
+		encoding: 'utf8',
+		callback,
+	})
+		.then(res => {
+			const benchmarkData = JSON.parse(res)
+			return db.collection('campaigns').insertMany(benchmarkData.campaigns)
+		})
+		.catch(err => {
+			return Promise.reject(err)
+		})
+}
+
 function getCampaign(options) {
 	return {
 		creator: options.creator || '0x712e40a78735af344f6ae3b79fa6952d698c3b37',
@@ -262,4 +283,4 @@ function getCampaign(options) {
 		},
 	}
 }
-module.exports = { testData, seedDb, getCampaign }
+module.exports = { testData, seedDb, getCampaign, seedDbBenchmarking }
