@@ -117,6 +117,7 @@ async function getStatusOfCampaign(campaign) {
 		),
 		newStateLeader: lastApproved ? [lastApproved.newState] : [],
 		approveStateFollower: lastApproved ? [lastApproved.approveState] : [],
+		rejectStateFollower: lastApproved ? [lastApproved.rejectState] : [],
 	}
 
 	const verified = verifyLastApproved(lastApproved, validators)

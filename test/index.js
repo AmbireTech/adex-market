@@ -91,6 +91,16 @@ tape('isInvalid()', function(t) {
 		'Recent NewState messages but follower does not propagate approveState returns true'
 	)
 	t.equals(
+		isInvalid(vtm.invalid.second),
+		true,
+		'Recent NewState, no ApproveState but RejectState instead'
+	)
+	t.equals(
+		isInvalid(vtm.invalid.third),
+		true,
+		'Recent NewState and ApproveState messages but also a RejectState'
+	)
+	t.equals(
 		isInvalid(vtm.notInvalid.first),
 		false,
 		'Recent NewState messages and follower propagates approveState returns false'
