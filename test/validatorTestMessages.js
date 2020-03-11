@@ -113,6 +113,12 @@ const approveStateMessageUnhealthy = generateMessage({
 	healthy: false,
 })
 
+const rejectStateMessage = generateMessage({
+	type: 'RejectState',
+	timestamp: nowDate,
+	reason: 'InvalidSignature',
+})
+
 // Empty messages
 const initializingMessages1 = {
 	leaderHeartbeat: [],
@@ -213,6 +219,24 @@ const invalidMessages = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [],
+	rejectStateFollower: [],
+}
+
+const invalidMessages2 = {
+	leaderHeartbeat: [heartbeatMessageNowDate],
+	followerHeartbeat: [heartbeatMessageNowDate],
+	newStateLeader: [newStateMessage],
+	approveStateFollower: [],
+	rejectStateFollower: [rejectStateMessage],
+}
+
+// weird case
+const invalidMessages3 = {
+	leaderHeartbeat: [heartbeatMessageNowDate],
+	followerHeartbeat: [heartbeatMessageNowDate],
+	newStateLeader: [newStateMessage],
+	approveStateFollower: [approveStateMessageHealthy],
+	rejectStateFollower: [rejectStateMessage],
 }
 
 // Recent newstate and approvestate
@@ -221,6 +245,7 @@ const notInvalidMessages1 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [approveStateMessageHealthy],
+	rejectStateFollower: [],
 }
 
 // No approvestate but also no recent newstate
@@ -229,6 +254,7 @@ const notInvalidMessages2 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 // Approvestate but no recent newstate
@@ -237,6 +263,7 @@ const notInvalidMessages3 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [approveStateMessageHealthy],
+	rejectStateFollower: [],
 }
 
 // 0 newstate messages and no approvestate
@@ -245,6 +272,7 @@ const notInvalidMessages4 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
+	rejectStateFollower: [],
 }
 
 // Recent heartbeat and newstate but approvestate reports unhealthy
@@ -379,7 +407,11 @@ module.exports = {
 		third: disconnectedMessages3,
 	},
 	notDisconnected: { first: notDisconnectedMessages1 },
-	invalid: { first: invalidMessages },
+	invalid: {
+		first: invalidMessages,
+		second: invalidMessages2,
+		third: invalidMessages3,
+	},
 	notInvalid: {
 		first: notInvalidMessages1,
 		second: notInvalidMessages2,
