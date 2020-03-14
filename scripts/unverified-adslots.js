@@ -19,7 +19,7 @@ const blacklisted = [
 	'turkeynamaa.com',
 	'cryptocut.org',
 	'adzbux.com',
-	'adbtc.top', 'adeth.cc', 'addoge.cc', 'adltc.cc', 'adbch.cc', 'addash.cc', 'adxrp.cc'
+	'adbtc.top', 'adeth.cc', 'addoge.cc', 'adltc.cc', 'adbch.cc', 'addash.cc', 'adxrp.cc', 'adsdogecoin.com'
 ]
 const isBlacklisted = hostname => blacklisted.some(b => hostname === b || hostname.endsWith('.'+b))
 
