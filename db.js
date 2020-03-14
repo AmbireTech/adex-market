@@ -59,7 +59,7 @@ function createIndexes(db) {
 	db.collection('adUnits').createIndex({ ipfs: 1 })
 	db.collection('campaigns').createIndex({ 'status.name': 1 })
 	db.collection('websites').createIndex(
-		{ publisherAddr: 1, hostname: 1 },
+		{ publisher: 1, hostname: 1 },
 		{ unique: true }
 	)
 }
