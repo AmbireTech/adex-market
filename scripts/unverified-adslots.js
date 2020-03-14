@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { verifyPublisher, getAlexaStats } = require('../lib/publisherVerification')
+const { verifyPublisher } = require('../lib/publisherVerification')
 const db = require('../db')
 const url = require('url')
 
@@ -11,10 +11,12 @@ require('dotenv').config()
 // for now, only blacklisting hostnames since otherwise we risk exploitation (publishers getting legit domains blacklisted)
 const blacklisted = [
 	'cryptofans.ru', 'cryptofans.news', 'sciencedaily.news', 'icrypto.media',
-	'downloadlagu-mp3.pro', 'enermags.com', 'https://4kmovies.me',
+	'downloadlagu-mp3.pro', 'enermags.com', '4kmovies.me',
 	'www.elsimultimedia.com', '10dollarbigtits.com', 'laguaz.pro', 'coinrevolution.com',
 	'aisrafa.com', 'aisrafa.com.au', 'vespabiru.com', 'nuyul.online',
 	'www.jfknewsonline.com',
+	'adz7short.space', 'adzbazar.com', 'clixblue.com', 'indexclix.com', 'fingersclix.com', 'ads4.pro', 'adzseven.com',
+	'turkeynamaa.com'
 ]
 const isBlacklisted = hostname => blacklisted.some(b => hostname === b || hostname.endsWith('.'+b))
 
@@ -52,12 +54,45 @@ async function run() {
 	})
 
 	for (const slot of unverified) {
-		const { hostname } = url.parse(slot.website)
+		const { hostname, protocol } = url.parse(slot.website)
+
+		if (protocol !== 'https:') {
+			console.log(`skip ${slot.owner} ${slot.website} cause of protocol`)
+			continue
+		}
+		
 		// be careful as the blacklisted flag is not respected in prod yet
-		if (isBlacklisted(hostname)) continue
-		const stats = await getAlexaStats(slot.website)
-		if (!stats.rank) continue
-		console.log(stats.rank, slot.website)
+		if (isBlacklisted(hostname)) {
+			console.log(`skip ${slot.owner} ${hostname} because it is blacklisted`)
+			continue
+		}
+		
+		// skip non-www subdomains
+		const hostnameParts = hostname.split('.')
+		if (!(hostnameParts.length === 2 || hostnameParts.length === 3 && hostnameParts[0] === 'www')) {
+			console.log(`skip ${slot.owner} ${hostname} because of the hostname`)
+			continue
+		}
+
+		// For now, skip the ones that don't have a rank or it's too low
+		const result = await verifyPublisher(slot.owner, slot.website)
+		const rankOk = result.rank && result.rank < 200000
+		const passes = result.verifiedIntegration || result.verifiedOwnership
+		if (!rankOk) {
+			console.log(`skip ${slot.owner} ${hostname} because rank is too low`)
+			continue
+		}
+		if (passes) {
+			console.log(`successful verification for ${slot.owner} ${hostname}`)
+		}
+		if (rankOk && !passes) {
+			console.log(`skip ${slot.owner} ${hostname} cause it did not pass verification but rank is ${result.rank}`)
+		}
+		await websitesCol.updateOne(
+			{ publisher: result.publisher, hostname: result.hostname },
+			{ $set: result, $setOnInsert: { created: new Date() } },
+			{ upsert: true }
+		)
 	}
 
 	process.exit(0)
