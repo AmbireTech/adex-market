@@ -1,10 +1,21 @@
 #!/usr/bin/env node
-const verifyPublisher = require('../lib/publisherVerification')
+
+const { verifyPublisher, getAlexaStats } = require('../lib/publisherVerification')
 const db = require('../db')
 const url = require('url')
 
 // import env
 require('dotenv').config()
+
+// from previous fraud attempts
+// for now, only blacklisting hostnames since otherwise we risk exploitation (publishers getting legit domains blacklisted)
+const blacklisted = [
+	'cryptofans.ru', 'cryptofans.news', 'sciencedaily.news',
+	'downloadlagu-mp3.pro', 'enermags.com',
+	'www.elsimultimedia.com', '10dollarbigtits.com', 'laguaz.pro', 'coinrevolution.com',
+	'aisrafa.com', 'aisrafa.com.au', 'vespabiru.com', 'nuyul.online'
+]
+const isBlacklisted = hostname => blacklisted.some(b => hostname === b || hostname.endsWith('.'+b))
 
 async function run() {
 	await db.connect()
@@ -28,7 +39,7 @@ async function run() {
 
 	const allAdSlots = await adslotsCol
 		.find(
-			{ website: { $exists: true, $ne: null } },
+			{ website: { $exists: true, $nin: ['', null] } },
 			{ project: { owner: 1, website: 1 } }
 		)
 		.toArray()
@@ -38,7 +49,15 @@ async function run() {
 		const firstHostname = allVerifiedSites.find(x => x.hostname === hostname)
 		return !firstHostname || firstHostname.publisher !== slot.owner
 	})
-	console.log(unverified)
+
+	for (const slot of unverified) {
+		const { hostname } = url.parse(slot.website)
+		// be careful as the blacklisted flag is not respected in prod yet
+		if (isBlacklisted(hostname)) continue
+		const stats = await getAlexaStats(slot.website)
+		if (!stats.rank) continue
+		console.log(stats.rank, slot.website)
+	}
 
 	process.exit(0)
 }
