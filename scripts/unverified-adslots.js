@@ -15,8 +15,11 @@ const blacklisted = [
 	'www.elsimultimedia.com', '10dollarbigtits.com', 'laguaz.pro', 'coinrevolution.com',
 	'aisrafa.com', 'aisrafa.com.au', 'vespabiru.com', 'nuyul.online',
 	'www.jfknewsonline.com',
-	'adz7short.space', 'adzbazar.com', 'clixblue.com', 'indexclix.com', 'fingersclix.com', 'ads4.pro', 'adzseven.com',
-	'turkeynamaa.com'
+	'adz7short.space', 'adzbazar.com', 'clixblue.com', 'indexclix.com', 'fingersclix.com', 'ads4.pro', 'adzseven.com', 'clixmoney.cf',
+	'turkeynamaa.com',
+	'cryptocut.org',
+	'adzbux.com',
+	'adbtc.top', 'adeth.cc', 'addoge.cc', 'adltc.cc', 'adbch.cc', 'addash.cc', 'adxrp.cc'
 ]
 const isBlacklisted = hostname => blacklisted.some(b => hostname === b || hostname.endsWith('.'+b))
 
