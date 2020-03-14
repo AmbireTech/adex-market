@@ -10,10 +10,11 @@ require('dotenv').config()
 // from previous fraud attempts
 // for now, only blacklisting hostnames since otherwise we risk exploitation (publishers getting legit domains blacklisted)
 const blacklisted = [
-	'cryptofans.ru', 'cryptofans.news', 'sciencedaily.news',
-	'downloadlagu-mp3.pro', 'enermags.com',
+	'cryptofans.ru', 'cryptofans.news', 'sciencedaily.news', 'icrypto.media',
+	'downloadlagu-mp3.pro', 'enermags.com', 'https://4kmovies.me',
 	'www.elsimultimedia.com', '10dollarbigtits.com', 'laguaz.pro', 'coinrevolution.com',
-	'aisrafa.com', 'aisrafa.com.au', 'vespabiru.com', 'nuyul.online'
+	'aisrafa.com', 'aisrafa.com.au', 'vespabiru.com', 'nuyul.online',
+	'www.jfknewsonline.com',
 ]
 const isBlacklisted = hostname => blacklisted.some(b => hostname === b || hostname.endsWith('.'+b))
 
