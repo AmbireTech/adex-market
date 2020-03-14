@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const verifyPublisher = require('../lib/publisherVerification')
+const { verifyPublisher } = require('../lib/publisherVerification')
 const db = require('../db')
 
 // import env
