@@ -10,18 +10,44 @@ require('dotenv').config()
 // from previous fraud attempts
 // for now, only blacklisting hostnames since otherwise we risk exploitation (publishers getting legit domains blacklisted)
 const blacklisted = [
-	'cryptofans.ru', 'cryptofans.news', 'sciencedaily.news', 'icrypto.media',
-	'downloadlagu-mp3.pro', 'enermags.com', '4kmovies.me',
-	'www.elsimultimedia.com', '10dollarbigtits.com', 'laguaz.pro', 'coinrevolution.com',
-	'aisrafa.com', 'aisrafa.com.au', 'vespabiru.com', 'nuyul.online',
+	'cryptofans.ru',
+	'cryptofans.news',
+	'sciencedaily.news',
+	'icrypto.media',
+	'downloadlagu-mp3.pro',
+	'enermags.com',
+	'4kmovies.me',
+	'www.elsimultimedia.com',
+	'10dollarbigtits.com',
+	'laguaz.pro',
+	'coinrevolution.com',
+	'aisrafa.com',
+	'aisrafa.com.au',
+	'vespabiru.com',
+	'nuyul.online',
 	'www.jfknewsonline.com',
-	'adz7short.space', 'adzbazar.com', 'clixblue.com', 'indexclix.com', 'fingersclix.com', 'ads4.pro', 'adzseven.com', 'clixmoney.cf',
+	'adz7short.space',
+	'adzbazar.com',
+	'clixblue.com',
+	'indexclix.com',
+	'fingersclix.com',
+	'ads4.pro',
+	'adzseven.com',
+	'clixmoney.cf',
 	'turkeynamaa.com',
 	'cryptocut.org',
 	'adzbux.com',
-	'adbtc.top', 'adeth.cc', 'addoge.cc', 'adltc.cc', 'adbch.cc', 'addash.cc', 'adxrp.cc', 'adsdogecoin.com'
+	'adbtc.top',
+	'adeth.cc',
+	'addoge.cc',
+	'adltc.cc',
+	'adbch.cc',
+	'addash.cc',
+	'adxrp.cc',
+	'adsdogecoin.com',
 ]
-const isBlacklisted = hostname => blacklisted.some(b => hostname === b || hostname.endsWith('.'+b))
+const isBlacklisted = hostname =>
+	blacklisted.some(b => hostname === b || hostname.endsWith('.' + b))
 
 async function run() {
 	await db.connect()
@@ -63,16 +89,21 @@ async function run() {
 			console.log(`skip ${slot.owner} ${slot.website} cause of protocol`)
 			continue
 		}
-		
+
 		// be careful as the blacklisted flag is not respected in prod yet
 		if (isBlacklisted(hostname)) {
 			console.log(`skip ${slot.owner} ${hostname} because it is blacklisted`)
 			continue
 		}
-		
+
 		// skip non-www subdomains
 		const hostnameParts = hostname.split('.')
-		if (!(hostnameParts.length === 2 || hostnameParts.length === 3 && hostnameParts[0] === 'www')) {
+		if (
+			!(
+				hostnameParts.length === 2 ||
+				(hostnameParts.length === 3 && hostnameParts[0] === 'www')
+			)
+		) {
 			console.log(`skip ${slot.owner} ${hostname} because of the hostname`)
 			continue
 		}
@@ -89,7 +120,9 @@ async function run() {
 			console.log(`successful verification for ${slot.owner} ${hostname}`)
 		}
 		if (rankOk && !passes) {
-			console.log(`skip ${slot.owner} ${hostname} cause it did not pass verification but rank is ${result.rank}`)
+			console.log(
+				`skip ${slot.owner} ${hostname} cause it did not pass verification but rank is ${result.rank}`
+			)
 		}
 		await websitesCol.updateOne(
 			{ publisher: result.publisher, hostname: result.hostname },
