@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const db = require('../db')
 
 async function getWAF() {
