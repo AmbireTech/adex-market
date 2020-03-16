@@ -32,33 +32,54 @@ router.post(
 	postAdSlot
 )
 
-function getAdSlots(req, res) {
-	const identity = req.query.identity
-	const limit = +req.query.limit || (identity ? 0 : 100)
-	const skip = +req.query.skip || 0
-	const adSlotsCol = db.getMongo().collection('adSlots')
+async function getAdSlots(req, res) {
+	try {
+		const identity = req.query.identity
+		const limit = +req.query.limit || (identity ? 0 : 100)
+		const skip = +req.query.skip || 0
+		const adSlotsCol = db.getMongo().collection('adSlots')
 
-	const query = {}
+		const query = {}
 
-	if (identity) {
-		query['$or'] = [
-			{ owner: identity.toLowerCase() },
-			{ owner: getAddress(identity) },
-		]
+		if (identity) {
+			query['$or'] = [
+				{ owner: identity.toLowerCase() },
+				{ owner: getAddress(identity) },
+			]
+		}
+
+		const slots = await adSlotsCol
+			.find(query, { projection: { _id: 0 } })
+			.skip(skip)
+			.limit(limit)
+			.toArray()
+
+		const websitesQuery = {
+			hostname: {
+				$in: Object.keys(
+					slots.reduce((hosts, { website }) => {
+						const { hostname } = url.parse(website)
+						hosts[hostname] = true
+						return hosts
+					}, {})
+				),
+			},
+			publisher: { $in: [identity.toLowerCase(), getAddress(identity)] },
+		}
+
+		const websitesCol = db.getMongo().collection('websites')
+		const websitesRes = await websitesCol.find(websitesQuery).toArray()
+
+		const websites = websitesRes.reduce((all, ws) => {
+			all[ws.hostname] = { issues: getWebsiteIssues(ws) }
+			return all
+		}, {})
+
+		return res.send({ slots, websites })
+	} catch (err) {
+		console.error('Error getting ad slots', err)
+		return res.status(500).send(err.toString())
 	}
-
-	return adSlotsCol
-		.find(query, { projection: { _id: 0 } })
-		.skip(skip)
-		.limit(limit)
-		.toArray()
-		.then(result => {
-			return res.send(result)
-		})
-		.catch(err => {
-			console.error('Error getting ad slots', err)
-			return res.status(500).send(err.toString())
-		})
 }
 
 // returning `null` means "everything"
@@ -202,33 +223,13 @@ async function getWebsiteData(identity, websiteUrl) {
 function getWebsiteIssues(data) {
 	const issues = []
 	if (data.blacklisted) {
-		issues.push({ label: 'SLOT_ISSUE_BLACKLISTED' })
+		issues.push('SLOT_ISSUE_BLACKLISTED')
 	}
 	if (!data.verifiedIntegration) {
-		issues.push({
-			label: 'SLOT_ISSUE_INTEGRATION_NOT_VERIFIED',
-			args: [
-				{
-					type: 'anchor',
-					label: 'HERE',
-					href:
-						'https://help.adex.network/hc/en-us/articles/360012022820-How-to-implement-an-ad-slot-to-your-website',
-				},
-			],
-		})
+		issues.push('SLOT_ISSUE_INTEGRATION_NOT_VERIFIED')
 	}
 	if (!data.verifiedOwnership) {
-		issues.push({
-			label: 'SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED',
-			args: [
-				{
-					type: 'anchor',
-					label: 'HERE',
-					href:
-						'https://help.adex.network/hc/en-us/articles/360012481519-How-to-add-DNS-TXT-record-for-your-publisher-domain',
-				},
-			],
-		})
+		issues.push('SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED')
 	}
 
 	return issues
