@@ -5,6 +5,7 @@ const { schemas, AdSlot } = require('adex-models')
 const { getAddress } = require('ethers/utils')
 
 const db = require('../db')
+const { verifyPublisher } = require('../lib/publisherVerification')
 const addDataToIpfs = require('../helpers/ipfs')
 const signatureCheck = require('../helpers/signatureCheck')
 
@@ -12,6 +13,12 @@ const router = express.Router()
 
 router.get('/', getAdSlots)
 router.get('/:id', getAdSlotById)
+router.post(
+	'/verify-website',
+	signatureCheck,
+	celebrate({ body: { websiteUrl: schemas.adSlotPost.website } }),
+	verifyWebsite
+)
 router.put(
 	'/:id',
 	signatureCheck,
@@ -160,6 +167,41 @@ function putAdSlot(req, res) {
 			return res.status(200).send({ slot: result.value })
 		}
 	)
+}
+
+async function verifyWebsite(req, res) {
+	try {
+		const identity = req.identity
+
+		const { publisher, hostname, ...rest } = await verifyPublisher(
+			identity,
+			req.body.websiteUrl
+		)
+		const websitesCol = db.getMongo().collection('websites')
+
+		const existing = await websitesCol.findOne({ publisher, hostname })
+
+		const data = { ...(existing || {}), ...rest }
+
+		const issues = []
+		if (data.blacklisted) {
+			issues.push('SLOT_ISSUE_BLACKLISTED')
+		}
+		if (!data.verifiedIntegration) {
+			issues.push('SLOT_ISSUE_INTEGRATION_NOT_VERIFIED')
+		}
+		if (!data.verifiedOwnership) {
+			issues.push('SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED')
+		}
+		if (!data.verifiedOwnership) {
+			issues.push('SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED')
+		}
+
+		return { hostname, issues }
+	} catch (err) {
+		console.error('Error verifyWebsite', err)
+		return res.status(500).send(err.toString())
+	}
 }
 
 module.exports = router
