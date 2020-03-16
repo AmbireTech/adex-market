@@ -128,25 +128,35 @@ function getAdSlotById(req, res) {
 		})
 }
 
-function postAdSlot(req, res) {
-	const identity = req.identity
-	const adSlotsCol = db.getMongo().collection('adSlots')
-	const adSlot = new AdSlot(req.body)
-	adSlot.owner = identity
-	adSlot.created = new Date()
-	return addDataToIpfs(Buffer.from(JSON.stringify(adSlot.spec))).then(
-		dataHash => {
-			adSlot['ipfs'] = dataHash
+async function postAdSlot(req, res) {
+	try {
+		const identity = req.identity
+		const adSlotsCol = db.getMongo().collection('adSlots')
+		const adSlot = new AdSlot(req.body)
+		adSlot.owner = identity
+		adSlot.created = new Date()
 
-			return adSlotsCol.insertOne(adSlot.marketDbAdd, err => {
-				if (err) {
-					console.error('Error adding adSlot', err)
-					return res.status(500).send(err.toString())
-				}
-				return res.send(adSlot)
-			})
-		}
-	)
+		const websiteData = await getWebsiteData(identity, adSlot.website)
+		const websitesCol = db.getMongo().collection('websites')
+
+		await websitesCol.updateOne(
+			{ publisher: websiteData.publisher, hostname: websiteData.hostname },
+			{ $set: websiteData },
+			{ upsert: true }
+		)
+
+		const dataHash = await addDataToIpfs(
+			Buffer.from(JSON.stringify(adSlot.spec))
+		)
+		adSlot['ipfs'] = dataHash
+
+		const inserted = await adSlotsCol.insertOne(adSlot.marketDbAdd)
+		console.log('inserted', inserted)
+		return res.send(adSlot)
+	} catch (err) {
+		console.error('Error adding adSlot', err)
+		return res.status(500).send(err.toString())
+	}
 }
 
 function putAdSlot(req, res) {
@@ -169,52 +179,68 @@ function putAdSlot(req, res) {
 	)
 }
 
+async function getWebsiteData(identity, websiteUrl) {
+	const { publisher, hostname, ...rest } = await verifyPublisher(
+		identity,
+		websiteUrl
+	)
+	const websitesCol = db.getMongo().collection('websites')
+
+	const existing = (await websitesCol.findOne({ publisher, hostname })) || {}
+
+	const data = {
+		hostname,
+		publisher,
+		...existing,
+		...rest,
+		created: existing.created || new Date(),
+	}
+
+	return data
+}
+
+function getWebsiteIssues(data) {
+	const issues = []
+	if (data.blacklisted) {
+		issues.push({ label: 'SLOT_ISSUE_BLACKLISTED' })
+	}
+	if (!data.verifiedIntegration) {
+		issues.push({
+			label: 'SLOT_ISSUE_INTEGRATION_NOT_VERIFIED',
+			args: [
+				{
+					type: 'anchor',
+					label: 'HERE',
+					href:
+						'https://help.adex.network/hc/en-us/articles/360012022820-How-to-implement-an-ad-slot-to-your-website',
+				},
+			],
+		})
+	}
+	if (!data.verifiedOwnership) {
+		issues.push({
+			label: 'SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED',
+			args: [
+				{
+					type: 'anchor',
+					label: 'HERE',
+					href:
+						'https://help.adex.network/hc/en-us/articles/360012481519-How-to-add-DNS-TXT-record-for-your-publisher-domain',
+				},
+			],
+		})
+	}
+
+	return issues
+}
+
 async function verifyWebsite(req, res) {
 	try {
-		const identity = req.identity
+		const data = await getWebsiteData(req.identity, req.body.websiteUrl)
 
-		const { publisher, hostname, ...rest } = await verifyPublisher(
-			identity,
-			req.body.websiteUrl
-		)
-		const websitesCol = db.getMongo().collection('websites')
+		const issues = getWebsiteIssues(data)
 
-		const existing = await websitesCol.findOne({ publisher, hostname })
-
-		const data = { ...(existing || {}), ...rest }
-
-		const issues = []
-		if (data.blacklisted) {
-			issues.push({ label: 'SLOT_ISSUE_BLACKLISTED' })
-		}
-		if (!data.verifiedIntegration) {
-			issues.push({
-				label: 'SLOT_ISSUE_INTEGRATION_NOT_VERIFIED',
-				args: [
-					{
-						type: 'anchor',
-						label: 'HERE',
-						href:
-							'https://help.adex.network/hc/en-us/articles/360012022820-How-to-implement-an-ad-slot-to-your-website',
-					},
-				],
-			})
-		}
-		if (!data.verifiedOwnership) {
-			issues.push({
-				label: 'SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED',
-				args: [
-					{
-						type: 'anchor',
-						label: 'HERE',
-						href:
-							'https://help.adex.network/hc/en-us/articles/360012481519-How-to-add-DNS-TXT-record-for-your-publisher-domain',
-					},
-				],
-			})
-		}
-
-		return res.status(200).send({ hostname, issues })
+		return res.status(200).send({ hostname: data.hostname, issues })
 	} catch (err) {
 		console.error('Error verifyWebsite', err)
 		return res.status(500).send(err.toString())
