@@ -157,12 +157,12 @@ async function postAdSlot(req, res) {
 		adSlot.owner = identity
 		adSlot.created = new Date()
 
-		const websiteData = await getWebsiteData(identity, adSlot.website)
+		const { data } = await getWebsiteData(identity, adSlot.website)
 		const websitesCol = db.getMongo().collection('websites')
 
 		await websitesCol.updateOne(
-			{ publisher: websiteData.publisher, hostname: websiteData.hostname },
-			{ $set: websiteData },
+			{ publisher: data.publisher, hostname: data.hostname },
+			{ $set: data, $setOnInsert: { created: new Date() } },
 			{ upsert: true }
 		)
 
@@ -171,9 +171,9 @@ async function postAdSlot(req, res) {
 		)
 		adSlot['ipfs'] = dataHash
 
-		const inserted = await adSlotsCol.insertOne(adSlot.marketDbAdd)
-		console.log('inserted', inserted)
-		return res.send(adSlot)
+		await adSlotsCol.insertOne(adSlot.marketDbAdd)
+
+		return res.send(adSlot.plainObj())
 	} catch (err) {
 		console.error('Error adding adSlot', err)
 		return res.status(500).send(err.toString())
@@ -207,20 +207,32 @@ async function getWebsiteData(identity, websiteUrl) {
 	)
 	const websitesCol = db.getMongo().collection('websites')
 
-	const existing = (await websitesCol.findOne({ publisher, hostname })) || {}
+	const existingFromOthers = await websitesCol
+		.find(
+			{
+				hostname,
+				$or: [
+					{ verifiedIntegration: true },
+					{ verifiedOwnership: true },
+					{ verifiedForce: true },
+				],
+				blacklisted: { $ne: true },
+				publisher: { $ne: publisher },
+			},
+			{ projection: { _id: 0 } }
+		)
+		.toArray()
 
 	const data = {
 		hostname,
 		publisher,
-		...existing,
 		...rest,
-		created: existing.created || new Date(),
 	}
 
-	return data
+	return { data, existingFromOthers }
 }
 
-function getWebsiteIssues(data) {
+function getWebsiteIssues(data, existingFromOthers) {
 	const issues = []
 	if (data.blacklisted) {
 		issues.push('SLOT_ISSUE_BLACKLISTED')
@@ -231,15 +243,21 @@ function getWebsiteIssues(data) {
 	if (!data.verifiedOwnership) {
 		issues.push('SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED')
 	}
+	if (existingFromOthers && existingFromOthers.lehgt) {
+		issues.push('SLOT_ISSUE_SOMEONE_ELSE_VERIFIED')
+	}
 
 	return issues
 }
 
 async function verifyWebsite(req, res) {
 	try {
-		const data = await getWebsiteData(req.identity, req.body.websiteUrl)
+		const { data, existingFromOthers } = await getWebsiteData(
+			req.identity,
+			req.body.websiteUrl
+		)
 
-		const issues = getWebsiteIssues(data)
+		const issues = getWebsiteIssues(data, existingFromOthers)
 
 		return res.status(200).send({ hostname: data.hostname, issues })
 	} catch (err) {
