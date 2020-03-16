@@ -193,9 +193,6 @@ async function verifyWebsite(req, res) {
 		if (!data.verifiedOwnership) {
 			issues.push('SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED')
 		}
-		if (!data.verifiedOwnership) {
-			issues.push('SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED')
-		}
 
 		return res.status(200).send({ hostname, issues })
 	} catch (err) {
