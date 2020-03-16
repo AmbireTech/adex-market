@@ -70,10 +70,10 @@ async function getAdSlots(req, res) {
 		const websitesCol = db.getMongo().collection('websites')
 		const websitesRes = await websitesCol.find(websitesQuery).toArray()
 
-		const websites = websitesRes.reduce((all, ws) => {
-			all[ws.hostname] = { issues: getWebsiteIssues(ws) }
-			return all
-		}, {})
+		const websites = websitesRes.map(ws => ({
+			id: ws.hostname,
+			issues: getWebsiteIssues(ws),
+		}))
 
 		return res.send({ slots, websites })
 	} catch (err) {
