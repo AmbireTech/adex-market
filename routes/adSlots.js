@@ -197,7 +197,7 @@ async function verifyWebsite(req, res) {
 			issues.push('SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED')
 		}
 
-		return { hostname, issues }
+		return res.status(200).send({ hostname, issues })
 	} catch (err) {
 		console.error('Error verifyWebsite', err)
 		return res.status(500).send(err.toString())
