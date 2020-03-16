@@ -243,7 +243,7 @@ function getWebsiteIssues(data, existingFromOthers) {
 	if (!data.verifiedOwnership) {
 		issues.push('SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED')
 	}
-	if (existingFromOthers && existingFromOthers.lehgt) {
+	if (existingFromOthers && existingFromOthers.length) {
 		issues.push('SLOT_ISSUE_SOMEONE_ELSE_VERIFIED')
 	}
 
