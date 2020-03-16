@@ -58,8 +58,10 @@ async function getAdSlots(req, res) {
 			hostname: {
 				$in: Object.keys(
 					slots.reduce((hosts, { website }) => {
-						const { hostname } = url.parse(website)
-						hosts[hostname] = true
+						if (website) {
+							const { hostname } = url.parse(website)
+							hosts[hostname] = true
+						}
 						return hosts
 					}, {})
 				),
