@@ -185,13 +185,33 @@ async function verifyWebsite(req, res) {
 
 		const issues = []
 		if (data.blacklisted) {
-			issues.push('SLOT_ISSUE_BLACKLISTED')
+			issues.push({ label: 'SLOT_ISSUE_BLACKLISTED' })
 		}
 		if (!data.verifiedIntegration) {
-			issues.push('SLOT_ISSUE_INTEGRATION_NOT_VERIFIED')
+			issues.push({
+				label: 'SLOT_ISSUE_INTEGRATION_NOT_VERIFIED',
+				args: [
+					{
+						type: 'anchor',
+						label: 'HERE',
+						href:
+							'https://help.adex.network/hc/en-us/articles/360012022820-How-to-implement-an-ad-slot-to-your-website',
+					},
+				],
+			})
 		}
 		if (!data.verifiedOwnership) {
-			issues.push('SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED')
+			issues.push({
+				label: 'SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED',
+				args: [
+					{
+						type: 'anchor',
+						label: 'HERE',
+						href:
+							'https://help.adex.network/hc/en-us/articles/360012481519-How-to-add-DNS-TXT-record-for-your-publisher-domain',
+					},
+				],
+			})
 		}
 
 		return res.status(200).send({ hostname, issues })
