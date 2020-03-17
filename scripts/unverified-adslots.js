@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
-const { verifyPublisher, isHostnameBlacklisted } = require('../lib/publisherVerification')
+const {
+	verifyPublisher,
+	isHostnameBlacklisted,
+} = require('../lib/publisherVerification')
 const db = require('../db')
 const url = require('url')
 
