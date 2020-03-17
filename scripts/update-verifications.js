@@ -50,13 +50,20 @@ async function run() {
 	}
 
 	// Part 2: set blacklist flags
-	await websitesCol.updateMany(
-		{
-			hostname: { $in: BLACKLISTED_HOSTNAMES },
-			alexaDataUrl: { $in: BLACKLISTED_HOSTNAMES },
-		},
-		{ $set: { blacklisted: true } }
-	)
+	await websitesCol.updateMany({ $or: [
+		{ hostname: { $in: BLACKLISTED_HOSTNAMES } },
+		{ alexaDataUrl: { $in: BLACKLISTED_HOSTNAMES } }
+	] }, { $set: { blacklisted: true } })
+
+	// contagious blacklisting: if there are any other records that match on `hostname`, blacklist them too
+	const allHostnameRecords = await websitesCol
+		.find({ blacklisted: true }, { projection: { hostname: 1 } })
+		.toArray()
+	const allHostnames = allHostnameRecords.map(x => x.hostname)
+	await websitesCol.updateMany({
+		hostname: { $in: allHostnames },
+		blacklisted: { $ne: true }
+	}, { $set: { blacklisted: true } })
 
 	process.exit(0)
 }
