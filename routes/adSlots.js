@@ -5,7 +5,7 @@ const { schemas, AdSlot } = require('adex-models')
 const { getAddress } = require('ethers/utils')
 
 const db = require('../db')
-const { verifyPublisher } = require('../lib/publisherVerification')
+const { verifyPublisher, validQuery } = require('../lib/publisherVerification')
 const addDataToIpfs = require('../helpers/ipfs')
 const signatureCheck = require('../helpers/signatureCheck')
 
@@ -87,14 +87,6 @@ async function getAdSlots(req, res) {
 // returning `null` means "everything"
 // returning an empty array means "nothing"
 async function getAcceptedReferrers(slot) {
-	const validQuery = {
-		$or: [
-			{ verifiedIntegration: true },
-			{ verifiedOwnership: true },
-			{ verifiedForce: true },
-		],
-		blacklisted: { $ne: true },
-	}
 	const websitesCol = db.getMongo().collection('websites')
 	if (slot.website) {
 		// website is set: check if there is a verification
@@ -213,13 +205,8 @@ async function getWebsiteData(identity, websiteUrl) {
 		.find(
 			{
 				hostname,
-				$or: [
-					{ verifiedIntegration: true },
-					{ verifiedOwnership: true },
-					{ verifiedForce: true },
-				],
-				blacklisted: { $ne: true },
 				publisher: { $ne: publisher },
+				...validQuery,
 			},
 			{ projection: { _id: 0 } }
 		)
