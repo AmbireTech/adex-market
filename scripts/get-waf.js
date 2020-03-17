@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const db = require('../db')
+const { validQuery } = require('../lib/publisherVerification')
 
 const grantAccs = [
 	'0xB7d3F81E857692d13e9D63b232A90F4A1793189E',
@@ -133,13 +134,7 @@ async function getWAF() {
 		await db
 			.getMongo()
 			.collection('websites')
-			.find({
-				$or: [
-					{ verifiedOwnership: true },
-					{ verifiedIntegration: true },
-					{ verifiedForce: true },
-				],
-			})
+			.find(validQuery)
 			.toArray()
 	)
 		.map(x => x.publisher)
