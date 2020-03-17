@@ -5,6 +5,7 @@ const { schemas, AdSlot } = require('adex-models')
 const { getAddress } = require('ethers/utils')
 
 const db = require('../db')
+const { verifyPublisher } = require('../lib/publisherVerification')
 const addDataToIpfs = require('../helpers/ipfs')
 const signatureCheck = require('../helpers/signatureCheck')
 
@@ -12,6 +13,12 @@ const router = express.Router()
 
 router.get('/', getAdSlots)
 router.get('/:id', getAdSlotById)
+router.post(
+	'/verify-website',
+	signatureCheck,
+	celebrate({ body: { websiteUrl: schemas.adSlotPost.website } }),
+	verifyWebsite
+)
 router.put(
 	'/:id',
 	signatureCheck,
@@ -25,33 +32,56 @@ router.post(
 	postAdSlot
 )
 
-function getAdSlots(req, res) {
-	const identity = req.query.identity
-	const limit = +req.query.limit || (identity ? 0 : 100)
-	const skip = +req.query.skip || 0
-	const adSlotsCol = db.getMongo().collection('adSlots')
+async function getAdSlots(req, res) {
+	try {
+		const identity = req.query.identity
+		const limit = +req.query.limit || (identity ? 0 : 100)
+		const skip = +req.query.skip || 0
+		const adSlotsCol = db.getMongo().collection('adSlots')
 
-	const query = {}
+		const query = {}
 
-	if (identity) {
-		query['$or'] = [
-			{ owner: identity.toLowerCase() },
-			{ owner: getAddress(identity) },
-		]
+		if (identity) {
+			query['$or'] = [
+				{ owner: identity.toLowerCase() },
+				{ owner: getAddress(identity) },
+			]
+		}
+
+		const slots = await adSlotsCol
+			.find(query, { projection: { _id: 0 } })
+			.skip(skip)
+			.limit(limit)
+			.toArray()
+
+		const websitesQuery = {
+			hostname: {
+				$in: Object.keys(
+					slots.reduce((hosts, { website }) => {
+						if (website) {
+							const { hostname } = url.parse(website)
+							hosts[hostname] = true
+						}
+						return hosts
+					}, {})
+				),
+			},
+			publisher: { $in: [identity.toLowerCase(), getAddress(identity)] },
+		}
+
+		const websitesCol = db.getMongo().collection('websites')
+		const websitesRes = await websitesCol.find(websitesQuery).toArray()
+
+		const websites = websitesRes.map(ws => ({
+			id: ws.hostname,
+			issues: getWebsiteIssues(ws),
+		}))
+
+		return res.send({ slots, websites })
+	} catch (err) {
+		console.error('Error getting ad slots', err)
+		return res.status(500).send(err.toString())
 	}
-
-	return adSlotsCol
-		.find(query, { projection: { _id: 0 } })
-		.skip(skip)
-		.limit(limit)
-		.toArray()
-		.then(result => {
-			return res.send(result)
-		})
-		.catch(err => {
-			console.error('Error getting ad slots', err)
-			return res.status(500).send(err.toString())
-		})
 }
 
 // returning `null` means "everything"
@@ -121,25 +151,35 @@ function getAdSlotById(req, res) {
 		})
 }
 
-function postAdSlot(req, res) {
-	const identity = req.identity
-	const adSlotsCol = db.getMongo().collection('adSlots')
-	const adSlot = new AdSlot(req.body)
-	adSlot.owner = identity
-	adSlot.created = new Date()
-	return addDataToIpfs(Buffer.from(JSON.stringify(adSlot.spec))).then(
-		dataHash => {
-			adSlot['ipfs'] = dataHash
+async function postAdSlot(req, res) {
+	try {
+		const identity = req.identity
+		const adSlotsCol = db.getMongo().collection('adSlots')
+		const adSlot = new AdSlot(req.body)
+		adSlot.owner = identity
+		adSlot.created = new Date()
 
-			return adSlotsCol.insertOne(adSlot.marketDbAdd, err => {
-				if (err) {
-					console.error('Error adding adSlot', err)
-					return res.status(500).send(err.toString())
-				}
-				return res.send(adSlot)
-			})
-		}
-	)
+		const { data } = await getWebsiteData(identity, adSlot.website)
+		const websitesCol = db.getMongo().collection('websites')
+
+		await websitesCol.updateOne(
+			{ publisher: data.publisher, hostname: data.hostname },
+			{ $set: data, $setOnInsert: { created: new Date() } },
+			{ upsert: true }
+		)
+
+		const dataHash = await addDataToIpfs(
+			Buffer.from(JSON.stringify(adSlot.spec))
+		)
+		adSlot['ipfs'] = dataHash
+
+		await adSlotsCol.insertOne(adSlot.marketDbAdd)
+
+		return res.send(adSlot.plainObj())
+	} catch (err) {
+		console.error('Error adding adSlot', err)
+		return res.status(500).send(err.toString())
+	}
 }
 
 function putAdSlot(req, res) {
@@ -160,6 +200,72 @@ function putAdSlot(req, res) {
 			return res.status(200).send({ slot: result.value })
 		}
 	)
+}
+
+async function getWebsiteData(identity, websiteUrl) {
+	const { publisher, hostname, ...rest } = await verifyPublisher(
+		identity,
+		websiteUrl
+	)
+	const websitesCol = db.getMongo().collection('websites')
+
+	const existingFromOthers = await websitesCol
+		.find(
+			{
+				hostname,
+				$or: [
+					{ verifiedIntegration: true },
+					{ verifiedOwnership: true },
+					{ verifiedForce: true },
+				],
+				blacklisted: { $ne: true },
+				publisher: { $ne: publisher },
+			},
+			{ projection: { _id: 0 } }
+		)
+		.toArray()
+
+	const data = {
+		hostname,
+		publisher,
+		...rest,
+	}
+
+	return { data, existingFromOthers }
+}
+
+function getWebsiteIssues(data, existingFromOthers) {
+	const issues = []
+	if (data.blacklisted) {
+		issues.push('SLOT_ISSUE_BLACKLISTED')
+	}
+	if (!data.verifiedIntegration) {
+		issues.push('SLOT_ISSUE_INTEGRATION_NOT_VERIFIED')
+	}
+	if (!data.verifiedOwnership) {
+		issues.push('SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED')
+	}
+	if (existingFromOthers && existingFromOthers.length) {
+		issues.push('SLOT_ISSUE_SOMEONE_ELSE_VERIFIED')
+	}
+
+	return issues
+}
+
+async function verifyWebsite(req, res) {
+	try {
+		const { data, existingFromOthers } = await getWebsiteData(
+			req.identity,
+			req.body.websiteUrl
+		)
+
+		const issues = getWebsiteIssues(data, existingFromOthers)
+
+		return res.status(200).send({ hostname: data.hostname, issues })
+	} catch (err) {
+		console.error('Error verifyWebsite', err)
+		return res.status(500).send(err.toString())
+	}
 }
 
 module.exports = router
