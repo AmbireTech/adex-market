@@ -19,10 +19,7 @@ async function run() {
 
 	// @TODO dedup by hostname, take first for publisher
 	const allVerifiedSites = await websitesCol
-		.find(
-			validQuery,
-			{ projection: { hostname: 1, publisher: 1 } }
-		)
+		.find(validQuery, { projection: { hostname: 1, publisher: 1 } })
 		.toArray()
 
 	const allAdSlots = await adslotsCol
