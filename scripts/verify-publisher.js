@@ -18,12 +18,7 @@ async function run() {
 		force: argv[2] === '--force',
 	})
 	if (argv[2] === '--blacklist')
-		Object.assign(result, {
-			verifiedIntegration: false,
-			verifiedOwnership: false,
-			verifiedForce: false,
-			blacklisted: true,
-		})
+		Object.assign(result, { blacklisted: true })
 	if (argv[3] === '--extra') result.extraReferrers = argv.slice(4)
 
 	console.log('Verification results:', result)
