@@ -151,12 +151,12 @@ async function postAdSlot(req, res) {
 		adSlot.owner = identity
 		adSlot.created = new Date()
 
-		const { data } = await getWebsiteData(identity, adSlot.website)
+		const { websiteRecord } = await getWebsiteData(identity, adSlot.website)
 		const websitesCol = db.getMongo().collection('websites')
 
 		await websitesCol.updateOne(
-			{ publisher: data.publisher, hostname: data.hostname },
-			{ $set: data, $setOnInsert: { created: new Date() } },
+			{ publisher: websiteRecord.publisher, hostname: websiteRecord.hostname },
+			{ $set: websiteRecord, $setOnInsert: { created: new Date() } },
 			{ upsert: true }
 		)
 
@@ -212,24 +212,24 @@ async function getWebsiteData(identity, websiteUrl) {
 		)
 		.toArray()
 
-	const data = {
+	const websiteRecord = {
 		hostname,
 		publisher,
 		...rest,
 	}
 
-	return { data, existingFromOthers }
+	return { websiteRecord, existingFromOthers }
 }
 
-function getWebsiteIssues(data, existingFromOthers) {
+function getWebsiteIssues(websiteRecord, existingFromOthers) {
 	const issues = []
-	if (data.blacklisted) {
+	if (websiteRecord.blacklisted) {
 		issues.push('SLOT_ISSUE_BLACKLISTED')
 	}
-	if (!data.verifiedIntegration) {
+	if (!websiteRecord.verifiedIntegration) {
 		issues.push('SLOT_ISSUE_INTEGRATION_NOT_VERIFIED')
 	}
-	if (!data.verifiedOwnership) {
+	if (!websiteRecord.verifiedOwnership) {
 		issues.push('SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED')
 	}
 	if (existingFromOthers && existingFromOthers.length) {
@@ -241,14 +241,14 @@ function getWebsiteIssues(data, existingFromOthers) {
 
 async function verifyWebsite(req, res) {
 	try {
-		const { data, existingFromOthers } = await getWebsiteData(
+		const { websiteRecord, existingFromOthers } = await getWebsiteData(
 			req.identity,
 			req.body.websiteUrl
 		)
 
-		const issues = getWebsiteIssues(data, existingFromOthers)
+		const issues = getWebsiteIssues(websiteRecord, existingFromOthers)
 
-		return res.status(200).send({ hostname: data.hostname, issues })
+		return res.status(200).send({ hostname: websiteRecord.hostname, issues })
 	} catch (err) {
 		console.error('Error verifyWebsite', err)
 		return res.status(500).send(err.toString())
