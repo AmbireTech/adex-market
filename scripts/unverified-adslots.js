@@ -2,6 +2,7 @@
 
 const {
 	verifyPublisher,
+	validQuery,
 	isHostnameBlacklisted,
 } = require('../lib/publisherVerification')
 const db = require('../db')
@@ -19,13 +20,7 @@ async function run() {
 	// @TODO dedup by hostname, take first for publisher
 	const allVerifiedSites = await websitesCol
 		.find(
-			{
-				$or: [
-					{ verifiedOwnership: true },
-					{ verifiedIntegration: true },
-					{ verifiedForce: true },
-				],
-			},
+			validQuery,
 			{ projection: { hostname: 1, publisher: 1 } }
 		)
 		.toArray()
