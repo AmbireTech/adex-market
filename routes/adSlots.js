@@ -84,6 +84,14 @@ async function getAdSlots(req, res) {
 	}
 }
 
+function getRecommendedEarningLimitUSD(website) {
+	if (!(website && website.rank)) return 100
+	if (website.rank < 10000) return 10000
+	else if (website.rank < 100000) return 5000
+	else if (website.rank < 300000) return 1000
+	else return 100
+
+}
 // returning `null` means "everything"
 // returning an empty array means "nothing"
 async function getAcceptedReferrers(slot) {
@@ -96,11 +104,13 @@ async function getAcceptedReferrers(slot) {
 		const website = await websitesCol.findOne({ hostname, ...validQuery })
 		// @TODO: consider allowing everything if it's not verified yet (if !website)
 		// @XXX: .extraReferrers is only permitted in the new mode (if .website is set)
-		return website && website.publisher === slot.owner
+		const acceptedReferrers = website && website.publisher === slot.owner
 			? [`https://${hostname}`].concat(
 					Array.isArray(website.extraReferrers) ? website.extraReferrers : []
 			  )
 			: []
+		const recommendedEarningLimitUSD = getRecommendedEarningLimitUSD(website)
+		return { acceptedReferrers, recommendedEarningLimitUSD }
 	} else {
 		// A single website may have been verified by multiple publishers
 		const websites = await websitesCol
@@ -116,7 +126,10 @@ async function getAcceptedReferrers(slot) {
 		const websitesWithNoDupes = websites.filter(
 			x => !websitesDupes.find(y => x.hostname === y.hostname && y._id < x._id)
 		)
-		return websitesWithNoDupes.map(x => `https://${x.hostname}`)
+		const acceptedReferrers = websitesWithNoDupes.map(x => `https://${x.hostname}`)
+		// This case doesn't support recommendedEarningLimitUSD: that's intentional,
+		// as it's only used by old publishers who were strictly verified
+		return { acceptedReferrers, recommendedEarningLimitUSD: null }
 	}
 }
 
