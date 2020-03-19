@@ -70,5 +70,6 @@ function start() {
 		.catch(err => {
 			console.error('Error when starting server', err)
 			throw new Error(err)
+			process.exit(1)
 		})
 }
