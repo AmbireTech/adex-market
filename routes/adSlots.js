@@ -8,6 +8,7 @@ const db = require('../db')
 const { verifyPublisher } = require('../lib/publisherVerification')
 const addDataToIpfs = require('../helpers/ipfs')
 const signatureCheck = require('../helpers/signatureCheck')
+const categorizeAdSlot = require('../lib/categorizeAdSlot')
 
 const router = express.Router()
 
@@ -158,6 +159,7 @@ async function postAdSlot(req, res) {
 		const adSlot = new AdSlot(req.body)
 		adSlot.owner = identity
 		adSlot.created = new Date()
+		adSlot.tags = await categorizeAdSlot(adSlot)
 
 		const { data } = await getWebsiteData(identity, adSlot.website)
 		const websitesCol = db.getMongo().collection('websites')
