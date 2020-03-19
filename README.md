@@ -57,3 +57,14 @@ We save each hostname to a collection called `websites` where each entry contain
 Whether a record is considered valid is determined at query-time rather than when saving the record. This is done for two reasons: 1) to check for duplicates (whether another publisher verified the same hostname before you) and 2) so we can change what we consider to be "verified" at any point. For example, right now we accept either DNS TXT (ownership) verification or integration, but at some point we may only accept DNS TXT and we want to be able to change this quickly without migrating the DB.
 
 For more details on how verification is done, see `lib/publisherVerification`.
+
+
+### Scripts
+
+There are a few scripts to moderate publisher verification:
+
+`./scripts/verify-publisher.js publisherAddr websiteUrl [--force|--blacklist]`: trigger verification of a publisher or update their verification; `--force` will make it verified regardless of whether the automated checks pass, and `--blacklist` will blacklist it
+
+`./scripts/update-verifications.js`: updates all existing verification records by re-running the check; also blacklists in a "contagious" manner: if one verification record is blacklisted, all other records with the same hostname will be too; should be ran every 24 hours
+
+There's also `unverified-adslots.js`, but this is no longer relevant.
