@@ -5,7 +5,7 @@ const { schemas, AdSlot } = require('adex-models')
 const { getAddress } = require('ethers/utils')
 
 const db = require('../db')
-const { verifyPublisher } = require('../lib/publisherVerification')
+const { verifyPublisher, validQuery } = require('../lib/publisherVerification')
 const addDataToIpfs = require('../helpers/ipfs')
 const signatureCheck = require('../helpers/signatureCheck')
 
@@ -84,17 +84,16 @@ async function getAdSlots(req, res) {
 	}
 }
 
+function getRecommendedEarningLimitUSD(website) {
+	if (!(website && website.rank)) return 100
+	if (website.rank < 10000) return 10000
+	else if (website.rank < 100000) return 5000
+	else if (website.rank < 300000) return 1000
+	else return 100
+}
 // returning `null` means "everything"
 // returning an empty array means "nothing"
-async function getAcceptedReferrers(slot) {
-	const validQuery = {
-		$or: [
-			{ verifiedIntegration: true },
-			{ verifiedOwnership: true },
-			{ verifiedForce: true },
-		],
-		blacklisted: { $ne: true },
-	}
+async function getAcceptedReferrersInfo(slot) {
 	const websitesCol = db.getMongo().collection('websites')
 	if (slot.website) {
 		// website is set: check if there is a verification
@@ -104,11 +103,14 @@ async function getAcceptedReferrers(slot) {
 		const website = await websitesCol.findOne({ hostname, ...validQuery })
 		// @TODO: consider allowing everything if it's not verified yet (if !website)
 		// @XXX: .extraReferrers is only permitted in the new mode (if .website is set)
-		return website && website.publisher === slot.owner
-			? [`https://${hostname}`].concat(
-					Array.isArray(website.extraReferrers) ? website.extraReferrers : []
-			  )
-			: []
+		const acceptedReferrers =
+			website && website.publisher === slot.owner
+				? [`https://${hostname}`].concat(
+						Array.isArray(website.extraReferrers) ? website.extraReferrers : []
+				  )
+				: []
+		const recommendedEarningLimitUSD = getRecommendedEarningLimitUSD(website)
+		return { acceptedReferrers, recommendedEarningLimitUSD }
 	} else {
 		// A single website may have been verified by multiple publishers
 		const websites = await websitesCol
@@ -124,7 +126,12 @@ async function getAcceptedReferrers(slot) {
 		const websitesWithNoDupes = websites.filter(
 			x => !websitesDupes.find(y => x.hostname === y.hostname && y._id < x._id)
 		)
-		return websitesWithNoDupes.map(x => `https://${x.hostname}`)
+		const acceptedReferrers = websitesWithNoDupes.map(
+			x => `https://${x.hostname}`
+		)
+		// This case doesn't support recommendedEarningLimitUSD: that's intentional,
+		// as it's only used by old publishers who were strictly verified
+		return { acceptedReferrers, recommendedEarningLimitUSD: null }
 	}
 }
 
@@ -142,7 +149,7 @@ function getAdSlotById(req, res) {
 			res.set('Cache-Control', 'public, max-age=10000')
 			res.send({
 				slot: result,
-				acceptedReferrers: await getAcceptedReferrers(result),
+				...(await getAcceptedReferrersInfo(result)),
 			})
 		})
 		.catch(err => {
@@ -159,12 +166,12 @@ async function postAdSlot(req, res) {
 		adSlot.owner = identity
 		adSlot.created = new Date()
 
-		const { data } = await getWebsiteData(identity, adSlot.website)
+		const { websiteRecord } = await getWebsiteData(identity, adSlot.website)
 		const websitesCol = db.getMongo().collection('websites')
 
 		await websitesCol.updateOne(
-			{ publisher: data.publisher, hostname: data.hostname },
-			{ $set: data, $setOnInsert: { created: new Date() } },
+			{ publisher: websiteRecord.publisher, hostname: websiteRecord.hostname },
+			{ $set: websiteRecord, $setOnInsert: { created: new Date() } },
 			{ upsert: true }
 		)
 
@@ -213,36 +220,31 @@ async function getWebsiteData(identity, websiteUrl) {
 		.find(
 			{
 				hostname,
-				$or: [
-					{ verifiedIntegration: true },
-					{ verifiedOwnership: true },
-					{ verifiedForce: true },
-				],
-				blacklisted: { $ne: true },
 				publisher: { $ne: publisher },
+				...validQuery,
 			},
 			{ projection: { _id: 0 } }
 		)
 		.toArray()
 
-	const data = {
+	const websiteRecord = {
 		hostname,
 		publisher,
 		...rest,
 	}
 
-	return { data, existingFromOthers }
+	return { websiteRecord, existingFromOthers }
 }
 
-function getWebsiteIssues(data, existingFromOthers) {
+function getWebsiteIssues(websiteRecord, existingFromOthers) {
 	const issues = []
-	if (data.blacklisted) {
+	if (websiteRecord.blacklisted) {
 		issues.push('SLOT_ISSUE_BLACKLISTED')
 	}
-	if (!data.verifiedIntegration) {
+	if (!websiteRecord.verifiedIntegration) {
 		issues.push('SLOT_ISSUE_INTEGRATION_NOT_VERIFIED')
 	}
-	if (!data.verifiedOwnership) {
+	if (!websiteRecord.verifiedOwnership) {
 		issues.push('SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED')
 	}
 	if (existingFromOthers && existingFromOthers.length) {
@@ -254,14 +256,14 @@ function getWebsiteIssues(data, existingFromOthers) {
 
 async function verifyWebsite(req, res) {
 	try {
-		const { data, existingFromOthers } = await getWebsiteData(
+		const { websiteRecord, existingFromOthers } = await getWebsiteData(
 			req.identity,
 			req.body.websiteUrl
 		)
 
-		const issues = getWebsiteIssues(data, existingFromOthers)
+		const issues = getWebsiteIssues(websiteRecord, existingFromOthers)
 
-		return res.status(200).send({ hostname: data.hostname, issues })
+		return res.status(200).send({ hostname: websiteRecord.hostname, issues })
 	} catch (err) {
 		console.error('Error verifyWebsite', err)
 		return res.status(500).send(err.toString())
