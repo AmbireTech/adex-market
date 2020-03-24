@@ -93,12 +93,17 @@ tape('isInvalid()', function(t) {
 	t.equals(
 		isInvalid(vtm.invalid.second),
 		true,
-		'Recent NewState, no ApproveState but RejectState instead'
+		'Recent NewState, but old ApproveState returns true'
 	)
 	t.equals(
 		isInvalid(vtm.invalid.third),
 		true,
-		'Recent NewState and ApproveState messages but also a RejectState'
+		'Recent ApproveState but old NewState returns true'
+	)
+	t.equals(
+		isInvalid(vtm.invalid.fourth),
+		true,
+		'Old ApproveState and old NewState returns true'
 	)
 	t.equals(
 		isInvalid(vtm.notInvalid.first),
