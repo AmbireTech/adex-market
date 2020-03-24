@@ -1,7 +1,7 @@
-const nowDate = Math.floor(Date.now() / 1000)
-const oldDate = Math.floor((Date.now() - 10000000) / 1000)
-const oldDateNoHex = Math.floor((Date.now() - 10000000) / 1000)
-const inTheFuture = Math.floor((Date.now() + 10000000) / 1000)
+const nowDate = new Date(Date.now()).toISOString()
+const oldDate = new Date(Date.now() - 10000000).toISOString()
+const oldDateNoHex = new Date(Date.now() - 10000000).toISOString()
+const inTheFuture = new Date(Date.now() + 10000000).toISOString()
 
 const VALIDATOR_MSG_FROM_ADDRESS = '0x2892f6C41E0718eeeDd49D98D648C789668cA67d'
 const VALIDATOR_MSG_STATE_ROOT =
@@ -24,7 +24,7 @@ const balanceTreeUnder = {
 }
 
 function generateMessage(params) {
-	const { type, timestamp, healthy } = params
+	const { type, timestamp, healthy, received } = params
 
 	const validatorMessage = {
 		from: VALIDATOR_MSG_FROM_ADDRESS,
@@ -34,6 +34,7 @@ function generateMessage(params) {
 				'0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
 			stateRoot: VALIDATOR_MSG_STATE_ROOT,
 		},
+		received: received || nowDate,
 	}
 
 	switch (type) {
@@ -43,6 +44,8 @@ function generateMessage(params) {
 		case 'ApproveState':
 			validatorMessage.msg['lastEvAggr'] = timestamp
 			validatorMessage.msg['isHealthy'] = healthy
+			break
+		case 'NewState':
 			break
 		default:
 			break
@@ -103,20 +106,24 @@ const newStateMessage = generateMessage({ type: 'NewState' })
 
 const approveStateMessageHealthy = generateMessage({
 	type: 'ApproveState',
-	timestamp: nowDate,
 	healthy: true,
 })
 
 const approveStateMessageUnhealthy = generateMessage({
 	type: 'ApproveState',
-	timestamp: nowDate,
 	healthy: false,
 })
 
-const rejectStateMessage = generateMessage({
-	type: 'RejectState',
-	timestamp: nowDate,
-	reason: 'InvalidSignature',
+const approveStateMessageOld = generateMessage({
+	type: 'ApproveState',
+	healthy: true,
+	received: oldDate,
+})
+
+const newStateMessageOld = generateMessage({
+	type: 'NewState',
+	healthy: true,
+	received: oldDate,
 })
 
 // Empty messages
@@ -219,24 +226,27 @@ const invalidMessages = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [],
-	rejectStateFollower: [],
 }
 
 const invalidMessages2 = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
-	approveStateFollower: [],
-	rejectStateFollower: [rejectStateMessage],
+	approveStateFollower: [approveStateMessageOld],
 }
 
-// weird case
 const invalidMessages3 = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
 	followerHeartbeat: [heartbeatMessageNowDate],
-	newStateLeader: [newStateMessage],
+	newStateLeader: [newStateMessageOld],
 	approveStateFollower: [approveStateMessageHealthy],
-	rejectStateFollower: [rejectStateMessage],
+}
+
+const invalidMessages4 = {
+	leaderHeartbeat: [heartbeatMessageNowDate],
+	followerHeartbeat: [heartbeatMessageNowDate],
+	newStateLeader: [newStateMessageOld],
+	approveStateFollower: [approveStateMessageOld],
 }
 
 // Recent newstate and approvestate
@@ -245,7 +255,6 @@ const notInvalidMessages1 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [approveStateMessageHealthy],
-	rejectStateFollower: [],
 }
 
 // No approvestate but also no recent newstate
@@ -254,7 +263,6 @@ const notInvalidMessages2 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
-	rejectStateFollower: [],
 }
 
 // Approvestate but no recent newstate
@@ -263,7 +271,6 @@ const notInvalidMessages3 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [approveStateMessageHealthy],
-	rejectStateFollower: [],
 }
 
 // 0 newstate messages and no approvestate
@@ -272,7 +279,6 @@ const notInvalidMessages4 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
-	rejectStateFollower: [],
 }
 
 // Recent heartbeat and newstate but approvestate reports unhealthy
@@ -411,6 +417,7 @@ module.exports = {
 		first: invalidMessages,
 		second: invalidMessages2,
 		third: invalidMessages3,
+		fourth: invalidMessages4,
 	},
 	notInvalid: {
 		first: notInvalidMessages1,
