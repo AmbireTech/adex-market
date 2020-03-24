@@ -159,7 +159,7 @@ async function postAdSlot(req, res) {
 		const adSlot = new AdSlot(req.body)
 		adSlot.owner = identity
 		adSlot.created = new Date()
-		adSlot.tags = await categorizeAdSlot(adSlot)
+		adSlot.autoTags = await categorizeAdSlot(adSlot)
 
 		const { data } = await getWebsiteData(identity, adSlot.website)
 		const websitesCol = db.getMongo().collection('websites')
