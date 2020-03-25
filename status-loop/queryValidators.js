@@ -93,10 +93,14 @@ async function getStatusOfCampaign(campaign) {
 	const callFollower = getRequest(
 		`${follower.url}/channel/${campaign.id}/last-approved?withHeartbeat=true`
 	)
+	const callLeaderForLatestNewState = getRequest(
+		`${follower.url}/channel/${campaign.id}/validator-messages/${leader.id}/NewState`
+	)
 
-	const [dataLeader, dataFollower] = await Promise.all([
+	const [dataLeader, dataFollower, dataLatestNewState] = await Promise.all([
 		callLeader,
 		callFollower,
+		callLeaderForLatestNewState,
 	])
 
 	const lastApproved = dataLeader.lastApproved
@@ -117,6 +121,9 @@ async function getStatusOfCampaign(campaign) {
 		),
 		newStateLeader: lastApproved ? [lastApproved.newState] : [],
 		approveStateFollower: lastApproved ? [lastApproved.approveState] : [],
+		latestNewState: dataLatestNewState
+			? [dataLatestNewState.validatorMessages[0]]
+			: [],
 	}
 
 	const verified = verifyLastApproved(lastApproved, validators)
