@@ -58,10 +58,16 @@ Whether a record is considered valid is determined at query-time rather than whe
 
 If many records with the same hostname exist (but for a different publisher), only one is considered valid: the oldest one that is passing verification.
 
-DNS TXT ownership verification (`verifiedOwnership`) works by checking a DNS TXT record that contains the publisher address. It will consider a root domain record to be valid for a subdomain.
+Ownership verification (`verifiedOwnership`) works by checking a DNS TXT record or a file in [`.well-known`](https://tools.ietf.org/html/rfc8615) that contains the publisher address. It will consider a root domain record to be valid for a subdomain.
 
 For more details on how verification is done, see `lib/publisherVerification`.
 
+### Ownership verification
+
+To prove you're the owner of a domain, you can either:
+
+* add a DNS TXT record with the content `adex-publisher=replace-with-your-publisher-address`, for example `adex-publisher=0xd5860D6196A4900bf46617cEf088ee6E6b61C9d6`; the record name can either be the hostname (e.g. for `https://www.stremio.com`, this is `www.`) or the root hostname itself (stremio.com)
+* place a `.well-known/adex.txt` file in the root directory that contains the same string
 
 ### Scripts
 
