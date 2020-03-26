@@ -74,7 +74,7 @@ async function getAdSlots(req, res) {
 			})
 			.toArray()
 
-		const othersWebsites = websitesCol
+		const othersWebsites = await websitesCol
 			.find(
 				{
 					hostname: {
@@ -91,7 +91,7 @@ async function getAdSlots(req, res) {
 			id: ws.hostname,
 			issues: getWebsiteIssues(
 				ws,
-				othersWebsites.filter(({ hostname }) => hostname === ws.hostname).length
+				othersWebsites.some(({ hostname }) => hostname === ws.hostname)
 			),
 		}))
 
@@ -268,7 +268,7 @@ function getWebsiteIssues(websiteRecord, existingFromOthers) {
 	if (!websiteRecord.verifiedOwnership) {
 		issues.push('SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED')
 	}
-	if (existingFromOthers && existingFromOthers > 0) {
+	if (existingFromOthers) {
 		issues.push('SLOT_ISSUE_SOMEONE_ELSE_VERIFIED')
 	}
 
