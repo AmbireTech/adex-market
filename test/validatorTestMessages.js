@@ -166,6 +166,7 @@ const notInitializingMessages = {
 // No recent heartbeat on both
 const offlineMessages1 = {
 	leaderHeartbeat: [heartbeatMessageOldDate],
+	followerHeartbeat: [heartbeatMessageOldDate],
 	followerFromLeader: [heartbeatMessageOldDate],
 	newStateLeader: [],
 	approveStateFollower: [],
@@ -174,6 +175,7 @@ const offlineMessages1 = {
 // No recent heartbeat on second
 const offlineMessages2 = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
+	followerHeartbeat: [heartbeatMessageOldDate],
 	followerFromLeader: [heartbeatMessageOldDate],
 	newStateLeader: [],
 	approveStateFollower: [],
@@ -182,6 +184,7 @@ const offlineMessages2 = {
 // No recent heartbeat on first
 const offlineMessages3 = {
 	leaderHeartbeat: [heartbeatMessageOldDate],
+	followerHeartbeat: [heartbeatMessageNowDate],
 	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
@@ -197,15 +200,17 @@ const notOfflineMessages = {
 
 // No recent heartbeat messages on both sides
 const disconnectedMessages1 = {
-	followerHeartbeat: [],
-	followerFromLeader: [],
+	leaderHeartbeat: [heartbeatMessageOldDate],
+	followerHeartbeat: [heartbeatMessageOldDate],
+	followerFromLeader: [heartbeatMessageOldDate],
 	newStateLeader: [],
 	approveStateFollower: [],
 }
 
 // No recent leader heartbeat messages on follower
 const disconnectedMessages2 = {
-	followerHeartbeat: [],
+	leaderHeartbeat: [heartbeatMessageOldDate],
+	followerHeartbeat: [heartbeatMessageOldDate],
 	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
@@ -213,6 +218,7 @@ const disconnectedMessages2 = {
 
 // No recent follower heartbeat messages on leader
 const disconnectedMessages3 = {
+	leaderHeartbeat: [heartbeatMessageOldDate],
 	followerHeartbeat: [heartbeatMessageNowDate],
 	followerFromLeader: [],
 	newStateLeader: [],
@@ -231,6 +237,7 @@ const notDisconnectedMessages1 = {
 const invalidMessages = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
 	followerHeartbeat: [heartbeatMessageNowDate],
+	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [],
 	latestNewState: [],
@@ -239,6 +246,7 @@ const invalidMessages = {
 const invalidMessages2 = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
 	followerHeartbeat: [heartbeatMessageNowDate],
+	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessageOld],
 	approveStateFollower: [approveStateMessageHealthy],
 	latestNewState: [newStateOlderThanMinute],
@@ -299,8 +307,10 @@ const notInvalidMessages6 = {
 const unhealthyMessages = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
 	followerHeartbeat: [heartbeatMessageNowDate],
+	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [approveStateMessageUnhealthy],
+	latestNewState: [newStateMessageNew]
 }
 
 // Recent heartbeat and newstate and approvestate reports healthy
@@ -323,6 +333,7 @@ const notUnhealthyMessages2 = {
 const readyMessages1 = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
 	followerHeartbeat: [heartbeatMessageNowDate],
+	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
 }
@@ -365,8 +376,10 @@ const notReadyMessages4 = {
 const activeMessages = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
 	followerHeartbeat: [heartbeatMessageNowDate],
+	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [approveStateMessageHealthy],
+	latestNewState: [newStateMessage]
 }
 
 // Working example but we switch isHealthy to false
