@@ -216,6 +216,11 @@ async function getWebsiteData(identity, websiteUrl) {
 	)
 	const websitesCol = db.getMongo().collection('websites')
 
+	const { verifiedForce } = (await websitesCol.findOne(
+		{ publisher, hostname },
+		{ projection: { verifiedForce: 1 } }
+	)) || { verifiedForce: false }
+
 	const existingFromOthers = await websitesCol
 		.find(
 			{
@@ -231,6 +236,7 @@ async function getWebsiteData(identity, websiteUrl) {
 		hostname,
 		publisher,
 		...rest,
+		verifiedForce,
 	}
 
 	return { websiteRecord, existingFromOthers }
