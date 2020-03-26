@@ -54,27 +54,45 @@ async function getAdSlots(req, res) {
 			.limit(limit)
 			.toArray()
 
-		const websitesQuery = {
-			hostname: {
-				$in: Object.keys(
-					slots.reduce((hosts, { website }) => {
-						if (website) {
-							const { hostname } = url.parse(website)
-							hosts[hostname] = true
-						}
-						return hosts
-					}, {})
-				),
-			},
-			publisher: { $in: [identity.toLowerCase(), getAddress(identity)] },
-		}
+		const publisherIds = [identity.toLowerCase(), getAddress(identity)]
 
 		const websitesCol = db.getMongo().collection('websites')
-		const websitesRes = await websitesCol.find(websitesQuery).toArray()
+		const publisherWebsites = await websitesCol
+			.find({
+				hostname: {
+					$in: Object.keys(
+						slots.reduce((hosts, { website }) => {
+							if (website) {
+								const { hostname } = url.parse(website)
+								hosts[hostname] = true
+							}
+							return hosts
+						}, {})
+					),
+				},
+				publisher: { $in: publisherIds },
+			})
+			.toArray()
 
-		const websites = websitesRes.map(ws => ({
+		const othersWebsites = websitesCol
+			.find(
+				{
+					hostname: {
+						$in: publisherWebsites.map(({ hostname }) => hostname),
+					},
+					publisher: { $nin: publisherIds },
+					...validQuery,
+				},
+				{ projection: { hostname: 1 } }
+			)
+			.toArray()
+
+		const websites = publisherWebsites.map(ws => ({
 			id: ws.hostname,
-			issues: getWebsiteIssues(ws),
+			issues: getWebsiteIssues(
+				ws,
+				othersWebsites.filter(({ hostname }) => hostname === ws.hostname).length
+			),
 		}))
 
 		return res.send({ slots, websites })
@@ -222,15 +240,12 @@ async function getWebsiteData(identity, websiteUrl) {
 	)) || { verifiedForce: false }
 
 	const existingFromOthers = await websitesCol
-		.find(
-			{
-				hostname,
-				publisher: { $ne: publisher },
-				...validQuery,
-			},
-			{ projection: { _id: 0 } }
-		)
-		.toArray()
+		.find({
+			hostname,
+			publisher: { $ne: publisher },
+			...validQuery,
+		})
+		.count()
 
 	const websiteRecord = {
 		hostname,
@@ -253,7 +268,7 @@ function getWebsiteIssues(websiteRecord, existingFromOthers) {
 	if (!websiteRecord.verifiedOwnership) {
 		issues.push('SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED')
 	}
-	if (existingFromOthers && existingFromOthers.length) {
+	if (existingFromOthers && existingFromOthers > 0) {
 		issues.push('SLOT_ISSUE_SOMEONE_ELSE_VERIFIED')
 	}
 
