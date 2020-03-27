@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const verifyPublisher = require('../lib/publisherVerification')
+const { verifyPublisher } = require('../lib/publisherVerification')
 const db = require('../db')
 
 // import env
@@ -17,7 +17,7 @@ async function run() {
 	const result = await verifyPublisher(argv[0], argv[1], {
 		force: argv[2] === '--force',
 	})
-
+	if (argv[2] === '--blacklist') Object.assign(result, { blacklisted: true })
 	if (argv[3] === '--extra') result.extraReferrers = argv.slice(4)
 
 	console.log('Verification results:', result)
