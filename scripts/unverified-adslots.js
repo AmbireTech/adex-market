@@ -1,53 +1,15 @@
 #!/usr/bin/env node
 
-const { verifyPublisher } = require('../lib/publisherVerification')
+const {
+	verifyPublisher,
+	validQuery,
+	isHostnameBlacklisted,
+} = require('../lib/publisherVerification')
 const db = require('../db')
 const url = require('url')
 
 // import env
 require('dotenv').config()
-
-// from previous fraud attempts
-// for now, only blacklisting hostnames since otherwise we risk exploitation (publishers getting legit domains blacklisted)
-const blacklisted = [
-	'cryptofans.ru',
-	'cryptofans.news',
-	'sciencedaily.news',
-	'icrypto.media',
-	'downloadlagu-mp3.pro',
-	'enermags.com',
-	'4kmovies.me',
-	'www.elsimultimedia.com',
-	'10dollarbigtits.com',
-	'laguaz.pro',
-	'coinrevolution.com',
-	'aisrafa.com',
-	'aisrafa.com.au',
-	'vespabiru.com',
-	'nuyul.online',
-	'www.jfknewsonline.com',
-	'adz7short.space',
-	'adzbazar.com',
-	'clixblue.com',
-	'indexclix.com',
-	'fingersclix.com',
-	'ads4.pro',
-	'adzseven.com',
-	'clixmoney.cf',
-	'turkeynamaa.com',
-	'cryptocut.org',
-	'adzbux.com',
-	'adbtc.top',
-	'adeth.cc',
-	'addoge.cc',
-	'adltc.cc',
-	'adbch.cc',
-	'addash.cc',
-	'adxrp.cc',
-	'adsdogecoin.com',
-]
-const isBlacklisted = hostname =>
-	blacklisted.some(b => hostname === b || hostname.endsWith('.' + b))
 
 async function run() {
 	await db.connect()
@@ -57,16 +19,7 @@ async function run() {
 
 	// @TODO dedup by hostname, take first for publisher
 	const allVerifiedSites = await websitesCol
-		.find(
-			{
-				$or: [
-					{ verifiedOwnership: true },
-					{ verifiedIntegration: true },
-					{ verifiedForce: true },
-				],
-			},
-			{ projection: { hostname: 1, publisher: 1 } }
-		)
+		.find(validQuery, { projection: { hostname: 1, publisher: 1 } })
 		.toArray()
 
 	const allAdSlots = await adslotsCol
@@ -91,7 +44,7 @@ async function run() {
 		}
 
 		// be careful as the blacklisted flag is not respected in prod yet
-		if (isBlacklisted(hostname)) {
+		if (isHostnameBlacklisted(hostname)) {
 			console.log(`skip ${slot.owner} ${hostname} because it is blacklisted`)
 			continue
 		}
