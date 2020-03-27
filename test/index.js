@@ -9,6 +9,7 @@ const {
 	isActive,
 	isExhausted,
 	isExpired,
+	isWithdraw,
 } = require('../lib/getStatus')
 const vtm = require('./validatorTestMessages')
 
@@ -232,6 +233,20 @@ tape('isExpired()', function(t) {
 		isExpired(vtm.notExpired.first.campaign),
 		false,
 		'validUntil has not passed returns false'
+	)
+	t.end()
+})
+
+tape('isWithdraw()', function(t) {
+	t.equals(
+		isWithdraw(vtm.withdraw.first.campaign),
+		true,
+		'Campaign with withdrawPeriodStart that has passed returns true'
+	)
+	t.equals(
+		isWithdraw(vtm.notWithdraw.first.campaign),
+		false,
+		'Campaign with withdrawPeriodStart that has not passed yet returns false'
 	)
 	t.end()
 })
