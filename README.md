@@ -69,6 +69,14 @@ To prove you're the owner of a domain, you can either:
 * add a DNS TXT record with the content `adex-publisher=replace-with-your-publisher-address`, for example `adex-publisher=0xd5860D6196A4900bf46617cEf088ee6E6b61C9d6`; the record name can either be the hostname (e.g. for `https://www.stremio.com`, this is `www.`) or the root hostname itself (stremio.com)
 * place a `.well-known/adex.txt` file in the root directory that contains the same string
 
+### Contagious blacklisting
+
+Contagious blacklisting is an automatic process: if one verification record is blacklisted, all other records with the same hostname will eventually get auto-blacklisted as well.
+
+Please note, it is not contagious on account basis: meaning that an account may have one blacklisted hostname, but still keep using their other hostnames.
+
+This is implemented in the `update-verifications.js` script.
+
 ### Scripts
 
 There are a few scripts to moderate publisher verification:
