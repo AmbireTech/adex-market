@@ -91,24 +91,39 @@ tape('isInvalid()', function(t) {
 		'Recent NewState messages but follower does not propagate approveState returns true'
 	)
 	t.equals(
+		isInvalid(vtm.invalid.second),
+		true,
+		'Last approved newState is older than latest newstate and latest newstate is older than one minute returns true'
+	)
+	t.equals(
 		isInvalid(vtm.notInvalid.first),
 		false,
 		'Recent NewState messages and follower propagates approveState returns false'
 	)
-	t.equals(
-		isInvalid(vtm.notInvalid.second),
-		false,
-		"Follower does not propagate approveState but one of the NewState messages isn't recent returns false"
-	)
-	t.equals(
-		isInvalid(vtm.notInvalid.third),
-		false,
-		'ApproveState but no recent NewState returns false'
-	)
+	// t.equals(
+	// 	isInvalid(vtm.notInvalid.second),
+	// 	false,
+	// 	"Follower does not propagate approveState but one of the NewState messages isn't recent returns false"
+	// )
+	// t.equals(
+	// 	isInvalid(vtm.notInvalid.third),
+	// 	false,
+	// 	'ApproveState but no recent NewState returns false'
+	// )
 	t.equals(
 		isInvalid(vtm.notInvalid.fourth),
 		false,
-		'0 NewState messages and no ApproveState returns false'
+		'Last approved newState is older than latest newstate but NOT older than a minute returns false'
+	)
+	t.equals(
+		isInvalid(vtm.notInvalid.fifth),
+		false,
+		'Last approved newState is same as latest newstate but older than a minute returns false'
+	)
+	t.equals(
+		isInvalid(vtm.notInvalid.sixth),
+		false,
+		'Last approved newState is neither older than the latest nor older than a minute returns false'
 	)
 	t.end()
 })
