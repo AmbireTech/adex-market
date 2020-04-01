@@ -435,6 +435,43 @@ const notWithdrawCampaign = generateCampaign({
 	withdrawPeriodStart: inTheFutureTimestamp,
 })
 
+const defaultCampaign = notExhausted.campaign
+const expiredConfig = [
+	activeMessages,
+	expiredCampaign.campaign,
+	balanceTreeUnder,
+]
+const exhaustedConfig = [
+	activeMessages,
+	exhausted1.campaign,
+	balanceTreeExceeds,
+]
+const withdrawConfig = [
+	activeMessages,
+	withdrawCampaign.campaign,
+	balanceTreeUnder,
+]
+const initializingConfig = [
+	initializingMessages2,
+	notExpiredCampaign.campaign,
+	balanceTreeUnder,
+]
+const offlineConfig = [offlineMessages2, defaultCampaign, balanceTreeUnder]
+const disconnectedConfig = [
+	disconnectedMessages3,
+	notExpiredCampaign.campaign,
+	balanceTreeUnder,
+]
+const invalidConfig = [invalidMessages, defaultCampaign, balanceTreeUnder]
+const invalidConfigSecondCase = [
+	invalidMessages2,
+	defaultCampaign,
+	balanceTreeUnder,
+]
+const unhealthyConfig = [unhealthyMessages, defaultCampaign, balanceTreeUnder]
+const activeConfig = [activeMessages, defaultCampaign, balanceTreeUnder]
+const readyConfig = [readyMessages1, defaultCampaign, balanceTreeUnder]
+
 module.exports = {
 	initializing: {
 		first: initializingMessages1,
@@ -486,4 +523,15 @@ module.exports = {
 	notExpired: { first: notExpiredCampaign },
 	withdraw: { first: withdrawCampaign },
 	notWithdraw: { first: notWithdrawCampaign },
+	expiredConfig,
+	exhaustedConfig,
+	withdrawConfig,
+	initializingConfig,
+	offlineConfig,
+	disconnectedConfig,
+	invalidConfig,
+	invalidConfigSecondCase,
+	unhealthyConfig,
+	activeConfig,
+	readyConfig,
 }

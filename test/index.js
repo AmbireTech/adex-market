@@ -252,3 +252,4 @@ tape('isWithdraw()', function(t) {
 })
 
 require('./usdEstimation')
+require('./getStatusTests')

@@ -246,4 +246,4 @@ function startStatusLoop() {
 	setInterval(queryValidators, cfg.statusLoopTick)
 }
 
-module.exports = { startStatusLoop, getEstimateInUsd }
+module.exports = { startStatusLoop, getEstimateInUsd, getStatus }
