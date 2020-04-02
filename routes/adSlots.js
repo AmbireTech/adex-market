@@ -54,30 +54,34 @@ async function getAdSlots(req, res) {
 			.limit(limit)
 			.toArray()
 
-		const websitesQuery = {
-			hostname: {
-				$in: Object.keys(
-					slots.reduce((hosts, { website }) => {
-						if (website) {
-							const { hostname } = url.parse(website)
-							hosts[hostname] = true
-						}
-						return hosts
-					}, {})
-				),
-			},
-			publisher: { $in: [identity.toLowerCase(), getAddress(identity)] },
+		if (identity) {
+			const websitesQuery = {
+				hostname: {
+					$in: Object.keys(
+						slots.reduce((hosts, { website }) => {
+							if (website) {
+								const { hostname } = url.parse(website)
+								hosts[hostname] = true
+							}
+							return hosts
+						}, {})
+					),
+				},
+				publisher: { $in: [identity.toLowerCase(), getAddress(identity)] },
+			}
+
+			const websitesCol = db.getMongo().collection('websites')
+			const websitesRes = await websitesCol.find(websitesQuery).toArray()
+
+			const websites = websitesRes.map(ws => ({
+				id: ws.hostname,
+				issues: getWebsiteIssues(ws),
+			}))
+
+			return res.send({ slots, websites })
+		} else {
+			return res.send({ slots })
 		}
-
-		const websitesCol = db.getMongo().collection('websites')
-		const websitesRes = await websitesCol.find(websitesQuery).toArray()
-
-		const websites = websitesRes.map(ws => ({
-			id: ws.hostname,
-			issues: getWebsiteIssues(ws),
-		}))
-
-		return res.send({ slots, websites })
 	} catch (err) {
 		console.error('Error getting ad slots', err)
 		return res.status(500).send(err.toString())
