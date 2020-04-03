@@ -105,7 +105,6 @@ async function getAcceptedReferrersInfo(slot) {
 		// A single website may have been verified by multiple publishers; in this case, we allow the earliest
 		// valid verification: this is why we get the first record and check whether publisher == owner
 		const website = await websitesCol.findOne({ hostname, ...validQuery })
-		// @TODO: consider allowing everything if it's not verified yet (if !website)
 		// @XXX: .extraReferrers is only permitted in the new mode (if .website is set)
 		const acceptedReferrers =
 			website && website.publisher === slot.owner
