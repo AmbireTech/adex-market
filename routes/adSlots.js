@@ -95,6 +95,17 @@ function getRecommendedEarningLimitUSD(website) {
 	else if (website.rank < 300000) return 1000
 	else return 100
 }
+
+// If the hostname does not start with www., return a www. hostname
+// and vice versa
+function getOppositeWww(hostname) {
+	const split = hostname.split('.')
+	if (split.length === 3 && split[0] === 'www')
+		return [`https://${split[1]}.${split[2]}`]
+	if (split.length === 2) return [`https://www.${split[0]}.${split[1]}`]
+	return []
+}
+
 // returning `null` means "everything"
 // returning an empty array means "nothing"
 async function getAcceptedReferrersInfo(slot) {
@@ -105,13 +116,16 @@ async function getAcceptedReferrersInfo(slot) {
 		// A single website may have been verified by multiple publishers; in this case, we allow the earliest
 		// valid verification: this is why we get the first record and check whether publisher == owner
 		const website = await websitesCol.findOne({ hostname, ...validQuery })
-		// @TODO: consider allowing everything if it's not verified yet (if !website)
 		// @XXX: .extraReferrers is only permitted in the new mode (if .website is set)
 		const acceptedReferrers =
 			website && website.publisher === slot.owner
-				? [`https://${hostname}`].concat(
-						Array.isArray(website.extraReferrers) ? website.extraReferrers : []
-				  )
+				? [`https://${hostname}`]
+						.concat(getOppositeWww(hostname))
+						.concat(
+							Array.isArray(website.extraReferrers)
+								? website.extraReferrers
+								: []
+						)
 				: []
 		const recommendedEarningLimitUSD = getRecommendedEarningLimitUSD(website)
 		return { acceptedReferrers, recommendedEarningLimitUSD }
