@@ -310,7 +310,7 @@ const unhealthyMessages = {
 	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [approveStateMessageUnhealthy],
-	latestNewState: [newStateMessageNew]
+	latestNewState: [newStateMessageNew],
 }
 
 // Recent heartbeat and newstate and approvestate reports healthy
@@ -379,7 +379,7 @@ const activeMessages = {
 	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [approveStateMessageHealthy],
-	latestNewState: [newStateMessage]
+	latestNewState: [newStateMessage],
 }
 
 // Working example but we switch isHealthy to false
