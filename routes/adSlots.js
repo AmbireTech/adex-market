@@ -55,18 +55,25 @@ async function getAdSlots(req, res) {
 
 		if (identity) {
 			const websitesCol = db.getMongo().collection('websites')
+			const { hosts, passbacks } = slots.reduce(
+				(items, { website, fallbackUnit }) => {
+					if (website) {
+						const { hostname } = url.parse(website)
+						items.hosts[hostname] = true
+					}
+
+					if (fallbackUnit) {
+						items.passbacks[fallbackUnit] = true
+					}
+					return hosts
+				},
+				{ hosts, passbacks }
+			)
+
 			const publisherWebsites = await websitesCol
 				.find({
 					hostname: {
-						$in: Object.keys(
-							slots.reduce((hosts, { website }) => {
-								if (website) {
-									const { hostname } = url.parse(website)
-									hosts[hostname] = true
-								}
-								return hosts
-							}, {})
-						),
+						$in: Object.keys(hosts),
 					},
 					publisher: { $in: publisherIds },
 				})
@@ -93,7 +100,26 @@ async function getAdSlots(req, res) {
 				),
 			}))
 
-			return res.send({ slots, websites })
+			const adUnitCol = db.getMongo().collection('adUnits')
+
+			const passbackUnits = await adUnitCol
+				.find(
+					{
+						ipfs: { $in: Object.keys(passbacks) },
+					},
+					{
+						projection: {
+							id: 1,
+							ipfs: 1,
+							mediaMime: 1,
+							mediaUrl: 1,
+							targetUrl: 1,
+						},
+					}
+				)
+				.toArray()
+
+			return res.send({ slots, websites, passbackUnits })
 		} else {
 			return res.send({ slots })
 		}
