@@ -34,18 +34,17 @@ router.post(
 
 async function getAdSlots(req, res) {
 	try {
-		const identity = req.query.identity
+		const identity = req.query.identity || ''
 		const limit = +req.query.limit || (identity ? 0 : 100)
 		const skip = +req.query.skip || 0
 		const adSlotsCol = db.getMongo().collection('adSlots')
 
 		const query = {}
 
+		const publisherIds = [identity.toLowerCase(), getAddress(identity)]
+
 		if (identity) {
-			query['$or'] = [
-				{ owner: identity.toLowerCase() },
-				{ owner: getAddress(identity) },
-			]
+			query['owner'] = { $in: publisherIds }
 		}
 
 		const slots = await adSlotsCol
@@ -54,48 +53,50 @@ async function getAdSlots(req, res) {
 			.limit(limit)
 			.toArray()
 
-		const publisherIds = [identity.toLowerCase(), getAddress(identity)]
-
-		const websitesCol = db.getMongo().collection('websites')
-		const publisherWebsites = await websitesCol
-			.find({
-				hostname: {
-					$in: Object.keys(
-						slots.reduce((hosts, { website }) => {
-							if (website) {
-								const { hostname } = url.parse(website)
-								hosts[hostname] = true
-							}
-							return hosts
-						}, {})
-					),
-				},
-				publisher: { $in: publisherIds },
-			})
-			.toArray()
-
-		const othersWebsites = await websitesCol
-			.find(
-				{
+		if (identity) {
+			const websitesCol = db.getMongo().collection('websites')
+			const publisherWebsites = await websitesCol
+				.find({
 					hostname: {
-						$in: publisherWebsites.map(({ hostname }) => hostname),
+						$in: Object.keys(
+							slots.reduce((hosts, { website }) => {
+								if (website) {
+									const { hostname } = url.parse(website)
+									hosts[hostname] = true
+								}
+								return hosts
+							}, {})
+						),
 					},
-					publisher: { $nin: publisherIds },
-					...validQuery,
-				},
-				{ projection: { hostname: 1 } }
-			)
-			.toArray()
+					publisher: { $in: publisherIds },
+				})
+				.toArray()
 
-		const websites = publisherWebsites.map(ws => ({
-			id: ws.hostname,
-			issues: getWebsiteIssues(
-				ws,
-				othersWebsites.some(({ hostname }) => hostname === ws.hostname)
-			),
-		}))
+			const othersWebsites = await websitesCol
+				.find(
+					{
+						hostname: {
+							$in: publisherWebsites.map(({ hostname }) => hostname),
+						},
+						publisher: { $nin: publisherIds },
+						...validQuery,
+					},
+					{ projection: { hostname: 1 } }
+				)
+				.toArray()
 
-		return res.send({ slots, websites })
+			const websites = publisherWebsites.map(ws => ({
+				id: ws.hostname,
+				issues: getWebsiteIssues(
+					ws,
+					othersWebsites.some(({ hostname }) => hostname === ws.hostname)
+				),
+			}))
+
+			return res.send({ slots, websites })
+		} else {
+			return res.send({ slots })
+		}
 	} catch (err) {
 		console.error('Error getting ad slots', err)
 		return res.status(500).send(err.toString())
