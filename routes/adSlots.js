@@ -65,9 +65,10 @@ async function getAdSlots(req, res) {
 					if (fallbackUnit) {
 						items.passbacks[fallbackUnit] = true
 					}
-					return hosts
+
+					return items
 				},
-				{ hosts, passbacks }
+				{ hosts: {}, passbacks: {} }
 			)
 
 			const publisherWebsites = await websitesCol
@@ -109,6 +110,7 @@ async function getAdSlots(req, res) {
 					},
 					{
 						projection: {
+							_id: 0,
 							id: 1,
 							ipfs: 1,
 							mediaMime: 1,
