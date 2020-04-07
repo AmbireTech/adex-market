@@ -1,7 +1,8 @@
-const nowDate = Math.floor(Date.now() / 1000)
-const oldDate = Math.floor((Date.now() - 10000000) / 1000)
-const oldDateNoHex = Math.floor((Date.now() - 10000000) / 1000)
-const inTheFuture = Math.floor((Date.now() + 10000000) / 1000)
+const nowDate = new Date(Date.now()).toISOString()
+const oldDate = new Date(Date.now() - 10000000).toISOString()
+const oldDateNoHex = (Date.now() - 1000000000) / 1000
+const inTheFuture = new Date(Date.now() + 10000000).toISOString()
+const twoMinutesAgo = new Date(Date.now() - 1000 * 60 * 2).toISOString()
 
 const VALIDATOR_MSG_FROM_ADDRESS = '0x2892f6C41E0718eeeDd49D98D648C789668cA67d'
 const VALIDATOR_MSG_STATE_ROOT =
@@ -24,7 +25,7 @@ const balanceTreeUnder = {
 }
 
 function generateMessage(params) {
-	const { type, timestamp, healthy } = params
+	const { type, timestamp, healthy, received } = params
 
 	const validatorMessage = {
 		from: VALIDATOR_MSG_FROM_ADDRESS,
@@ -34,6 +35,7 @@ function generateMessage(params) {
 				'0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
 			stateRoot: VALIDATOR_MSG_STATE_ROOT,
 		},
+		received: received || nowDate,
 	}
 
 	switch (type) {
@@ -43,6 +45,8 @@ function generateMessage(params) {
 		case 'ApproveState':
 			validatorMessage.msg['lastEvAggr'] = timestamp
 			validatorMessage.msg['isHealthy'] = healthy
+			break
+		case 'NewState':
 			break
 		default:
 			break
@@ -103,14 +107,30 @@ const newStateMessage = generateMessage({ type: 'NewState' })
 
 const approveStateMessageHealthy = generateMessage({
 	type: 'ApproveState',
-	timestamp: nowDate,
 	healthy: true,
 })
 
 const approveStateMessageUnhealthy = generateMessage({
 	type: 'ApproveState',
-	timestamp: nowDate,
 	healthy: false,
+})
+
+const newStateMessageOld = generateMessage({
+	type: 'NewState',
+	healthy: true,
+	received: oldDate,
+})
+
+const newStateOlderThanMinute = generateMessage({
+	type: 'NewState',
+	healthy: true,
+	received: twoMinutesAgo,
+})
+
+const newStateMessageNew = generateMessage({
+	type: 'NewState',
+	healthy: true,
+	received: nowDate,
 })
 
 // Empty messages
@@ -146,6 +166,7 @@ const notInitializingMessages = {
 // No recent heartbeat on both
 const offlineMessages1 = {
 	leaderHeartbeat: [heartbeatMessageOldDate],
+	followerHeartbeat: [heartbeatMessageOldDate],
 	followerFromLeader: [heartbeatMessageOldDate],
 	newStateLeader: [],
 	approveStateFollower: [],
@@ -154,6 +175,7 @@ const offlineMessages1 = {
 // No recent heartbeat on second
 const offlineMessages2 = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
+	followerHeartbeat: [heartbeatMessageOldDate],
 	followerFromLeader: [heartbeatMessageOldDate],
 	newStateLeader: [],
 	approveStateFollower: [],
@@ -162,6 +184,7 @@ const offlineMessages2 = {
 // No recent heartbeat on first
 const offlineMessages3 = {
 	leaderHeartbeat: [heartbeatMessageOldDate],
+	followerHeartbeat: [heartbeatMessageNowDate],
 	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
@@ -177,15 +200,17 @@ const notOfflineMessages = {
 
 // No recent heartbeat messages on both sides
 const disconnectedMessages1 = {
-	followerHeartbeat: [],
-	followerFromLeader: [],
+	leaderHeartbeat: [heartbeatMessageOldDate],
+	followerHeartbeat: [heartbeatMessageOldDate],
+	followerFromLeader: [heartbeatMessageOldDate],
 	newStateLeader: [],
 	approveStateFollower: [],
 }
 
 // No recent leader heartbeat messages on follower
 const disconnectedMessages2 = {
-	followerHeartbeat: [],
+	leaderHeartbeat: [heartbeatMessageOldDate],
+	followerHeartbeat: [heartbeatMessageOldDate],
 	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
@@ -193,6 +218,7 @@ const disconnectedMessages2 = {
 
 // No recent follower heartbeat messages on leader
 const disconnectedMessages3 = {
+	leaderHeartbeat: [heartbeatMessageOldDate],
 	followerHeartbeat: [heartbeatMessageNowDate],
 	followerFromLeader: [],
 	newStateLeader: [],
@@ -211,8 +237,19 @@ const notDisconnectedMessages1 = {
 const invalidMessages = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
 	followerHeartbeat: [heartbeatMessageNowDate],
+	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [],
+	latestNewState: [],
+}
+
+const invalidMessages2 = {
+	leaderHeartbeat: [heartbeatMessageNowDate],
+	followerHeartbeat: [heartbeatMessageNowDate],
+	followerFromLeader: [heartbeatMessageNowDate],
+	newStateLeader: [newStateMessageOld],
+	approveStateFollower: [approveStateMessageHealthy],
+	latestNewState: [newStateOlderThanMinute],
 }
 
 // Recent newstate and approvestate
@@ -221,38 +258,59 @@ const notInvalidMessages1 = {
 	followerHeartbeat: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [approveStateMessageHealthy],
+	latestNewState: [newStateMessageNew],
 }
 
-// No approvestate but also no recent newstate
-const notInvalidMessages2 = {
-	leaderHeartbeat: [heartbeatMessageNowDate],
-	followerHeartbeat: [heartbeatMessageNowDate],
-	newStateLeader: [],
-	approveStateFollower: [],
-}
+// // No approvestate but also no recent newstate
+// const notInvalidMessages2 = {
+// 	leaderHeartbeat: [heartbeatMessageNowDate],
+// 	followerHeartbeat: [heartbeatMessageNowDate],
+// 	newStateLeader: [],
+// 	approveStateFollower: [],
+// 	latestNewState: [newStateMessageOld],
+// }
 
-// Approvestate but no recent newstate
-const notInvalidMessages3 = {
-	leaderHeartbeat: [heartbeatMessageNowDate],
-	followerHeartbeat: [heartbeatMessageNowDate],
-	newStateLeader: [],
-	approveStateFollower: [approveStateMessageHealthy],
-}
+// // Approvestate but no recent newstate
+// const notInvalidMessages3 = {
+// 	leaderHeartbeat: [heartbeatMessageNowDate],
+// 	followerHeartbeat: [heartbeatMessageNowDate],
+// 	newStateLeader: [],
+// 	approveStateFollower: [approveStateMessageHealthy],
+// 	latestNewState: [newStateMessageOld],
+// }
 
-// 0 newstate messages and no approvestate
 const notInvalidMessages4 = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
 	followerHeartbeat: [heartbeatMessageNowDate],
-	newStateLeader: [],
-	approveStateFollower: [],
+	newStateLeader: [newStateMessageOld],
+	approveStateFollower: [approveStateMessageHealthy],
+	latestNewState: [newStateMessageNew],
+}
+
+const notInvalidMessages5 = {
+	leaderHeartbeat: [heartbeatMessageNowDate],
+	followerHeartbeat: [heartbeatMessageNowDate],
+	newStateLeader: [newStateOlderThanMinute],
+	approveStateFollower: [approveStateMessageHealthy],
+	latestNewState: [newStateOlderThanMinute],
+}
+
+const notInvalidMessages6 = {
+	leaderHeartbeat: [heartbeatMessageNowDate],
+	followerHeartbeat: [heartbeatMessageNowDate],
+	newStateLeader: [newStateMessageNew],
+	approveStateFollower: [approveStateMessageHealthy],
+	latestNewState: [newStateMessageNew],
 }
 
 // Recent heartbeat and newstate but approvestate reports unhealthy
 const unhealthyMessages = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
 	followerHeartbeat: [heartbeatMessageNowDate],
+	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [approveStateMessageUnhealthy],
+	latestNewState: [newStateMessageNew]
 }
 
 // Recent heartbeat and newstate and approvestate reports healthy
@@ -275,6 +333,7 @@ const notUnhealthyMessages2 = {
 const readyMessages1 = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
 	followerHeartbeat: [heartbeatMessageNowDate],
+	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [],
 	approveStateFollower: [],
 }
@@ -317,8 +376,10 @@ const notReadyMessages4 = {
 const activeMessages = {
 	leaderHeartbeat: [heartbeatMessageNowDate],
 	followerHeartbeat: [heartbeatMessageNowDate],
+	followerFromLeader: [heartbeatMessageNowDate],
 	newStateLeader: [newStateMessage],
 	approveStateFollower: [approveStateMessageHealthy],
+	latestNewState: [newStateMessage]
 }
 
 // Working example but we switch isHealthy to false
@@ -379,12 +440,17 @@ module.exports = {
 		third: disconnectedMessages3,
 	},
 	notDisconnected: { first: notDisconnectedMessages1 },
-	invalid: { first: invalidMessages },
+	invalid: {
+		first: invalidMessages,
+		second: invalidMessages2,
+	},
 	notInvalid: {
 		first: notInvalidMessages1,
-		second: notInvalidMessages2,
-		third: notInvalidMessages3,
+		// second: notInvalidMessages2,
+		// third: notInvalidMessages3,
 		fourth: notInvalidMessages4,
+		fifth: notInvalidMessages5,
+		sixth: notInvalidMessages6,
 	},
 	unhealthy: { first: unhealthyMessages },
 	notUnhealthy: { first: notUnhealthyMessages1, second: notUnhealthyMessages2 },
