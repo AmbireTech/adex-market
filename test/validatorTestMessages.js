@@ -1,7 +1,9 @@
 const nowDate = new Date(Date.now()).toISOString()
 const oldDate = new Date(Date.now() - 10000000).toISOString()
 const oldDateNoHex = (Date.now() - 1000000000) / 1000
+const oldDateTimestamp = Date.now() - 1000000000
 const inTheFuture = new Date(Date.now() + 10000000).toISOString()
+const inTheFutureTimestamp = Date.now() + 10000000
 const twoMinutesAgo = new Date(Date.now() - 1000 * 60 * 2).toISOString()
 
 const VALIDATOR_MSG_FROM_ADDRESS = '0x2892f6C41E0718eeeDd49D98D648C789668cA67d'
@@ -56,7 +58,7 @@ function generateMessage(params) {
 }
 
 function generateCampaign(params) {
-	const { validUntil, balanceTree } = params
+	const { validUntil, balanceTree, withdrawPeriodStart } = params
 
 	const campaign = {
 		campaign: {
@@ -83,6 +85,9 @@ function generateCampaign(params) {
 	}
 	if (validUntil) {
 		campaign.campaign['validUntil'] = validUntil
+	}
+	if (withdrawPeriodStart) {
+		campaign.campaign.spec['withdrawPeriodStart'] = withdrawPeriodStart
 	}
 
 	return campaign
@@ -421,6 +426,52 @@ const expiredCampaign = generateCampaign({ validUntil: oldDateNoHex })
 // Not expired
 const notExpiredCampaign = generateCampaign({ validUntil: inTheFuture })
 
+// the channel is in withdraw period
+const withdrawCampaign = generateCampaign({
+	withdrawPeriodStart: oldDateTimestamp,
+})
+// Campaign has withdrawPeriodStart but it has not yet passed as a date
+const notWithdrawCampaign = generateCampaign({
+	withdrawPeriodStart: inTheFutureTimestamp,
+})
+
+const defaultCampaign = notExhausted.campaign
+const expiredConfig = [
+	activeMessages,
+	expiredCampaign.campaign,
+	balanceTreeUnder,
+]
+const exhaustedConfig = [
+	activeMessages,
+	exhausted1.campaign,
+	balanceTreeExceeds,
+]
+const withdrawConfig = [
+	activeMessages,
+	withdrawCampaign.campaign,
+	balanceTreeUnder,
+]
+const initializingConfig = [
+	initializingMessages2,
+	notExpiredCampaign.campaign,
+	balanceTreeUnder,
+]
+const offlineConfig = [offlineMessages2, defaultCampaign, balanceTreeUnder]
+const disconnectedConfig = [
+	disconnectedMessages3,
+	notExpiredCampaign.campaign,
+	balanceTreeUnder,
+]
+const invalidConfig = [invalidMessages, defaultCampaign, balanceTreeUnder]
+const invalidConfigSecondCase = [
+	invalidMessages2,
+	defaultCampaign,
+	balanceTreeUnder,
+]
+const unhealthyConfig = [unhealthyMessages, defaultCampaign, balanceTreeUnder]
+const activeConfig = [activeMessages, defaultCampaign, balanceTreeUnder]
+const readyConfig = [readyMessages1, defaultCampaign, balanceTreeUnder]
+
 module.exports = {
 	initializing: {
 		first: initializingMessages1,
@@ -470,4 +521,17 @@ module.exports = {
 	notExhausted: { first: notExhausted },
 	expired: { first: expiredCampaign },
 	notExpired: { first: notExpiredCampaign },
+	withdraw: { first: withdrawCampaign },
+	notWithdraw: { first: notWithdrawCampaign },
+	expiredConfig,
+	exhaustedConfig,
+	withdrawConfig,
+	initializingConfig,
+	offlineConfig,
+	disconnectedConfig,
+	invalidConfig,
+	invalidConfigSecondCase,
+	unhealthyConfig,
+	activeConfig,
+	readyConfig,
 }
