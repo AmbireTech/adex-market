@@ -34,18 +34,17 @@ router.post(
 
 async function getAdSlots(req, res) {
 	try {
-		const identity = req.query.identity
+		const identity = req.query.identity || ''
 		const limit = +req.query.limit || (identity ? 0 : 100)
 		const skip = +req.query.skip || 0
 		const adSlotsCol = db.getMongo().collection('adSlots')
 
 		const query = {}
 
+		const publisherIds = [identity.toLowerCase(), getAddress(identity)]
+
 		if (identity) {
-			query['$or'] = [
-				{ owner: identity.toLowerCase() },
-				{ owner: getAddress(identity) },
-			]
+			query['owner'] = { $in: publisherIds }
 		}
 
 		const slots = await adSlotsCol
@@ -55,30 +54,74 @@ async function getAdSlots(req, res) {
 			.toArray()
 
 		if (identity) {
-			const websitesQuery = {
-				hostname: {
-					$in: Object.keys(
-						slots.reduce((hosts, { website }) => {
-							if (website) {
-								const { hostname } = url.parse(website)
-								hosts[hostname] = true
-							}
-							return hosts
-						}, {})
-					),
-				},
-				publisher: { $in: [identity.toLowerCase(), getAddress(identity)] },
-			}
-
 			const websitesCol = db.getMongo().collection('websites')
-			const websitesRes = await websitesCol.find(websitesQuery).toArray()
+			const { hosts, passbacks } = slots.reduce(
+				(items, { website, fallbackUnit }) => {
+					if (website) {
+						const { hostname } = url.parse(website)
+						items.hosts[hostname] = true
+					}
 
-			const websites = websitesRes.map(ws => ({
+					if (fallbackUnit) {
+						items.passbacks[fallbackUnit] = true
+					}
+
+					return items
+				},
+				{ hosts: {}, passbacks: {} }
+			)
+
+			const publisherWebsites = await websitesCol
+				.find({
+					hostname: {
+						$in: Object.keys(hosts),
+					},
+					publisher: { $in: publisherIds },
+				})
+				.toArray()
+
+			const othersWebsites = await websitesCol
+				.find(
+					{
+						hostname: {
+							$in: publisherWebsites.map(({ hostname }) => hostname),
+						},
+						publisher: { $nin: publisherIds },
+						...validQuery,
+					},
+					{ projection: { hostname: 1 } }
+				)
+				.toArray()
+
+			const websites = publisherWebsites.map(ws => ({
 				id: ws.hostname,
-				issues: getWebsiteIssues(ws),
+				issues: getWebsiteIssues(
+					ws,
+					othersWebsites.some(({ hostname }) => hostname === ws.hostname)
+				),
 			}))
 
-			return res.send({ slots, websites })
+			const adUnitCol = db.getMongo().collection('adUnits')
+
+			const passbackUnits = await adUnitCol
+				.find(
+					{
+						ipfs: { $in: Object.keys(passbacks) },
+					},
+					{
+						projection: {
+							_id: 0,
+							id: 1,
+							ipfs: 1,
+							mediaMime: 1,
+							mediaUrl: 1,
+							targetUrl: 1,
+						},
+					}
+				)
+				.toArray()
+
+			return res.send({ slots, websites, passbackUnits })
 		} else {
 			return res.send({ slots })
 		}
@@ -234,21 +277,24 @@ async function getWebsiteData(identity, websiteUrl) {
 	)
 	const websitesCol = db.getMongo().collection('websites')
 
+	const { verifiedForce } = (await websitesCol.findOne(
+		{ publisher, hostname },
+		{ projection: { verifiedForce: 1 } }
+	)) || { verifiedForce: false }
+
 	const existingFromOthers = await websitesCol
-		.find(
-			{
-				hostname,
-				publisher: { $ne: publisher },
-				...validQuery,
-			},
-			{ projection: { _id: 0 } }
-		)
-		.toArray()
+		.find({
+			hostname,
+			publisher: { $ne: publisher },
+			...validQuery,
+		})
+		.count()
 
 	const websiteRecord = {
 		hostname,
 		publisher,
 		...rest,
+		verifiedForce,
 	}
 
 	return { websiteRecord, existingFromOthers }
@@ -265,7 +311,7 @@ function getWebsiteIssues(websiteRecord, existingFromOthers) {
 	if (!websiteRecord.verifiedOwnership) {
 		issues.push('SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED')
 	}
-	if (existingFromOthers && existingFromOthers.length) {
+	if (existingFromOthers) {
 		issues.push('SLOT_ISSUE_SOMEONE_ELSE_VERIFIED')
 	}
 
