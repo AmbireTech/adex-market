@@ -125,6 +125,7 @@ const newStateMessageOld = generateMessage({
 	healthy: true,
 	received: oldDate,
 })
+newStateMessageOld.msg.stateRoot += '1'
 
 const newStateOlderThanMinute = generateMessage({
 	type: 'NewState',
