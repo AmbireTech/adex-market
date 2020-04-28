@@ -2,11 +2,11 @@ const express = require('express')
 const {
 	webDetection,
 	labelDetection,
-	textDetection
+	textDetection,
 } = require('../helpers/google/googleVision')
 const {
 	classifyWebpage,
-	classifyText
+	classifyText,
 } = require('../helpers/google/googleLanguage')
 const { PredefinedTags } = require('adex-models').constants
 const multer = require('multer')
@@ -24,7 +24,7 @@ function getTags(req, res) {
 	return res.send(PredefinedTags)
 }
 
-async function getCategories (req, res) {
+async function getCategories(req, res) {
 	try {
 		const { targetUrl } = req.body
 		if (req.file) {
@@ -32,40 +32,41 @@ async function getCategories (req, res) {
 			const [
 				{ pagesWithMatchingImages },
 				textAnnotations,
-				labels
+				labels,
 			] = await Promise.all([
 				webDetection(image),
 				textDetection(image),
-				labelDetection(image)
+				labelDetection(image),
 			])
 			const [
 				[targetUlrSuggestions],
 				[imageTextSuggestions],
 				[labelsSuggestions],
-				[[matchingPagesSuggestions]]
+				[[matchingPagesSuggestions]],
 			] = await Promise.all([
 				classifyWebpage(targetUrl),
 				getCategoriesFromLabels(textAnnotations),
 				getCategoriesFromLabels(labels),
-				getCategoriesFromPage(pagesWithMatchingImages)
+				getCategoriesFromPage(pagesWithMatchingImages),
 			])
 			const result = {
 				categories: [
 					...((targetUlrSuggestions || []).categories || []),
 					...((imageTextSuggestions || []).categories || []),
 					...((labelsSuggestions || []).categories || []),
-					...((matchingPagesSuggestions || []).categories || [])
-				]
+					...((matchingPagesSuggestions || []).categories || []),
+				],
 			}
 			return res.json(result)
 		} else if (targetUrl) {
 			// if only targetUrl provided ( for AdSlot )
-			const withHttp = url => !/^https?:\/\//i.test(url) ? `http://${url}` : url
+			const withHttp = url =>
+				!/^https?:\/\//i.test(url) ? `http://${url}` : url
 			const [[targetUlrSuggestions]] = await Promise.all([
-				classifyWebpage(withHttp(targetUrl))
+				classifyWebpage(withHttp(targetUrl)),
 			])
 			const result = {
-				categories: [...((targetUlrSuggestions || []).categories || [])]
+				categories: [...((targetUlrSuggestions || []).categories || [])],
 			}
 			return res.json(result)
 		} else {
@@ -76,7 +77,7 @@ async function getCategories (req, res) {
 	}
 }
 
-async function getCategoriesFromLabels (labels) {
+async function getCategoriesFromLabels(labels) {
 	const results = []
 	labels && labels.map(i => i.description && results.push(i.description))
 	let enoughWords = []
@@ -86,7 +87,7 @@ async function getCategoriesFromLabels (labels) {
 	return classifyText(enoughWords.join(' '))
 }
 
-async function getCategoriesFromPage (pagesWithMatchingImages) {
+async function getCategoriesFromPage(pagesWithMatchingImages) {
 	const results = []
 	pagesWithMatchingImages &&
 		pagesWithMatchingImages.map(match => {
@@ -94,6 +95,5 @@ async function getCategoriesFromPage (pagesWithMatchingImages) {
 		})
 	return results.length > 0 ? Promise.all(results) : [[false]]
 }
-
 
 module.exports = router
