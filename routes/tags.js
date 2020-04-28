@@ -20,7 +20,7 @@ const MINIMUM_WORDS_NEEDED = 20
 router.get('/', getTags)
 router.post('/getCategories', upload.single('media'), getCategories)
 
-function getTags (req, res) {
+function getTags(req, res) {
 	return res.send(PredefinedTags)
 }
 
