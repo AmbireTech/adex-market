@@ -4,7 +4,7 @@ const ipfsPort = process.env.IPFSPORT || '8443'
 const ipfsProtocol = process.env.IPFSPROTOCOL || 'https'
 const ipfs = ipfsClient(ipfsHost, ipfsPort, { protocol: ipfsProtocol })
 
-async function addDataToIpfs (data) {
+async function addDataToIpfs(data) {
 	// Buffer is moved to separate routes where it is necessary
 
 	try {
