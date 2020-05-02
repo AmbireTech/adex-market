@@ -19,8 +19,7 @@ async function run() {
 		})
 		.toArray()
 
-	// Part 1: refresh ownership integrations
-	for (const website of allRecords) {
+	const verifyAndUpdate = async website => {
 		// @TODO we can't re-verify integration cause we don't have the original URL at which it was verified
 		const newRecord = await verifyPublisher(
 			website.publisher,
@@ -47,6 +46,11 @@ async function run() {
 						: 'un-verified as owned')
 			)
 		console.log(`refreshed ${website.hostname} (alexa: ${newRecord.rank})`)
+	}
+	// Part 1: refresh ownership integrations
+	for (const website of allRecords) {
+		await verifyAndUpdate(website)
+			.catch(e => console.error(`error verifying ${website.hostname}`, e))
 	}
 
 	// Part 2: set blacklist flags
