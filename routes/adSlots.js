@@ -241,13 +241,8 @@ async function postAdSlot(req, res) {
 		adSlot.created = new Date()
 
 		const { websiteRecord } = await getWebsiteData(identity, adSlot.website)
-		const websitesCol = db.getMongo().collection('websites')
 
-		await websitesCol.updateOne(
-			{ publisher: websiteRecord.publisher, hostname: websiteRecord.hostname },
-			{ $set: websiteRecord, $setOnInsert: { created: new Date() } },
-			{ upsert: true }
-		)
+		await updateWebsite(websiteRecord)
 
 		const dataHash = await addDataToIpfs(
 			Buffer.from(JSON.stringify(adSlot.spec))
