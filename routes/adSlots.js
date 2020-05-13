@@ -93,13 +93,16 @@ async function getAdSlots(req, res) {
 				)
 				.toArray()
 
-			const websites = publisherWebsites.map(ws => ({
-				id: ws.hostname,
-				issues: getWebsiteIssues(
-					ws,
-					othersWebsites.some(({ hostname }) => hostname === ws.hostname)
-				),
-			}))
+			const websites = publisherWebsites.map(
+				({ hostname, updated, ...rest }) => ({
+					id: hostname,
+					issues: getWebsiteIssues(
+						rest,
+						othersWebsites.some(({ hostname }) => hostname === hostname)
+					),
+					updated,
+				})
+			)
 
 			const adUnitCol = db.getMongo().collection('adUnits')
 
@@ -196,6 +199,16 @@ async function getAcceptedReferrersInfo(slot) {
 	}
 }
 
+async function updateWebsite(website) {
+	const websitesCol = db.getMongo().collection('websites')
+
+	await websitesCol.updateOne(
+		{ publisher: website.publisher, hostname: website.hostname },
+		{ $set: website, $setOnInsert: { created: new Date() } },
+		{ upsert: true }
+	)
+}
+
 function getAdSlotById(req, res) {
 	const ipfs = req.params['id']
 	const adSlotsCol = db.getMongo().collection('adSlots')
@@ -228,13 +241,8 @@ async function postAdSlot(req, res) {
 		adSlot.created = new Date()
 
 		const { websiteRecord } = await getWebsiteData(identity, adSlot.website)
-		const websitesCol = db.getMongo().collection('websites')
 
-		await websitesCol.updateOne(
-			{ publisher: websiteRecord.publisher, hostname: websiteRecord.hostname },
-			{ $set: websiteRecord, $setOnInsert: { created: new Date() } },
-			{ upsert: true }
-		)
+		await updateWebsite(websiteRecord)
 
 		const dataHash = await addDataToIpfs(
 			Buffer.from(JSON.stringify(adSlot.spec))
@@ -271,7 +279,7 @@ function putAdSlot(req, res) {
 }
 
 async function getWebsiteData(identity, websiteUrl) {
-	const { publisher, hostname, ...rest } = await verifyPublisher(
+	const { publisher, hostname, updated, ...rest } = await verifyPublisher(
 		identity,
 		websiteUrl
 	)
@@ -295,6 +303,7 @@ async function getWebsiteData(identity, websiteUrl) {
 		publisher,
 		...rest,
 		verifiedForce,
+		updated,
 	}
 
 	return { websiteRecord, existingFromOthers }
@@ -327,7 +336,13 @@ async function verifyWebsite(req, res) {
 
 		const issues = getWebsiteIssues(websiteRecord, existingFromOthers)
 
-		return res.status(200).send({ hostname: websiteRecord.hostname, issues })
+		await updateWebsite(websiteRecord)
+
+		return res.status(200).send({
+			hostname: websiteRecord.hostname,
+			issues,
+			updated: websiteRecord.updated,
+		})
 	} catch (err) {
 		console.error('Error verifyWebsite', err)
 		return res.status(500).send(err.toString())
