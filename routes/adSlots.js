@@ -287,7 +287,7 @@ async function getWebsiteData(identity, websiteUrl) {
 
 	const { verifiedForce } = (await websitesCol.findOne(
 		{ publisher, hostname },
-		{ projection: { verifiedForce: 1, updated: 1 } }
+		{ projection: { verifiedForce: 1 } }
 	)) || { verifiedForce: false }
 
 	const existingFromOthers = await websitesCol
