@@ -14,9 +14,8 @@ async function run() {
 		)
 		process.exit(1)
 	}
-	const result = await verifyPublisher(argv[0], argv[1], {
-		force: argv[2] === '--force',
-	})
+	const result = await verifyPublisher(argv[0], argv[1])
+	if (argv[2] === '--force') Object.assign(result, { verifiedForce: true })
 	if (argv[2] === '--blacklist') Object.assign(result, { blacklisted: true })
 	if (argv[3] === '--extra') result.extraReferrers = argv.slice(4)
 
