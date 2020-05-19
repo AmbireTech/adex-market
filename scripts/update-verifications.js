@@ -56,10 +56,11 @@ async function run() {
 	}
 
 	// Part 1: refresh ownership integrations
-	const allUpdates = allRecords.map(website => limit(() =>
-		verifyAndUpdate(website))
-			.catch(e => console.error(`error verifying ${website.hostname}`, e)
-	))
+	const allUpdates = allRecords.map(website =>
+		limit(() => verifyAndUpdate(website)).catch(e =>
+			console.error(`error verifying ${website.hostname}`, e)
+		)
+	)
 	await Promise.all(allUpdates)
 
 	// Part 2: set blacklist flags
