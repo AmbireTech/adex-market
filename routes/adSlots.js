@@ -148,7 +148,7 @@ function getCategories(website) {
 	const startCategories = website.webshrinkerCategories || []
 	const overrides = website.webshrinkerCategoriesOverrides || {}
 	// NOTE: Consider: if it's personal finance and shady (low rank, non reputable TLD), consider it incentivized
-	// NOTE: Consider: if it's high ranking and has other categories, do not look at overrides.incentivized
+	// NOTE: Consider: if it's high ranking, reputable TLD, and has other categories, do not look at overrides.incentivized
 	const categories = startCategories
 		.concat(overrides.incentivized ? ['IAB25-7'] : [])
 		.concat(overrides.add || [])
@@ -193,6 +193,7 @@ async function getWebsitesInfo(slot) {
 		const categories = getCategories(website)
 		return { acceptedReferrers, recommendedEarningLimitUSD, categories }
 	} else {
+		// @TODO: remove this; this is the legacy way of doing things; ad slots w/o websites should not be permitted at all
 		// A single website may have been verified by multiple publishers
 		const websites = await websitesCol
 			.find({ publisher: slot.owner, ...validQuery })
