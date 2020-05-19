@@ -144,7 +144,6 @@ function getRecommendedEarningLimitUSD(website) {
 
 function getCategories(website) {
 	if (!website) return []
-	console.log(website)
 	const startCategories = website.webshrinkerCategories || []
 	const overrides = website.webshrinkerCategoriesOverrides || {}
 	// NOTE: Consider: if it's personal finance and shady (low rank, non reputable TLD), consider it incentivized
