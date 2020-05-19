@@ -1,5 +1,8 @@
 #!/usr/bin/env node
-const { verifyPublisher, detectExtraFlags } = require('../lib/publisherVerification')
+const {
+	verifyPublisher,
+	detectExtraFlags,
+} = require('../lib/publisherVerification')
 const db = require('../db')
 
 // import env
@@ -16,7 +19,7 @@ async function run() {
 	}
 	const [result, extra] = await Promise.all([
 		verifyPublisher(argv[0], argv[1]),
-		detectExtraFlags(argv[0], argv[1])
+		detectExtraFlags(argv[0], argv[1]),
 	])
 	if (argv[2] === '--force') Object.assign(result, { verifiedForce: true })
 	if (argv[2] === '--blacklist') Object.assign(result, { blacklisted: true })
