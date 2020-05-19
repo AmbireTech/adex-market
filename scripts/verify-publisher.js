@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const { verifyPublisher } = require('../lib/publisherVerification')
+const { verifyPublisher, detectExtraFlags } = require('../lib/publisherVerification')
 const db = require('../db')
 
 // import env
@@ -14,17 +14,20 @@ async function run() {
 		)
 		process.exit(1)
 	}
-	const result = await verifyPublisher(argv[0], argv[1])
+	const [result, extra] = await Promise.all([
+		verifyPublisher(argv[0], argv[1]),
+		detectExtraFlags(argv[0], argv[1])
+	])
 	if (argv[2] === '--force') Object.assign(result, { verifiedForce: true })
 	if (argv[2] === '--blacklist') Object.assign(result, { blacklisted: true })
 	if (argv[3] === '--extra') result.extraReferrers = argv.slice(4)
 
-	console.log('Verification results:', result)
+	console.log('Verification results:', result, extra)
 
 	const websitesCol = db.getMongo().collection('websites')
 	await websitesCol.updateOne(
 		{ publisher: result.publisher, hostname: result.hostname },
-		{ $set: result, $setOnInsert: { created: new Date() } },
+		{ $set: { ...result, ...extra }, $setOnInsert: { created: new Date() } },
 		{ upsert: true }
 	)
 
