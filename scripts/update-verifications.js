@@ -4,6 +4,7 @@ const pLimit = require('p-limit')
 
 const {
 	verifyPublisher,
+	detectExtraFlags,
 	BLACKLISTED_HOSTNAMES,
 } = require('../lib/publisherVerification')
 const db = require('../db')
@@ -28,10 +29,12 @@ async function run() {
 	const limit = pLimit(10)
 	const verifyAndUpdate = async website => {
 		// @TODO we can't re-verify integration cause we don't have the original URL at which it was verified
-		const newRecord = await verifyPublisher(
-			website.publisher,
-			'https://' + website.hostname
-		)
+		const publisher = website.publisher
+		const websiteUrl = 'https://' + website.hostname
+		const [newRecord, extra] = await Promise.all([
+			verifyPublisher(publisher, websiteUrl),
+			detectExtraFlags(publisher, websiteUrl),
+		])
 		// only updating specific properties for now
 		await websitesCol.updateOne(
 			{ _id: website._id },
@@ -42,6 +45,8 @@ async function run() {
 					rank: newRecord.rank,
 					reachPerMillion: newRecord.reachPerMillion,
 					alexaDataUrl: newRecord.alexaDataUrl,
+					webshrinkerCategories: newRecord.webshrinkerCategories,
+					...extra,
 				},
 			}
 		)
@@ -56,10 +61,11 @@ async function run() {
 	}
 
 	// Part 1: refresh ownership integrations
-	const allUpdates = allRecords.map(website => limit(() =>
-		verifyAndUpdate(website))
-			.catch(e => console.error(`error verifying ${website.hostname}`, e)
-	))
+	const allUpdates = allRecords.map(website =>
+		limit(() => verifyAndUpdate(website)).catch(e =>
+			console.error(`error verifying ${website.hostname}`, e)
+		)
+	)
 	await Promise.all(allUpdates)
 
 	// Part 2: set blacklist flags
