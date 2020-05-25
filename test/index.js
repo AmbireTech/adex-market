@@ -143,7 +143,7 @@ tape('isUnhealthy()', function(t) {
 	t.equals(
 		isUnhealthy(vtm.notUnhealthy.second),
 		false,
-		'No recent Heartbeat returns false'
+		'ApproveState is unhealthy but there is no recent NewState message'
 	)
 	t.end()
 })
@@ -159,17 +159,17 @@ tape('isReady()', function(t) {
 	t.equals(
 		isReady(vtm.notReady.first),
 		false,
-		'One message has no recent Heartbeat and both messages have NewState returns false'
+		'Recent Heartbeat messages and recent NewState message returns false'
 	)
 	t.equals(
 		isReady(vtm.notReady.second),
 		false,
-		'No NewState but one message has no recent HeartBeat returns false'
+		'No NewState and no recent Follower Heartbeat returns false'
 	)
 	t.equals(
 		isReady(vtm.notReady.third),
 		false,
-		'Recent NewState messages but no Heartbeats returns false'
+		'No NewState and no recent Leader Heartbeat returns false'
 	)
 	t.end()
 })
