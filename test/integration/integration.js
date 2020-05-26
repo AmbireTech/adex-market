@@ -522,6 +522,21 @@ tape('===== Authorized routes =====', t => {
 				})
 				.catch(err => t.fail(err))
 
+			const queryAdUnitsForType = fetch(
+				`${marketUrl}/units?type=legacy_250x250`
+			)
+				.then(res => res.json())
+				.then(res => {
+					t.ok(Array.isArray(res), 'returns array')
+					t.equals(res.length, 1, 'returns the right amount of ad units')
+					t.equals(
+						res[0].type,
+						'legacy_250x250',
+						'ad unit has the correct type'
+					)
+				})
+				.catch(err => t.fail(err))
+
 			const postMedia = fetch(`${marketUrl}/media`, {
 				method: 'POST',
 				headers: {
@@ -708,6 +723,7 @@ tape('===== Authorized routes =====', t => {
 				postAdSlot,
 				postBadAdSlot,
 				getAdUnits,
+				queryAdUnitsForType,
 				getAdSlots,
 				session,
 			])
