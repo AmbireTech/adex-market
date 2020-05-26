@@ -1,4 +1,5 @@
 const express = require('express')
+const url = require('url')
 const { evaluate } = require('/home/ivo/repos/adex-adview-manager/lib/rules')
 const { getWebsitesInfo } = require('../lib/publisherWebsitesInfo')
 
@@ -15,12 +16,26 @@ async function getUnitsForSlot(req, res) {
 	const { id } = req.params
 	const adSlot = await adSlotsCol.findOne({ ipfs: id }, { projection: { _id: 0 } })
 	if (!adSlot) return res.send(404)
-	// @TODO limit?
+	// @TODO recommendedEarningLimitUSD?
 	const { acceptedReferrers, categories } = await getWebsitesInfo(websitesCol, adSlot)
-	// @TODO websites data
-	console.log(adSlot, categories, acceptedReferrers)
-	
-	res.sendStatus(200)
+
+	const targetingInput = {
+		adSlotId: id,
+		adSlotType: adSlot.type,
+		publisherId: adSlot.owner,
+		country: req.headers['cf-ipcountry'],
+		eventType: 'IMPRESSION',
+		secondsSinceEpoch: Math.floor(Date.now() / 1000),
+		// @TODO userAgent* vars 
+		'adSlot.categories': categories,
+		'adSlot.hostname': adSlot.website ? url.parse(adSlot.website).hostname : undefined,
+		// @TODO rank
+	}
+	res.send({
+		targetingInput,
+		acceptedReferrers,
+		fallbackUnit: adSlot.fallbackUnit,
+	})
 }
 
 
