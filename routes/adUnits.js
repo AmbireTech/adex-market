@@ -27,6 +27,7 @@ router.put(
 
 function getAdUnits(req, res) {
 	const identity = req.query.identity
+	const type = req.query.type
 	const limit = +req.query.limit || (identity ? 0 : 100)
 	const skip = +req.query.skip || 0
 	const adUnitCol = db.getMongo().collection('adUnits')
@@ -38,6 +39,9 @@ function getAdUnits(req, res) {
 			{ owner: identity.toLowerCase() },
 			{ owner: getAddress(identity) },
 		]
+	}
+	if (type) {
+		query['type'] = type
 	}
 
 	return adUnitCol
