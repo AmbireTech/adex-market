@@ -58,7 +58,7 @@ async function getUnitsForSlot(req) {
 		.map(campaign => {
 			// properties we do not care about: validUntil, depositAsset
 			const units = campaign.spec.adUnits.filter(u => u.type === adSlot.type)
-			if (!units.length) return []
+			if (!units.length) return null
 
 			const targetingRules = campaign.targetingRules || campaign.spec.targetingRules || shimTargetingRules(campaign)
 			const campaignInput = getTargetingInput(targetingInput, campaign)
@@ -70,7 +70,13 @@ async function getUnitsForSlot(req) {
 					'price.IMPRESSION': startPrice,
 				}
 				for (const rule of targetingRules) {
-					evaluate(input, output, rule)
+					try {
+						evaluate(input, output, rule)
+					} catch(e) {
+						if (e.isUndefinedVar) continue
+						else if (e.isTypeError) console.error(`WARNING: rule for ${campaign.id} failing with:`, e)
+						else throw e
+					}
 					// We stop executing if at any point the show is set to false
 					if (output.show === false) return null
 				}
@@ -92,6 +98,7 @@ async function getUnitsForSlot(req) {
 
 	// unitsWithPrices
 	return {
+		// @TODO
 		targetingInput,
 		acceptedReferrers,
 		fallbackUnit: adSlot.fallbackUnit,
@@ -101,8 +108,30 @@ async function getUnitsForSlot(req) {
 
 // @TODO remove that
 function shimTargetingRules(campaign) {
-	//const tags = campaign.spec.adUnits.map(x => x.targeting)
-	return []
+	const tags = campaign.spec.adUnits.map(x => x.targeting)
+	let categories = []
+	for (const unit of campaign.spec.adUnits) {
+		for (const tag of unit.targeting) {
+			if (tag.tag === 'cryptocurrency' || tag.tag === 'crypto') {
+				categories.push('IAB13')
+				categories.push('IAB13-11')
+			}
+			if (tag.tag === 'entertainment media') {
+				categories.push('IAB1')
+				categories.push('IAB1-5')
+			}
+			if (tag.tag === 'stremio' || tag.tag === 'stremio_user') {
+				categories.push('IAB1')
+				categories.push('IAB1-5')
+			}
+		}
+	}
+	return [
+		//{ onlyShowIf: { intersects: [{ get: 'adSlot.categories' }, categories] } },
+		{ onlyShowIf: { nin: [{ get: 'adSlot.categories' }, 'Incentive'] } },
+		// one rule with an adview input var, so that we can test that and implement freq cap
+		{ onlyShowIf: { gt: [{ get: 'adView.secondsSinceShow' }, 300] } },
+	]
 }
 
 function getTargetingInput(base, campaign) {
