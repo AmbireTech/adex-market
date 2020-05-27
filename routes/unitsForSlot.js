@@ -1,5 +1,6 @@
 const express = require('express')
 const url = require('url')
+const { BN } = require('bn.js')
 const { evaluate } = require('/home/ivo/repos/adex-adview-manager/lib/rules')
 const { getWebsitesInfo } = require('../lib/publisherWebsitesInfo')
 
@@ -38,10 +39,9 @@ async function getUnitsForSlot(req) {
 		// @TODO userAgent* vars
 		'adSlot.categories': categories,
 		'adSlot.hostname': adSlot.website ? url.parse(adSlot.website).hostname : undefined,
-		// @TODO rank
+		// @TODO alexaRank
 	}
 
-	// @TODO depositAsset
 	// @TODO optimized projections
 	// @TODO query by adUnit type?
 	const campaignsActive = await campaignsCol.find({
@@ -52,37 +52,65 @@ async function getUnitsForSlot(req) {
 		projection: { status: 0 }
 	}).toArray()
 
-	const campaigns = campaignsActive
+	const units = campaignsActive
 		.map(campaign => {
-			const { id, depositAsset, depositAmount, creator } = campaign
-			console.log(campaign.spec.adUnits)
+			// properties we do not care about: validUntil, depositAsset
 			const units = campaign.spec.adUnits.filter(u => u.type === adSlot.type)
-			if (!units.length) return null
+			if (!units.length) return []
 
 			const targetingRules = campaign.targetingRules || campaign.spec.targetingRules || shimTargetingRules(campaign)
-			// @TODO: should we return status, e.g. lastApprovedBalances? perhaps not, since we can include this in targetingInput
-			const targetingInput = {
-				campaignId: id,
-				advertiserId: creator,
-				// @TODO: BN
-				campaignBudget: depositAmount,
-			}
-			const unitsWithPrice = units.map(u => ({ mediaUrl: u.mediaUrl, mediaMime: u.mediaMime, targetUrl: u.targetUrl }))
-			return { targetingRules, targetingInput, unitsWithPrice }
+			// @TODO: unit ID
+			return units.map(u => {
+				const input = getTargetingInput(targetingInput, campaign, u)
+				const startPrice = new BN(campaign.spec.pricingBounds ? campaign.spec.pricingBounds.IMPRESSION.min : campaign.spec.minPerImpression)
+				const output = {
+					show: true,
+					'price.IMPRESSION': startPrice,
+				}
+				for (const rule of targetingRules) {
+					evaluate(input, output, rule)
+					// We stop executing if at any point the show is set to false
+					if (output.show === false) return null
+				}
+				const price = campaign.spec.pricingBounds ?
+					BN.min(new BN(campaign.spec.pricingBounds.IMPRESSION.max), output['price.IMPRESSION'])
+					: output['price.IMPRESSION']
+				const unit = { id: u.ipfs, mediaUrl: u.mediaUrl, mediaMime: u.mediaMime, targetUrl: u.targetUrl }
+				return { unit, targetingInput: input, price: price.toString(10) }
+			}).filter(u => u)
 		})
-		.filter(campaign => campaign)
+		.reduce((a, b) => a.concat(b), [])
 
 	// unitsWithPrices
 	return {
 		targetingInput,
 		acceptedReferrers,
 		fallbackUnit: adSlot.fallbackUnit,
-		campaigns,
+		units,
 	}
 }
 
 // @TODO remove that
 function shimTargetingRules(campaign) {
+	return []
+}
+
+function getTargetingInput(base, campaign, unit) {
+	return {
+		...base,
+		adUnitId: unit.ipfs,
+		campaignId: campaign.id,
+		advertiserId: campaign.creator,
+		// @TODO: BN
+		campaignBudget: new BN(campaign.depositAmount),
+		campaignSecondsActive: Math.max(0, Math.floor((Date.now() - campaign.spec.activeFrom)/1000)),
+		campaignSecondsDuration: Math.floor((campaign.spec.withdrawPeriodStart-campaign.spec.activeFrom)),
+		// skipping for now cause of performance (not obtaining status): campaignTotalSpent, publisherEarnedFromCampaign
+		//campaignTotalSpent: new BN(campaign.status.fundsDistributedRatio).mul(new BN(campaign.depositAmount)).div(new BN(1000)),
+		//publisherEarnedFromCampaign: new BN(campaign.status.lastApprovedBalances[base.publisherId] || 0),
+		// @TODO
+		// eventMinPrice, eventMaxPrice - from pricingBounds
+	}
 }
 
 
