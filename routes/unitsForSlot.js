@@ -52,16 +52,18 @@ async function getUnitsForSlot(req) {
 		projection: { status: 0 }
 	}).toArray()
 
-	const units = campaignsActive
+	// @TODO error handling on rules
+	// @TODO return targetingRules
+	const campaigns = campaignsActive
 		.map(campaign => {
 			// properties we do not care about: validUntil, depositAsset
 			const units = campaign.spec.adUnits.filter(u => u.type === adSlot.type)
 			if (!units.length) return []
 
 			const targetingRules = campaign.targetingRules || campaign.spec.targetingRules || shimTargetingRules(campaign)
-			// @TODO: unit ID
-			return units.map(u => {
-				const input = getTargetingInput(targetingInput, campaign, u)
+			const campaignInput = getTargetingInput(targetingInput, campaign)
+			const matchingUnits = units.map(u => {
+				const input = { ...campaignInput, adUnitId: u.ipfs }
 				const startPrice = new BN(campaign.spec.pricingBounds ? campaign.spec.pricingBounds.IMPRESSION.min : campaign.spec.minPerImpression)
 				const output = {
 					show: true,
@@ -76,29 +78,36 @@ async function getUnitsForSlot(req) {
 					BN.min(new BN(campaign.spec.pricingBounds.IMPRESSION.max), output['price.IMPRESSION'])
 					: output['price.IMPRESSION']
 				const unit = { id: u.ipfs, mediaUrl: u.mediaUrl, mediaMime: u.mediaMime, targetUrl: u.targetUrl }
-				return { unit, targetingInput: input, price: price.toString(10) }
-			}).filter(u => u)
+				return { unit, price: price.toString(10) }
+			}).filter(x => x)
+
+			if (matchingUnits.length === 0) return null
+			return {
+				targetingRules,
+				targetingInput: campaignInput,
+				units: matchingUnits
+			}
 		})
-		.reduce((a, b) => a.concat(b), [])
+		.filter(x => x)
 
 	// unitsWithPrices
 	return {
 		targetingInput,
 		acceptedReferrers,
 		fallbackUnit: adSlot.fallbackUnit,
-		units,
+		campaigns,
 	}
 }
 
 // @TODO remove that
 function shimTargetingRules(campaign) {
+	//const tags = campaign.spec.adUnits.map(x => x.targeting)
 	return []
 }
 
-function getTargetingInput(base, campaign, unit) {
+function getTargetingInput(base, campaign) {
 	return {
 		...base,
-		adUnitId: unit.ipfs,
 		campaignId: campaign.id,
 		advertiserId: campaign.creator,
 		// @TODO: BN
