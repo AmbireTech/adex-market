@@ -29,7 +29,7 @@ async function getUnitsForSlot(req) {
 	if (!adSlot) return res.send(404)
 	const { acceptedReferrers, categories } = await getWebsitesInfo(websitesCol, adSlot)
 
-	const targetingInput = {
+	const targetingInputBase = {
 		adSlotId: id,
 		adSlotType: adSlot.type,
 		publisherId: adSlot.owner,
@@ -61,9 +61,9 @@ async function getUnitsForSlot(req) {
 			if (!units.length) return null
 
 			const targetingRules = campaign.targetingRules || campaign.spec.targetingRules || shimTargetingRules(campaign)
-			const campaignInput = getTargetingInput(targetingInput, campaign)
+			const campaignInput = targetingInputGetter.bind(null, targetingInputBase, campaign)
 			const matchingUnits = units.map(u => {
-				const input = { ...campaignInput, adUnitId: u.ipfs }
+				const input = campaignInput.bind(null, u)
 				const startPrice = new BN(campaign.spec.pricingBounds ? campaign.spec.pricingBounds.IMPRESSION.min : campaign.spec.minPerImpression)
 				const output = {
 					show: true,
@@ -83,14 +83,14 @@ async function getUnitsForSlot(req) {
 				const price = campaign.spec.pricingBounds ?
 					BN.min(new BN(campaign.spec.pricingBounds.IMPRESSION.max), output['price.IMPRESSION'])
 					: output['price.IMPRESSION']
-				const unit = { id: u.ipfs, mediaUrl: u.mediaUrl, mediaMime: u.mediaMime, targetUrl: u.targetUrl }
+				const unit = mapUnit(u)
 				return { unit, price: price.toString(10) }
 			}).filter(x => x)
 
 			if (matchingUnits.length === 0) return null
 			return {
+				...mapCampaign(campaign),
 				targetingRules,
-				targetingInput: campaignInput,
 				units: matchingUnits
 			}
 		})
@@ -99,7 +99,7 @@ async function getUnitsForSlot(req) {
 	// unitsWithPrices
 	return {
 		// @TODO
-		targetingInput,
+		targetingInputBase,
 		acceptedReferrers,
 		fallbackUnit: adSlot.fallbackUnit,
 		campaigns,
@@ -134,20 +134,39 @@ function shimTargetingRules(campaign) {
 	]
 }
 
-function getTargetingInput(base, campaign) {
+function targetingInputGetter(base, campaign, unit, propName) {
+	if (propName === 'adUnitId' && unit) return unit.ipfs
+	if (propName === 'campaignId') return campaign.id
+	if (propName === 'advertiserId') return campaign.creator
+	if (propName === 'campaignBudget') return new BN(campaign.depositAmount)
+	if (propName === 'campaignSecondsActive') return Math.max(0, Math.floor((Date.now() - campaign.spec.activeFrom)/1000))
+	if (propName === 'campaignSecondsDuration') return Math.floor((campaign.spec.withdrawPeriodStart-campaign.spec.activeFrom))
+	// skipping for now cause of performance (not obtaining status): campaignTotalSpent, publisherEarnedFromCampaign
+	//if (propName === 'campaignTotalSpent' && campaign.status) return Object.values(campaign.status.lastApprovedBalances).map(x => new BN(x)).reduce((a, b) => a.add(b), new BN(0)),
+	//if (propName === 'publisherEarnedFromCampaign' && campaign.status) return new BN(campaign.status.lastApprovedBalances[base.publisherId] || 0),
+	// @TODO
+	// eventMinPrice, eventMaxPrice - from pricingBounds
+	return base[propName]
+}
+
+function mapCampaign(campaign, targetingRules, unitsWithPrice) {
 	return {
-		...base,
-		campaignId: campaign.id,
-		advertiserId: campaign.creator,
-		// @TODO: BN
-		campaignBudget: new BN(campaign.depositAmount),
-		campaignSecondsActive: Math.max(0, Math.floor((Date.now() - campaign.spec.activeFrom)/1000)),
-		campaignSecondsDuration: Math.floor((campaign.spec.withdrawPeriodStart-campaign.spec.activeFrom)),
-		// skipping for now cause of performance (not obtaining status): campaignTotalSpent, publisherEarnedFromCampaign
-		//campaignTotalSpent: new BN(campaign.status.fundsDistributedRatio).mul(new BN(campaign.depositAmount)).div(new BN(1000)),
-		//publisherEarnedFromCampaign: new BN(campaign.status.lastApprovedBalances[base.publisherId] || 0),
-		// @TODO
-		// eventMinPrice, eventMaxPrice - from pricingBounds
+		id: campaign.id,
+		depositAmount: campaign.depositAmount,
+		creator: campaign.creator,
+		spec: {
+			withdrawPeriodStart: campaign.spec.withdrawPeriodStart,
+			activeFrom: campaign.spec.activeFrom,
+		}
+	}
+}
+
+function mapUnit(u) {
+	return {
+		id: u.ipfs,
+		mediaUrl: u.mediaUrl,
+		mediaMime: u.mediaMime,
+		targetUrl: u.targetUrl
 	}
 }
 
