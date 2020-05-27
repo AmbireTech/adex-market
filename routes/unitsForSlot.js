@@ -42,18 +42,14 @@ async function getUnitsForSlot(req) {
 		// @TODO alexaRank
 	}
 
-	// @TODO optimized projections
-	// @TODO query by adUnit type?
+	// WARNING: be careful if optimizing projections; there's generally no point to do that cause this will be replaced by the Supermarket
+	// Also, if `campaign.status` is removed from the projection, the campaignTotalSpent/publisherEarnedFromCampaign variables won't be defined
 	const campaignsActive = await campaignsCol.find({
 		'status.name': { $in: ['Active', 'Ready'] },
 		// @TODO remove this hardcode
 		depositAsset: req.params.depositAsset || '0x6B175474E89094C44Da98b954EedeAC495271d0F'
-	}, {
-		projection: { status: 0 }
 	}).toArray()
 
-	// @TODO error handling on rules
-	// @TODO return targetingRules
 	const campaigns = campaignsActive
 		.map(campaign => {
 			// properties we do not care about: validUntil, depositAsset
@@ -64,6 +60,7 @@ async function getUnitsForSlot(req) {
 			const campaignInput = targetingInputGetter.bind(null, targetingInputBase, campaign)
 			const matchingUnits = units.map(u => {
 				const input = campaignInput.bind(null, u)
+				// @TODO: helper for getting min/max prices for impressions
 				const startPrice = new BN(campaign.spec.pricingBounds ? campaign.spec.pricingBounds.IMPRESSION.min : campaign.spec.minPerImpression)
 				const output = {
 					show: true,
@@ -96,9 +93,7 @@ async function getUnitsForSlot(req) {
 		})
 		.filter(x => x)
 
-	// unitsWithPrices
 	return {
-		// @TODO
 		targetingInputBase,
 		acceptedReferrers,
 		fallbackUnit: adSlot.fallbackUnit,
@@ -139,13 +134,17 @@ function targetingInputGetter(base, campaign, unit, propName) {
 	if (propName === 'campaignId') return campaign.id
 	if (propName === 'advertiserId') return campaign.creator
 	if (propName === 'campaignBudget') return new BN(campaign.depositAmount)
-	if (propName === 'campaignSecondsActive') return Math.max(0, Math.floor((Date.now() - campaign.spec.activeFrom)/1000))
-	if (propName === 'campaignSecondsDuration') return Math.floor((campaign.spec.withdrawPeriodStart-campaign.spec.activeFrom))
+	if (propName === 'campaignSecondsActive')
+		return Math.max(0, Math.floor((Date.now() - campaign.spec.activeFrom)/1000))
+	if (propName === 'campaignSecondsDuration')
+		return Math.floor((campaign.spec.withdrawPeriodStart-campaign.spec.activeFrom))
 	// skipping for now cause of performance (not obtaining status): campaignTotalSpent, publisherEarnedFromCampaign
-	//if (propName === 'campaignTotalSpent' && campaign.status) return Object.values(campaign.status.lastApprovedBalances).map(x => new BN(x)).reduce((a, b) => a.add(b), new BN(0)),
-	//if (propName === 'publisherEarnedFromCampaign' && campaign.status) return new BN(campaign.status.lastApprovedBalances[base.publisherId] || 0),
-	// @TODO
-	// eventMinPrice, eventMaxPrice - from pricingBounds
+	if (propName === 'campaignTotalSpent' && campaign.status) return Object.values(campaign.status.lastApprovedBalances)
+		.map(x => new BN(x))
+		.reduce((a, b) => a.add(b), new BN(0))
+	if (propName === 'publisherEarnedFromCampaign' && campaign.status)
+		return new BN(campaign.status.lastApprovedBalances[base.publisherId] || 0)
+	// @TODO: eventMinPrice, eventMaxPrice - from pricingBounds
 	return base[propName]
 }
 
