@@ -1,9 +1,9 @@
 const express = require('express')
 const url = require('url')
+const UAParser = require('ua-parser-js')
 const { BN } = require('bn.js')
 const { evaluate } = require('/home/ivo/repos/adex-adview-manager/lib/rules')
 const { getWebsitesInfo } = require('../lib/publisherWebsitesInfo')
-
 const db = require('../db')
 const cfg = require('../cfg')
 
@@ -31,7 +31,9 @@ async function getUnitsForSlot(req) {
 	const { acceptedReferrers, categories, alexaRank } = await getWebsitesInfo(websitesCol, adSlot)
 
 	const publisherId = adSlot.owner
-	// Note: variables that are unknown (e.g. alexaRank === null) should be skipped altogether
+	// Note: variables that are unknown (e.g. alexaRank === null) should be set them to undefined
+	// the UA parser adheres to that, since even with an empty string, it will just set properties to undefined
+	const ua = UAParser(req.headers['user-agent'])
 	const targetingInputBase = {
 		adSlotId: id,
 		adSlotType: adSlot.type,
@@ -39,7 +41,8 @@ async function getUnitsForSlot(req) {
 		country: req.headers['cf-ipcountry'],
 		eventType: 'IMPRESSION',
 		secondsSinceEpoch: Math.floor(Date.now() / 1000),
-		// @TODO userAgent* vars
+		userAgentOS: ua.os.name,
+		userAgentBrowserFamily: ua.browser.name,
 		'adSlot.categories': categories,
 		'adSlot.hostname': adSlot.website ? url.parse(adSlot.website).hostname : undefined,
 		alexaRank: typeof alexaRank === 'number' ? alexaRank : undefined,
