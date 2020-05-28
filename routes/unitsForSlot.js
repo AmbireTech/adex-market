@@ -28,7 +28,7 @@ async function getUnitsForSlot(req) {
 	const { id } = req.params
 	const adSlot = await adSlotsCol.findOne({ ipfs: id }, { projection: { _id: 0 } })
 	if (!adSlot) return res.send(404)
-	const { acceptedReferrers, categories } = await getWebsitesInfo(websitesCol, adSlot)
+	const { acceptedReferrers, categories, alexaRank } = await getWebsitesInfo(websitesCol, adSlot)
 
 	const publisherId = adSlot.owner
 	const targetingInputBase = {
@@ -41,7 +41,7 @@ async function getUnitsForSlot(req) {
 		// @TODO userAgent* vars
 		'adSlot.categories': categories,
 		'adSlot.hostname': adSlot.website ? url.parse(adSlot.website).hostname : undefined,
-		// @TODO alexaRank
+		alexaRank
 	}
 
 	// WARNING: be careful if optimizing projections; there's generally no point to do that cause this will be replaced by the Supermarket
