@@ -72,7 +72,7 @@ async function getUnitsForSlot(req) {
 			const campaignInput = targetingInputGetter.bind(null, targetingInputBase, campaign)
 			const matchingUnits = units.map(u => {
 				const input = campaignInput.bind(null, u)
-				const [minPrice, maxPrice] = getPricingBoundsImpression(campaign)
+				const [minPrice, maxPrice] = getPricingBounds(campaign)
 				const output = {
 					show: true,
 					'price.IMPRESSION': minPrice,
@@ -154,15 +154,20 @@ function targetingInputGetter(base, campaign, unit, propName) {
 	if (propName === 'publisherEarnedFromCampaign' && campaign.status)
 		return new BN(campaign.status.lastApprovedBalances[base.publisherId] || 0)
 	// @TODO: eventMinPrice, eventMaxPrice - from pricingBounds
+	// per event type
+	//if (propName === 'eventMinPrice') 
 	return base[propName]
 }
 
-function getPricingBoundsImpression(campaign) {
+function getPricingBounds(campaign, evType = 'IMPRESSION') {
 	const { pricingBounds, minPerImpression, maxPerImpression } = campaign.spec
-	if (pricingBounds && pricingBounds.IMPRESSION)
-		return [new BN(pricingBounds.IMPRESSION.min), new BN(pricingBounds.IMPRESSION.max)]
-	else
+	if (pricingBounds && pricingBounds[evType])
+		return [new BN(pricingBounds[evType].min), new BN(pricingBounds[evType].max)]
+	else if (evType === 'IMPRESSION')
 		return [new BN(minPerImpression || 1), new BN(maxPerImpression || 1)]
+	else
+		return [new BN(0), new BN(0)]
+
 }
 
 function mapCampaign(campaign, targetingRules, unitsWithPrice) {
