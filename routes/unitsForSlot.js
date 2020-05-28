@@ -153,17 +153,16 @@ function targetingInputGetter(base, campaign, unit, propName) {
 		.reduce((a, b) => a.add(b), new BN(0))
 	if (propName === 'publisherEarnedFromCampaign' && campaign.status)
 		return new BN(campaign.status.lastApprovedBalances[base.publisherId] || 0)
-	// @TODO: eventMinPrice, eventMaxPrice - from pricingBounds
-	// per event type
-	//if (propName === 'eventMinPrice') 
+	if (propName === 'eventMinPrice') return getPricingBounds(campaign, base.eventType)[0]
+	if (propName === 'eventMaxPrice') return getPricingBounds(campaign, base.eventType)[1]
 	return base[propName]
 }
 
-function getPricingBounds(campaign, evType = 'IMPRESSION') {
+function getPricingBounds(campaign, eventType = 'IMPRESSION') {
 	const { pricingBounds, minPerImpression, maxPerImpression } = campaign.spec
-	if (pricingBounds && pricingBounds[evType])
-		return [new BN(pricingBounds[evType].min), new BN(pricingBounds[evType].max)]
-	else if (evType === 'IMPRESSION')
+	if (pricingBounds && pricingBounds[eventType])
+		return [new BN(pricingBounds[eventType].min), new BN(pricingBounds[eventType].max)]
+	else if (eventType === 'IMPRESSION')
 		return [new BN(minPerImpression || 1), new BN(maxPerImpression || 1)]
 	else
 		return [new BN(0), new BN(0)]
