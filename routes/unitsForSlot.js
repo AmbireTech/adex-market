@@ -65,18 +65,17 @@ async function getUnitsForSlot(req) {
 			const units = campaign.spec.adUnits.filter(u => u.type === adSlot.type)
 			if (!units.length) return null
 
-			const targetingRules = (campaign.dynamicSpec && campaign.dynamicSpec.targetingRules
+			const targetingRules = (campaign.dynamicSpec && campaign.dynamicSpec.targetingRules)
 				|| campaign.spec.targetingRules
 				|| shimTargetingRules(campaign)
 
 			const campaignInput = targetingInputGetter.bind(null, targetingInputBase, campaign)
 			const matchingUnits = units.map(u => {
 				const input = campaignInput.bind(null, u)
-				// @TODO: helper for getting min/max prices for impressions
-				const startPrice = new BN(campaign.spec.pricingBounds ? campaign.spec.pricingBounds.IMPRESSION.min : campaign.spec.minPerImpression)
+				const [minPrice, maxPrice] = getPricingBoundsImpression(campaign)
 				const output = {
 					show: true,
-					'price.IMPRESSION': startPrice,
+					'price.IMPRESSION': minPrice,
 				}
 				for (const rule of targetingRules) {
 					try {
@@ -89,9 +88,7 @@ async function getUnitsForSlot(req) {
 					// We stop executing if at any point the show is set to false
 					if (output.show === false) return null
 				}
-				const price = campaign.spec.pricingBounds ?
-					BN.min(new BN(campaign.spec.pricingBounds.IMPRESSION.max), output['price.IMPRESSION'])
-					: output['price.IMPRESSION']
+				const price = BN.max(minPrice, BN.min(maxPrice, output['price.IMPRESSION']))
 				const unit = mapUnit(u)
 				return { unit, price: price.toString(10) }
 			}).filter(x => x)
@@ -158,6 +155,14 @@ function targetingInputGetter(base, campaign, unit, propName) {
 		return new BN(campaign.status.lastApprovedBalances[base.publisherId] || 0)
 	// @TODO: eventMinPrice, eventMaxPrice - from pricingBounds
 	return base[propName]
+}
+
+function getPricingBoundsImpression(campaign) {
+	const { pricingBounds, minPerImpression, maxPerImpression } = campaign.spec
+	if (pricingBounds && pricingBounds.IMPRESSION)
+		return [new BN(pricingBounds.IMPRESSION.min), new BN(pricingBounds.IMPRESSION.max)]
+	else
+		return [new BN(minPerImpression || 1), new BN(maxPerImpression || 1)]
 }
 
 function mapCampaign(campaign, targetingRules, unitsWithPrice) {
