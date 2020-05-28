@@ -31,6 +31,7 @@ async function getUnitsForSlot(req) {
 	const { acceptedReferrers, categories, alexaRank } = await getWebsitesInfo(websitesCol, adSlot)
 
 	const publisherId = adSlot.owner
+	// Note: variables that are unknown (e.g. alexaRank === null) should be skipped altogether
 	const targetingInputBase = {
 		adSlotId: id,
 		adSlotType: adSlot.type,
@@ -41,7 +42,7 @@ async function getUnitsForSlot(req) {
 		// @TODO userAgent* vars
 		'adSlot.categories': categories,
 		'adSlot.hostname': adSlot.website ? url.parse(adSlot.website).hostname : undefined,
-		alexaRank
+		alexaRank: typeof alexaRank === 'number' ? alexaRank : undefined,
 	}
 
 	// WARNING: be careful if optimizing projections; there's generally no point to do that cause this will be replaced by the Supermarket
