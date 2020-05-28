@@ -65,7 +65,10 @@ async function getUnitsForSlot(req) {
 			const units = campaign.spec.adUnits.filter(u => u.type === adSlot.type)
 			if (!units.length) return null
 
-			const targetingRules = campaign.targetingRules || campaign.spec.targetingRules || shimTargetingRules(campaign)
+			const targetingRules = (campaign.dynamicSpec && campaign.dynamicSpec.targetingRules
+				|| campaign.spec.targetingRules
+				|| shimTargetingRules(campaign)
+
 			const campaignInput = targetingInputGetter.bind(null, targetingInputBase, campaign)
 			const matchingUnits = units.map(u => {
 				const input = campaignInput.bind(null, u)
