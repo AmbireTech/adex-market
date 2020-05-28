@@ -5,6 +5,7 @@ const { evaluate } = require('/home/ivo/repos/adex-adview-manager/lib/rules')
 const { getWebsitesInfo } = require('../lib/publisherWebsitesInfo')
 
 const db = require('../db')
+const cfg = require('../cfg')
 
 const router = express.Router()
 
@@ -29,10 +30,11 @@ async function getUnitsForSlot(req) {
 	if (!adSlot) return res.send(404)
 	const { acceptedReferrers, categories } = await getWebsitesInfo(websitesCol, adSlot)
 
+	const publisherId = adSlot.owner
 	const targetingInputBase = {
 		adSlotId: id,
 		adSlotType: adSlot.type,
-		publisherId: adSlot.owner,
+		publisherId,
 		country: req.headers['cf-ipcountry'],
 		eventType: 'IMPRESSION',
 		secondsSinceEpoch: Math.floor(Date.now() / 1000),
@@ -50,7 +52,14 @@ async function getUnitsForSlot(req) {
 		depositAsset: req.params.depositAsset || '0x6B175474E89094C44Da98b954EedeAC495271d0F'
 	}).toArray()
 
-	const campaigns = campaignsActive
+	// We only allow a publisher to be earning from a certain number of active campaigns at the same time
+	// this is done because there's a cost to "sweeping" earnings from channels, so if you're earning from too many it will become cost-prohibitive
+	const campaignsByEarner = campaignsActive.filter(c => c.status.lastApprovedBalances[publisherId])
+	const campaignsLimitedByEarner = campaignsByEarner.length >= cfg.maxChannelsEarningFrom
+		? campaignsByEarner
+		: campaignsActive
+
+	const campaigns = campaignsLimitedByEarner
 		.map(campaign => {
 			// properties we do not care about: validUntil, depositAsset
 			const units = campaign.spec.adUnits.filter(u => u.type === adSlot.type)
