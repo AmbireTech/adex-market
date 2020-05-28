@@ -46,11 +46,11 @@ async function getUnitsForSlot(req) {
 
 	// WARNING: be careful if optimizing projections; there's generally no point to do that cause this will be replaced by the Supermarket
 	// Also, if `campaign.status` is removed from the projection, the campaignTotalSpent/publisherEarnedFromCampaign variables won't be defined
-	const campaignsActive = await campaignsCol.find({
+	const campaignsQuery = {
 		'status.name': { $in: ['Active', 'Ready'] },
-		// @TODO remove this hardcode
-		depositAsset: req.params.depositAsset || '0x6B175474E89094C44Da98b954EedeAC495271d0F'
-	}).toArray()
+	}
+	if (req.params.depositAsset) campaignsQuery.depositAsset = req.params.depositAsset
+	const campaignsActive = await campaignsCol.find(campaignsQuery).toArray()
 
 	// We only allow a publisher to be earning from a certain number of active campaigns at the same time
 	// this is done because there's a cost to "sweeping" earnings from channels, so if you're earning from too many it will become cost-prohibitive
@@ -61,7 +61,7 @@ async function getUnitsForSlot(req) {
 
 	const campaigns = campaignsLimitedByEarner
 		.map(campaign => {
-			// properties we do not care about: validUntil, depositAsset
+			// properties we do not care about: validUntil
 			const units = campaign.spec.adUnits.filter(u => u.type === adSlot.type)
 			if (!units.length) return null
 
@@ -161,6 +161,7 @@ function mapCampaign(campaign, targetingRules, unitsWithPrice) {
 	return {
 		id: campaign.id,
 		depositAmount: campaign.depositAmount,
+		depositAsset: campaign.depositAsset,
 		creator: campaign.creator,
 		spec: {
 			withdrawPeriodStart: campaign.spec.withdrawPeriodStart,
