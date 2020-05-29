@@ -3,6 +3,7 @@ const url = require('url')
 const UAParser = require('ua-parser-js')
 const { BN } = require('bn.js')
 const { evaluate } = require('/home/ivo/repos/adex-adview-manager/lib/rules')
+const { targetingInputGetter, getPricingBounds } = require('/home/ivo/repos/adex-adview-manager/lib/helpers')
 const { getWebsitesInfo } = require('../lib/publisherWebsitesInfo')
 const db = require('../db')
 const cfg = require('../cfg')
@@ -150,37 +151,6 @@ function shimTargetingRules(campaign) {
 		// one rule with an adview input var, so that we can test that and implement freq cap
 		{ onlyShowIf: { gt: [{ get: 'adView.secondsSinceShow' }, 300] } },
 	]
-}
-
-function targetingInputGetter(base, campaign, unit, propName) {
-	if (propName === 'adUnitId' && unit) return unit.ipfs
-	if (propName === 'campaignId') return campaign.id
-	if (propName === 'advertiserId') return campaign.creator
-	if (propName === 'campaignBudget') return new BN(campaign.depositAmount)
-	if (propName === 'campaignSecondsActive')
-		return Math.max(0, Math.floor((Date.now() - campaign.spec.activeFrom)/1000))
-	if (propName === 'campaignSecondsDuration')
-		return Math.floor((campaign.spec.withdrawPeriodStart-campaign.spec.activeFrom))
-	// skipping for now cause of performance (not obtaining status): campaignTotalSpent, publisherEarnedFromCampaign
-	if (propName === 'campaignTotalSpent' && campaign.status) return Object.values(campaign.status.lastApprovedBalances)
-		.map(x => new BN(x))
-		.reduce((a, b) => a.add(b), new BN(0))
-	if (propName === 'publisherEarnedFromCampaign' && campaign.status)
-		return new BN(campaign.status.lastApprovedBalances[base.publisherId] || 0)
-	if (propName === 'eventMinPrice') return getPricingBounds(campaign, base.eventType)[0]
-	if (propName === 'eventMaxPrice') return getPricingBounds(campaign, base.eventType)[1]
-	return base[propName]
-}
-
-function getPricingBounds(campaign, eventType = 'IMPRESSION') {
-	const { pricingBounds, minPerImpression, maxPerImpression } = campaign.spec
-	if (pricingBounds && pricingBounds[eventType])
-		return [new BN(pricingBounds[eventType].min), new BN(pricingBounds[eventType].max)]
-	else if (eventType === 'IMPRESSION')
-		return [new BN(minPerImpression || 1), new BN(maxPerImpression || 1)]
-	else
-		return [new BN(0), new BN(0)]
-
 }
 
 function mapCampaign(campaign, targetingRules, unitsWithPrice) {
