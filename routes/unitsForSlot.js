@@ -2,7 +2,7 @@ const express = require('express')
 const url = require('url')
 const UAParser = require('ua-parser-js')
 const { BN } = require('bn.js')
-const { evaluate } = require('/home/ivo/repos/adex-adview-manager/lib/rules')
+const { evaluateMultiple } = require('/home/ivo/repos/adex-adview-manager/lib/rules')
 const { targetingInputGetter, getPricingBounds } = require('/home/ivo/repos/adex-adview-manager/lib/helpers')
 const { getWebsitesInfo } = require('../lib/publisherWebsitesInfo')
 const db = require('../db')
@@ -87,21 +87,15 @@ async function getUnitsForSlot(req) {
 			const matchingUnits = units.map(u => {
 				const input = campaignInput.bind(null, u)
 				const [minPrice, maxPrice] = getPricingBounds(campaign)
-				const output = {
+				let output = {
 					show: true,
 					'price.IMPRESSION': minPrice,
 				}
-				for (const rule of targetingRules) {
-					try {
-						evaluate(input, output, rule)
-					} catch(e) {
-						if (e.isUndefinedVar) continue
-						else if (e.isTypeError) console.error(`WARNING: rule for ${campaign.id} failing with:`, e)
-						else throw e
-					}
-					// We stop executing if at any point the show is set to false
-					if (output.show === false) return null
-				}
+				const onTypeErr = (e, rule) => console.error(`WARNING: rule for ${campaign.id} failing with:`, e, rule)
+				output = evaluateMultiple(input, output, targetingRules)
+
+				if (output.show === false) return null
+
 				const price = BN.max(minPrice, BN.min(maxPrice, output['price.IMPRESSION']))
 				const unit = mapUnit(u)
 				return { unit, price: price.toString(10) }
