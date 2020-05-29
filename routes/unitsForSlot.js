@@ -24,6 +24,7 @@ async function getUnitsForSlot(req) {
 	const adSlotsCol = db.getMongo().collection('adSlots')
 	const websitesCol = db.getMongo().collection('websites')
 	const campaignsCol = db.getMongo().collection('campaigns')
+	const adUnitCol = db.getMongo().collection('adUnits')
 
 	const { id } = req.params
 	const adSlot = await adSlotsCol.findOne({ ipfs: id }, { projection: { _id: 0 } })
@@ -54,7 +55,14 @@ async function getUnitsForSlot(req) {
 		'status.name': { $in: ['Active', 'Ready'] },
 	}
 	if (req.params.depositAsset) campaignsQuery.depositAsset = req.params.depositAsset
-	const campaignsActive = await campaignsCol.find(campaignsQuery).toArray()
+
+	// retrieve campaigns/fallback unit together
+	const [campaignsActive, fallbackUnit] = await Promise.all([
+		campaignsCol.find(campaignsQuery).toArray(),
+		adSlot.fallbackUnit
+			? adUnitCol.findOne({ ipfs: adSlot.fallbackUnit }).then(mapUnit)
+			: Promise.resolve(null)
+	])
 
 	// We only allow a publisher to be earning from a certain number of active campaigns at the same time
 	// this is done because there's a cost to "sweeping" earnings from channels, so if you're earning from too many it will become cost-prohibitive
@@ -109,7 +117,7 @@ async function getUnitsForSlot(req) {
 	return {
 		targetingInputBase,
 		acceptedReferrers,
-		fallbackUnit: adSlot.fallbackUnit,
+		fallbackUnit,
 		campaigns,
 	}
 }
@@ -129,6 +137,7 @@ function shimTargetingRules(campaign) {
 				categories.push('IAB1-5')
 			}
 			if (tag.tag === 'stremio' || tag.tag === 'stremio_user') {
+				// or just add a rule that only matches stremio
 				categories.push('IAB1')
 				categories.push('IAB1-5')
 			}

@@ -10,6 +10,9 @@ const signatureCheck = require('../helpers/signatureCheck')
 
 const router = express.Router()
 
+// WARNING: never implement anything that deletes units from the DB
+// instead, just flag them as removed
+// otherwise, we may get a "dangling reference" with fallback units
 router.get('/', getAdUnits)
 router.get('/:id', getAdUnitById)
 router.post(
