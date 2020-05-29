@@ -109,7 +109,7 @@ async function getUnitsForSlot(req) {
 			return {
 				...mapCampaign(campaign),
 				targetingRules,
-				units: matchingUnits
+				unitsWithPrice: matchingUnits
 			}
 		})
 		.filter(x => x)
