@@ -53,6 +53,7 @@ async function getUnitsForSlot(req) {
 	// Also, if `campaign.status` is removed from the projection, the campaignTotalSpent/publisherEarnedFromCampaign variables won't be defined
 	const campaignsQuery = {
 		'status.name': { $in: ['Active', 'Ready'] },
+		creator: { $ne: publisherId }
 	}
 	if (req.params.depositAsset) campaignsQuery.depositAsset = req.params.depositAsset
 
