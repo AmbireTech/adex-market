@@ -8,6 +8,8 @@ const { getWebsitesInfo } = require('../lib/publisherWebsitesInfo')
 const db = require('../db')
 const cfg = require('../cfg')
 
+const GLOBAL_MIN_IMPRESSION_PRICE = new BN(cfg.globalMinImpressionPrice)
+
 const router = express.Router()
 
 router.get('/:id', getUnitsForSlotRoute)
@@ -97,6 +99,9 @@ async function getUnitsForSlot(req) {
 				if (output.show === false) return null
 
 				const price = BN.max(minPrice, BN.min(maxPrice, output['price.IMPRESSION']))
+
+				if (price.lt(GLOBAL_MIN_IMPRESSION_PRICE)) return null
+
 				const unit = mapUnit(u)
 				return { unit, price: price.toString(10) }
 			}).filter(x => x)
