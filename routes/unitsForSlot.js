@@ -150,7 +150,7 @@ function shimTargetingRules(campaign) {
 		// @TODO unless three's a tag in any of the units
 		{ onlyShowIf: { nin: [{ get: 'adSlot.categories' }, 'Incentive'] } },
 		// one rule with an adview input var, so that we can test that and implement freq cap
-		{ onlyShowIf: { gt: [{ get: 'adView.secondsSinceShow' }, 900] } },
+		{ onlyShowIf: { gt: [{ get: 'adView.secondsSinceCampaignImpression' }, 900] } },
 	]
 }
 
