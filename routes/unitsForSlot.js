@@ -95,7 +95,7 @@ async function getUnitsForSlot(req) {
 					'price.IMPRESSION': minPrice,
 				}
 				const onTypeErr = (e, rule) => console.error(`WARNING: rule for ${campaign.id} failing with:`, e, rule)
-				output = evaluateMultiple(input, output, targetingRules)
+				output = evaluateMultiple(input, output, targetingRules, onTypeErr)
 
 				if (output.show === false) return null
 
