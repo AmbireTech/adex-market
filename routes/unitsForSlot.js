@@ -149,7 +149,7 @@ function shimTargetingRules(campaign) {
 		//{ onlyShowIf: { intersects: [{ get: 'adSlot.categories' }, categories] } },
 		{ onlyShowIf: { nin: [{ get: 'adSlot.categories' }, 'Incentive'] } },
 		// one rule with an adview input var, so that we can test that and implement freq cap
-		{ onlyShowIf: { gt: [{ get: 'adView.secondsSinceShow' }, 300] } },
+		{ onlyShowIf: { gt: [{ get: 'adView.secondsSinceShow' }, 900] } },
 	]
 }
 
