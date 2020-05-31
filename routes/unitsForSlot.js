@@ -49,7 +49,7 @@ async function getUnitsForSlot(req) {
 		userAgentBrowserFamily: ua.browser.name,
 		'adSlot.categories': categories,
 		'adSlot.hostname': adSlot.website ? url.parse(adSlot.website).hostname : undefined,
-		alexaRank: typeof alexaRank === 'number' ? alexaRank : undefined,
+		'adSlot.alexaRank': typeof alexaRank === 'number' ? alexaRank : undefined,
 	}
 
 	// WARNING: be careful if optimizing projections; there's generally no point to do that cause this will be replaced by the Supermarket
