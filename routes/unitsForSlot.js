@@ -82,7 +82,7 @@ async function getUnitsForSlot(req) {
 			const units = campaign.spec.adUnits.filter(u => u.type === adSlot.type)
 			if (!units.length) return null
 
-			const targetingRules = (campaign.dynamicSpec && campaign.dynamicSpec.targetingRules)
+			const targetingRules = campaign.targetingRules
 				|| campaign.spec.targetingRules
 				|| shimTargetingRules(campaign)
 
@@ -147,6 +147,7 @@ function shimTargetingRules(campaign) {
 	}
 	return [
 		//{ onlyShowIf: { intersects: [{ get: 'adSlot.categories' }, categories] } },
+		// @TODO unless three's a tag in any of the units
 		{ onlyShowIf: { nin: [{ get: 'adSlot.categories' }, 'Incentive'] } },
 		// one rule with an adview input var, so that we can test that and implement freq cap
 		{ onlyShowIf: { gt: [{ get: 'adView.secondsSinceShow' }, 900] } },
