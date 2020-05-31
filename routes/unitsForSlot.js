@@ -163,6 +163,7 @@ function mapCampaign(campaign, targetingRules, unitsWithPrice) {
 		spec: {
 			withdrawPeriodStart: campaign.spec.withdrawPeriodStart,
 			activeFrom: campaign.spec.activeFrom,
+			validators: campaign.spec.validators,
 		}
 	}
 }
