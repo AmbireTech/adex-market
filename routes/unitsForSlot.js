@@ -58,7 +58,8 @@ async function getUnitsForSlot(req) {
 		'status.name': { $in: ['Active', 'Ready'] },
 		creator: { $ne: publisherId }
 	}
-	if (req.params.depositAsset) campaignsQuery.depositAsset = req.params.depositAsset
+	if (Array.isArray(req.query.depositAsset)) campaignsQuery.depositAsset = { $in: req.query.depositAsset }
+	if (typeof req.query.depositAsset === 'string') campaignsQuery.depositAsset = req.query.depositAsset
 
 	// retrieve campaigns/fallback unit together
 	const [campaignsActive, fallbackUnit] = await Promise.all([
