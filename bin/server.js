@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 
 const signatureCheck = require('../helpers/signatureCheck')
 const campaignsRoutes = require('../routes/campaigns')
+const unitsForSlotRoutes = require('../routes/unitsForSlot')
 const statsRoutes = require('../routes/stats')
 const usersRoutes = require('../routes/users')
 const validatorsRoutes = require('../routes/validators')
@@ -39,6 +40,7 @@ app.use(function(req, res, next) {
 })
 
 app.use('/campaigns', campaignsRoutes)
+app.use('/units-for-slot', unitsForSlotRoutes)
 app.use('/stats', statsRoutes)
 app.use('/users', usersRoutes)
 app.use('/validators', validatorsRoutes)
