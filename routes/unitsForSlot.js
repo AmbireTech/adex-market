@@ -106,6 +106,7 @@ async function getUnitsForSlot(req) {
 				campaign.targetingRules ||
 				campaign.spec.targetingRules ||
 				shimTargetingRules(campaign)
+			const adSlotRules = Array.isArray(adSlot.rules) ? adSlot.rules : []
 
 			const campaignInput = targetingInputGetter.bind(
 				null,
@@ -134,8 +135,12 @@ async function getUnitsForSlot(req) {
 						minPrice,
 						BN.min(maxPrice, output['price.IMPRESSION'])
 					)
-
 					if (price.lt(GLOBAL_MIN_IMPRESSION_PRICE)) return null
+
+					// Execute the adSlot rules after we've taken the price since they're not
+					// allowed to change the price
+					if (!evaluateMultiple(input, output, adSlotRules, onTypeErr).show)
+						return null
 
 					const unit = mapUnit(u)
 					return { unit, price: price.toString(10) }
