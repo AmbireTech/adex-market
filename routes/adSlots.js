@@ -178,16 +178,13 @@ async function getWebsitesInfo(slot) {
 		const website = await websitesCol.findOne({ hostname, ...validQuery })
 		const hasActiveValidWebsite = website && website.publisher === slot.owner
 		// @XXX: .extraReferrers is only permitted in the new mode (if .website is set)
-		const acceptedReferrers =
-			hasActiveValidWebsite
-				? [`https://${hostname}`]
-						.concat(getOppositeWww(hostname))
-						.concat(
-							Array.isArray(website.extraReferrers)
-								? website.extraReferrers
-								: []
-						)
-				: []
+		const acceptedReferrers = hasActiveValidWebsite
+			? [`https://${hostname}`]
+					.concat(getOppositeWww(hostname))
+					.concat(
+						Array.isArray(website.extraReferrers) ? website.extraReferrers : []
+					)
+			: []
 		const recommendedEarningLimitUSD = getRecommendedEarningLimitUSD(website)
 		const categories = getCategories(website)
 		return { acceptedReferrers, recommendedEarningLimitUSD, categories }
@@ -212,7 +209,11 @@ async function getWebsitesInfo(slot) {
 		)
 		// This case doesn't support recommendedEarningLimitUSD: that's intentional,
 		// as it's only used by old publishers who were strictly verified
-		return { acceptedReferrers, recommendedEarningLimitUSD: null, categories: [] }
+		return {
+			acceptedReferrers,
+			recommendedEarningLimitUSD: null,
+			categories: [],
+		}
 	}
 }
 
@@ -330,9 +331,6 @@ function getWebsiteIssues(websiteRecord, existingFromOthers) {
 	const issues = []
 	if (websiteRecord.blacklisted) {
 		issues.push('SLOT_ISSUE_BLACKLISTED')
-	}
-	if (!websiteRecord.verifiedIntegration) {
-		issues.push('SLOT_ISSUE_INTEGRATION_NOT_VERIFIED')
 	}
 	if (!websiteRecord.verifiedOwnership) {
 		issues.push('SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED')
