@@ -251,9 +251,6 @@ function getWebsiteIssues(websiteRecord, existingFromOthers) {
 	if (websiteRecord.blacklisted) {
 		issues.push('SLOT_ISSUE_BLACKLISTED')
 	}
-	if (!websiteRecord.verifiedIntegration) {
-		issues.push('SLOT_ISSUE_INTEGRATION_NOT_VERIFIED')
-	}
 	if (!websiteRecord.verifiedOwnership) {
 		issues.push('SLOT_ISSUE_OWNERSHIP_NOT_VERIFIED')
 	}
