@@ -199,7 +199,7 @@ async function queryValidators() {
 	const channels = await getChannels()
 	await channels.map(c =>
 		campaignsCol.updateOne({ _id: c.id }, {
-			$setOnInsert: c,
+			$setOnInsert: { ...c, targetingRules: undefined },
 			$set: { targetingRules: c.targetingRules }
 		}, { upsert: true })
 	)
