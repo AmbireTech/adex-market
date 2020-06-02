@@ -311,29 +311,27 @@ async function getTargetingDataByType(req, res) {
 			])
 			.toArray()
 
-		const websitesWithInfo = await Promise.all(
-			websitesWithSlots.map(async ws => ({
-				website: ws.website,
-
-				...(
-					await Promise.all(
-						ws.owners.map(async o => ({
-							owner: o,
-							info: await getWebsitesInfo(websitesCol, {
-								owner: o,
-								website: ws.website,
-							}),
-						}))
-					)
-				).find(
-					x =>
-						x &&
-						x.info &&
-						!!x.info.acceptedReferrers &&
-						!!x.info.acceptedReferrers.length
-				),
-			}))
-		)
+		const websitesWithInfo = (
+			await Promise.all(
+				websitesWithSlots.map(async ({ website, owners }) => ({
+					hostname: url.parse(website).hostname,
+					website,
+					...(
+						await Promise.all(
+							owners.map(async owner => ({
+								owner,
+								...(await getWebsitesInfo(websitesCol, {
+									owner,
+									website,
+								})),
+							}))
+						)
+					).find(
+						x => !!x && !!x.acceptedReferrers && x.acceptedReferrers.length
+					),
+				}))
+			)
+		).filter(x => x.owner)
 
 		res.json(websitesWithInfo)
 	} catch (err) {
