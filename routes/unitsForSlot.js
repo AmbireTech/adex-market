@@ -113,6 +113,9 @@ async function getUnitsForSlot(req) {
 				targetingInputBase,
 				campaign
 			)
+			const onTypeErr = function onTypeErr(e, rule) {
+				console.error(`WARNING: rule for ${campaign.id} failing with:`, e, rule)
+			}
 			const matchingUnits = units
 				.map(u => {
 					const input = campaignInput.bind(null, u)
@@ -121,12 +124,7 @@ async function getUnitsForSlot(req) {
 						show: true,
 						'price.IMPRESSION': minPrice,
 					}
-					const onTypeErr = (e, rule) =>
-						console.error(
-							`WARNING: rule for ${campaign.id} failing with:`,
-							e,
-							rule
-						)
+
 					output = evaluateMultiple(input, output, targetingRules, onTypeErr)
 
 					if (output.show === false) return null
@@ -172,6 +170,7 @@ function shimTargetingRules(campaign) {
 			if (tag.tag === 'cryptocurrency' || tag.tag === 'crypto') {
 				categories.push('IAB13')
 				categories.push('IAB13-11')
+				categories.push('ADX-1')
 			}
 			if (tag.tag === 'entertainment media') {
 				categories.push('IAB1')
