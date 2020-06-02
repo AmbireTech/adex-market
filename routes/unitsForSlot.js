@@ -102,10 +102,7 @@ async function getUnitsForSlot(req) {
 			const units = campaign.spec.adUnits.filter(u => u.type === adSlot.type)
 			if (!units.length) return null
 
-			const targetingRules =
-				campaign.targetingRules ||
-				campaign.spec.targetingRules ||
-				shimTargetingRules(campaign)
+			const targetingRules = campaign.targetingRules || campaign.spec.targetingRules || []
 			const adSlotRules = Array.isArray(adSlot.rules) ? adSlot.rules : []
 
 			const campaignInput = targetingInputGetter.bind(
@@ -160,40 +157,6 @@ async function getUnitsForSlot(req) {
 		fallbackUnit,
 		campaigns,
 	}
-}
-
-// @TODO remove that
-function shimTargetingRules(campaign) {
-	let categories = []
-	for (const unit of campaign.spec.adUnits) {
-		for (const tag of unit.targeting) {
-			if (tag.tag === 'cryptocurrency' || tag.tag === 'crypto') {
-				categories.push('IAB13')
-				categories.push('IAB13-11')
-				categories.push('ADX-1')
-			}
-			if (tag.tag === 'entertainment media') {
-				categories.push('IAB1')
-				categories.push('IAB1-5')
-			}
-			if (tag.tag === 'stremio' || tag.tag === 'stremio_user') {
-				// or just add a rule that only matches stremio
-				categories.push('IAB1')
-				categories.push('IAB1-5')
-			}
-		}
-	}
-	return [
-		//{ onlyShowIf: { intersects: [{ get: 'adSlot.categories' }, categories] } },
-		// @TODO unless three's a tag in any of the units
-		{ onlyShowIf: { nin: [{ get: 'adSlot.categories' }, 'Incentive'] } },
-		// one rule with an adview input var, so that we can test that and implement freq cap
-		{
-			onlyShowIf: {
-				gt: [{ get: 'adView.secondsSinceCampaignImpression' }, 900],
-			},
-		},
-	]
 }
 
 function mapCampaign(campaign) {
