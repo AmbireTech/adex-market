@@ -198,7 +198,10 @@ async function queryValidators() {
 	const campaignsCol = db.getMongo().collection('campaigns')
 	const channels = await getChannels()
 	await channels.map(c =>
-		campaignsCol.updateOne({ _id: c.id }, { $setOnInsert: c }, { upsert: true })
+		campaignsCol.updateOne({ _id: c.id }, {
+			$setOnInsert: c,
+			$set: { targetingRules: c.targetingRules }
+		}, { upsert: true })
 	)
 
 	// If a campaign is in Expired, there's no way the state would ever change after that: so no point to update it
@@ -232,7 +235,7 @@ async function queryValidators() {
 					console.log(`Status of campaign ${c._id} updated: ${status.name}`)
 					return campaignsCol.updateOne(
 						{ _id: c._id },
-						{ $set: { status: statusObj, targetingRules: c.targetingRules } }
+						{ $set: { status: statusObj } }
 					)
 				}
 				return Promise.resolve()
