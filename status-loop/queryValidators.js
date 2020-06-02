@@ -232,7 +232,7 @@ async function queryValidators() {
 					console.log(`Status of campaign ${c._id} updated: ${status.name}`)
 					return campaignsCol.updateOne(
 						{ _id: c._id },
-						{ $set: { status: statusObj } }
+						{ $set: { status: statusObj, targetingRules: c.targetingRules } }
 					)
 				}
 				return Promise.resolve()
