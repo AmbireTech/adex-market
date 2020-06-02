@@ -13,6 +13,7 @@ const signatureCheck = require('../helpers/signatureCheck')
 const router = express.Router()
 
 router.get('/', getAdSlots)
+router.get('/targeting-data', getTargetingDataByType)
 router.get('/:id', getAdSlotById)
 router.post(
 	'/verify-website',
@@ -279,6 +280,64 @@ async function verifyWebsite(req, res) {
 		})
 	} catch (err) {
 		console.error('Error verifyWebsite', err)
+		return res.status(500).send(err.toString())
+	}
+}
+
+async function getTargetingDataByType(req, res) {
+	// TODO: const type = req.query.type
+	try {
+		const adSlotsCol = db.getMongo().collection('adSlots')
+		const websitesCol = db.getMongo().collection('websites')
+
+		const websitesWithSlots = await adSlotsCol
+			.aggregate([
+				{
+					$match: {
+						$and: [
+							{ owner: { $exists: true } },
+							{ website: { $exists: true } },
+							{ website: { $ne: '' } },
+						],
+					},
+				},
+				{
+					$group: {
+						_id: { website: '$website' },
+						owners: { $addToSet: '$owner' },
+					},
+				},
+				{ $project: { _id: 0, website: '$_id.website', owners: '$owners' } },
+			])
+			.toArray()
+
+		const websitesWithInfo = await Promise.all(
+			websitesWithSlots.map(async ws => ({
+				website: ws.website,
+
+				...(
+					await Promise.all(
+						ws.owners.map(async o => ({
+							owner: o,
+							info: await getWebsitesInfo(websitesCol, {
+								owner: o,
+								website: ws.website,
+							}),
+						}))
+					)
+				).find(
+					x =>
+						x &&
+						x.info &&
+						!!x.info.acceptedReferrers &&
+						!!x.info.acceptedReferrers.length
+				),
+			}))
+		)
+
+		res.json(websitesWithInfo)
+	} catch (err) {
+		console.error('Error getting targeting data', err)
 		return res.status(500).send(err.toString())
 	}
 }
