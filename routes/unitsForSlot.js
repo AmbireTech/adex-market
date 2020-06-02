@@ -164,36 +164,53 @@ async function getUnitsForSlot(req) {
 
 // @TODO remove that
 function shimTargetingRules(campaign) {
-	let categories = []
+	let isCrypto = false
+	let isStremio = false
+	let countries = []
 	for (const unit of campaign.spec.adUnits) {
 		for (const tag of unit.targeting) {
 			if (tag.tag === 'cryptocurrency' || tag.tag === 'crypto') {
-				categories.push('IAB13')
-				categories.push('IAB13-11')
-				categories.push('ADX-1')
-			}
-			if (tag.tag === 'entertainment media') {
-				categories.push('IAB1')
-				categories.push('IAB1-5')
+				isCrypto = true
 			}
 			if (tag.tag === 'stremio' || tag.tag === 'stremio_user') {
-				// or just add a rule that only matches stremio
-				categories.push('IAB1')
-				categories.push('IAB1-5')
+				isStremio = true
+			}
+			if (tag.tag.startsWith('location_')) {
+				countries.push(tag.tag.split('_')[1])
 			}
 		}
 	}
-	return [
-		//{ onlyShowIf: { intersects: [{ get: 'adSlot.categories' }, categories] } },
-		// @TODO unless three's a tag in any of the units
-		{ onlyShowIf: { nin: [{ get: 'adSlot.categories' }, 'Incentive'] } },
-		// one rule with an adview input var, so that we can test that and implement freq cap
-		{
+	const isCatchAll =
+		typeof campaign.name === 'string'
+			? campaign.name.includes('catchAll')
+			: false
+	const lowCpm = parseInt(campaign.spec.minPerImpression) < 200000000000000
+	const includeIncentivized = isCatchAll || (lowCpm && isCrypto)
+	let rules = []
+	if (!includeIncentivized)
+		rules.push({
+			onlyShowIf: { nin: [{ get: 'adSlot.categories' }, 'Incentive'] },
+		})
+	if (!isCatchAll)
+		rules.push({
 			onlyShowIf: {
 				gt: [{ get: 'adView.secondsSinceCampaignImpression' }, 900],
 			},
-		},
-	]
+		})
+	if (isStremio)
+		rules.push({
+			onlyShowIf: {
+				eq: [
+					{ get: 'publisherId' },
+					'0xd5860D6196A4900bf46617cEf088ee6E6b61C9d6',
+				],
+			},
+		})
+	if (countries.length)
+		rules.push({
+			onlyShowIf: { in: [countries, { get: 'country' }] },
+		})
+	return rules
 }
 
 function mapCampaign(campaign) {
