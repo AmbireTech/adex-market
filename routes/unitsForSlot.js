@@ -102,10 +102,7 @@ async function getUnitsForSlot(req) {
 			const units = campaign.spec.adUnits.filter(u => u.type === adSlot.type)
 			if (!units.length) return null
 
-			const targetingRules =
-				campaign.targetingRules ||
-				campaign.spec.targetingRules ||
-				shimTargetingRules(campaign)
+			const targetingRules = campaign.targetingRules || campaign.spec.targetingRules || []
 			const adSlotRules = Array.isArray(adSlot.rules) ? adSlot.rules : []
 
 			const campaignInput = targetingInputGetter.bind(
@@ -160,57 +157,6 @@ async function getUnitsForSlot(req) {
 		fallbackUnit,
 		campaigns,
 	}
-}
-
-// @TODO remove that
-function shimTargetingRules(campaign) {
-	let isCrypto = false
-	let isStremio = false
-	let countries = []
-	for (const unit of campaign.spec.adUnits) {
-		for (const tag of unit.targeting) {
-			if (tag.tag === 'cryptocurrency' || tag.tag === 'crypto') {
-				isCrypto = true
-			}
-			if (tag.tag === 'stremio' || tag.tag === 'stremio_user') {
-				isStremio = true
-			}
-			if (tag.tag.startsWith('location_')) {
-				countries.push(tag.tag.split('_')[1])
-			}
-		}
-	}
-	const isCatchAll =
-		typeof campaign.name === 'string'
-			? campaign.name.includes('catchAll')
-			: false
-	const lowCpm = parseInt(campaign.spec.minPerImpression) < 200000000000000
-	const includeIncentivized = isCatchAll || (lowCpm && isCrypto)
-	let rules = []
-	if (!includeIncentivized)
-		rules.push({
-			onlyShowIf: { nin: [{ get: 'adSlot.categories' }, 'Incentive'] },
-		})
-	if (!isCatchAll)
-		rules.push({
-			onlyShowIf: {
-				gt: [{ get: 'adView.secondsSinceCampaignImpression' }, 900],
-			},
-		})
-	if (isStremio)
-		rules.push({
-			onlyShowIf: {
-				eq: [
-					{ get: 'publisherId' },
-					'0xd5860D6196A4900bf46617cEf088ee6E6b61C9d6',
-				],
-			},
-		})
-	if (countries.length)
-		rules.push({
-			onlyShowIf: { in: [countries, { get: 'country' }] },
-		})
-	return rules
 }
 
 function mapCampaign(campaign) {
