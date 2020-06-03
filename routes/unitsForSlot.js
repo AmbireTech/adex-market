@@ -20,7 +20,7 @@ router.get('/:id', getUnitsForSlotRoute)
 function getUnitsForSlotRoute(req, res) {
 	getUnitsForSlot(req)
 		.then(resp => {
-			res.set('Cache-Control', 'public, max-age=60')
+			res.set('Cache-Control', 'public, max-age=20')
 			if (!resp) res.sendStatus(404)
 			else res.send(resp)
 		})
