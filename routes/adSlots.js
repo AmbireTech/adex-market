@@ -13,7 +13,7 @@ const signatureCheck = require('../helpers/signatureCheck')
 const router = express.Router()
 
 router.get('/', getAdSlots)
-router.get('/targeting-data', getTargetingDataByType)
+router.get('/targeting-data', getTargetingData)
 router.get('/:id', getAdSlotById)
 router.post(
 	'/verify-website',
@@ -284,8 +284,7 @@ async function verifyWebsite(req, res) {
 	}
 }
 
-async function getTargetingDataByType(req, res) {
-	// TODO: const type = req.query.type
+async function getTargetingData(req, res) {
 	try {
 		const adSlotsCol = db.getMongo().collection('adSlots')
 		const websitesCol = db.getMongo().collection('websites')
@@ -304,21 +303,27 @@ async function getTargetingDataByType(req, res) {
 				{
 					$group: {
 						_id: { website: '$website' },
-						owners: { $addToSet: '$owner' },
+						owners: {
+							$addToSet: { owner: '$owner', type: '$type' },
+						},
 					},
 				},
-				{ $project: { _id: 0, website: '$_id.website', owners: '$owners' } },
+				{
+					$project: {
+						_id: 0,
+						website: '$_id.website',
+						owners: '$owners',
+					},
+				},
 			])
 			.toArray()
 
 		const websitesWithInfo = (
 			await Promise.all(
-				websitesWithSlots.map(async ({ website, owners }) => ({
-					hostname: url.parse(website).hostname,
-					website,
-					...(
+				websitesWithSlots.map(async ({ website, owners }) => {
+					const websiteInfo = (
 						await Promise.all(
-							owners.map(async owner => ({
+							owners.map(async ({ owner }) => ({
 								owner,
 								...(await getWebsitesInfo(websitesCol, {
 									owner,
@@ -328,10 +333,22 @@ async function getTargetingDataByType(req, res) {
 						)
 					).find(
 						x => !!x && !!x.acceptedReferrers && x.acceptedReferrers.length
-					),
-				}))
+					)
+
+					if (websiteInfo) {
+						return {
+							hostname: url.parse(website).hostname,
+							website,
+							...websiteInfo,
+							types: owners
+								.filter(({ owner }) => owner === websiteInfo.owner)
+								.map(({ type }) => type)
+								.filter((t, i, all) => all.indexOf(t) === i),
+						}
+					}
+				})
 			)
-		).filter(x => x.owner)
+		).filter(x => !!x && x.owner)
 
 		res.json(websitesWithInfo)
 	} catch (err) {
