@@ -1,5 +1,5 @@
 require('dotenv').config()
-const { getDb, connect } = require('../db')
+const { getMongo, connect } = require('../db')
 const { BigQuery } = require('@google-cloud/bigquery')
 const WEBSITES_TABLE_NAME = 'websites'
 const DATASET_NAME = process.env.DATASET_NAME || 'development'
@@ -26,13 +26,13 @@ async function createUserTable() {
 				{ name: 'websiteUrl', type: 'STRING', mode: 'NULLABLE' },
 				{ name: 'rank', type: 'INT64', mode: 'NULLABLE' },
 				{ name: 'reachPerMillion', type: 'FLOAT64', mode: 'NULLABLE' },
-				{ name: 'webshrinkerCategories', type: 'ARRAY', mode: 'NULLABLE' },
+				{ name: 'webshrinkerCategories', type: 'STRING', mode: 'REPEATED' },
 			],
 		},
 	})
 	startImport(
 		WEBSITES_TABLE_NAME,
-		getDb()
+		getMongo()
 			.collection('websites')
 			.find()
 			.sort({ _id: -1 })
@@ -80,7 +80,7 @@ async function init() {
 		if (!datasetExists) dataset = await dataset.create()
 
 		// Create Tables
-		importTables()
+		importTables(() => console.log('Init called'))
 	} catch (error) {
 		console.log(error.message)
 		process.exit(1)
