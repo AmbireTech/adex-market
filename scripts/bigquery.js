@@ -83,6 +83,7 @@ async function init() {
 		importTables()
 	} catch (error) {
 		console.log(error.message)
+		process.exit(1)
 	}
 }
 
