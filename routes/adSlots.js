@@ -350,6 +350,7 @@ async function getTargetingData(req, res) {
 			)
 		).filter(x => !!x && x.owner)
 
+		res.set('Cache-Control', `public, max-age=${15 * 60}`)
 		res.json(websitesWithInfo)
 	} catch (err) {
 		console.error('Error getting targeting data', err)
