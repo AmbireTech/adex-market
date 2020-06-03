@@ -15,7 +15,8 @@
     "benchmark": "./test/benchmark/benchmark.sh",
     "lint": "eslint . && echo Linting check finished",
     "lint:fix": "eslint --fix . && echo Linting fix finished",
-    "eslint-check": "eslint --print-config src/App.js | eslint-config-prettier-check"
+    "eslint-check": "eslint --print-config src/App.js | eslint-config-prettier-check",
+    "bq": "node ./scripts/bigquery.js"
   },
   "keywords": [
     "adex",
@@ -25,6 +26,7 @@
   "author": "Smart Code OOD",
   "license": "MIT",
   "dependencies": {
+    "@google-cloud/bigquery": "^4.7.0",
     "adex-adview-manager": "^2.0.1",
     "adex-models": "git+https://git@github.com/AdExBlockchain/adex-models.git#5446e5fd2d41f6e7120dfee8584e0f99759735ff",
     "bn.js": "^4.11.8",
