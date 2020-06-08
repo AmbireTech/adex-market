@@ -15,6 +15,7 @@ const mediaRoutes = require('../routes/media')
 const authRoutes = require('../routes/auth')
 const sessionRoutes = require('../routes/session')
 const tagsRoutes = require('../routes/tags')
+const audienceRoutes = require('../routes/audiences')
 
 const createCluster = require('../helpers/cluster')
 
@@ -50,6 +51,7 @@ app.use('/session', signatureCheck, sessionRoutes)
 app.use('/slots', adSlotsRoutes)
 app.use('/units', adUnitsRoutes)
 app.use('/media', signatureCheck, mediaRoutes)
+app.use('/audiences', signatureCheck, audienceRoutes)
 
 if (process.env.CLUSTERED) {
 	createCluster(start)
