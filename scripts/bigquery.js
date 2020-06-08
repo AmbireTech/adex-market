@@ -10,7 +10,7 @@ const options = {
 
 let dataset = null
 
-async function createUserTable() {
+async function createWebsitesTable() {
 	// Create the dataset
 	await dataset.createTable(WEBSITES_TABLE_NAME, {
 		schema: {
@@ -42,6 +42,7 @@ async function createUserTable() {
 			return {
 				id: website._id.toString(),
 				hostname: website.hostname.toString(),
+				publisher: website.publisher.toString(),
 				created: website.created
 					? parseInt(new Date(website.created).getTime() / 1000)
 					: null,
@@ -53,7 +54,7 @@ async function createUserTable() {
 				websiteUrl: website.websiteUrl,
 				rank: website.rank,
 				reachPerMillion: parseFloat(website.reachPerMillion),
-				webshrinkerCategories: website.webshrinkerCategories,
+				webshrinkerCategories: website.webshrinkerCategories || [],
 			}
 		}
 	)
@@ -61,10 +62,10 @@ async function createUserTable() {
 
 function importTables(cb) {
 	// Create BigQuery table - Users
-	dataset
-		.table(WEBSITES_TABLE_NAME)
-		.delete()
-		.then(createUserTable, createUserTable)
+	dataset.table(WEBSITES_TABLE_NAME).delete(() => {
+		console.log('deleted')
+		createWebsitesTable()
+	})
 
 	cb()
 }
@@ -79,6 +80,8 @@ async function init() {
 		const [datasetExists] = await dataset.exists()
 		if (!datasetExists) dataset = await dataset.create()
 
+		// There is a time limit restriction
+		// TODO: add when table fill is ran under 2 min
 		// Create Tables
 		importTables(() => console.log('Init called'))
 	} catch (error) {
