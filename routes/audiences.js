@@ -1,6 +1,5 @@
 const express = require('express')
 const db = require('../db')
-const signatureCheck = require('../helpers/signatureCheck')
 const { noCache } = require('../helpers/cache')
 // const { schemas } = require('adex-models')
 // const { celebrate } = require('celebrate')
@@ -8,17 +7,15 @@ const { getAddress } = require('ethers/utils')
 
 const router = express.Router()
 
-router.get('/by-owner', noCache, signatureCheck, getAudiencesByOwner)
-router.get('/:campaignId', signatureCheck, getAudience)
+router.get('/by-owner', noCache, getAudiencesByOwner)
+router.get('/:campaignId', getAudience)
 router.put(
 	'/:campaignId',
-	signatureCheck,
 	// celebrate({ body: schemas.audience }),
 	updateAudience
 )
 router.post(
-	'/',
-	signatureCheck,
+	'/:campaignId',
 	// celebrate({ body: schemas.audience }),
 	postAudience
 )
@@ -92,11 +89,13 @@ function updateAudience(req, res) {
 
 async function postAudience(req, res) {
 	try {
+		const campaignId = req.params.campaignId
 		const identity = req.identity
 		const audience = req.body
 		audience.owner = identity
 		audience.created = new Date()
-		const audiencesCol = db.getMongo().collection('audience')
+		audience.campaignId = campaignId + 1
+		const audiencesCol = db.getMongo().collection('audiences')
 
 		await audiencesCol.insertOne(audience)
 
