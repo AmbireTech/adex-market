@@ -117,18 +117,19 @@ async function createAdSlotTable() {
 	)
 }
 
-function importTables(cb) {
-	// Delete & Create BigQuery table - users
-	dataset.table(WEBSITES_TABLE_NAME).delete(() => {
-		console.log('deleted:', WEBSITES_TABLE_NAME)
-		createWebsitesTable()
-	})
-	// Delete & Create BigQuery table - adSlots
-	dataset.table(ADSLOTS_TABLE_NAME).delete(() => {
-		console.log('deleted:', ADSLOTS_TABLE_NAME)
-		createAdSlotTable()
-	})
+async function deleteTableAndImport(websiteName, createTableFunc) {
+	try {
+		await dataset.table(websiteName).delete()
+		console.log('deleted:', websiteName)
+	} catch (error) {
+		console.log(error)
+	}
+	createTableFunc()
+}
 
+function importTables(cb) {
+	deleteTableAndImport(WEBSITES_TABLE_NAME, createWebsitesTable)
+	deleteTableAndImport(ADSLOTS_TABLE_NAME, createAdSlotTable)
 	cb()
 }
 
