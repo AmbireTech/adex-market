@@ -4,18 +4,19 @@ const { noCache } = require('../helpers/cache')
 // const { schemas } = require('adex-models')
 // const { celebrate } = require('celebrate')
 const { getAddress } = require('ethers/utils')
+const { sha256 } = require('ethers').utils
 
 const router = express.Router()
 
 router.get('/by-owner', noCache, getAudiencesByOwner)
-router.get('/:campaignId', getAudience)
+router.get('/:id', getAudience)
 router.put(
-	'/:campaignId',
+	'/:id',
 	// celebrate({ body: schemas.audience }),
 	updateAudience
 )
 router.post(
-	'/:campaignId',
+	'/:id',
 	// celebrate({ body: schemas.audience }),
 	postAudience
 )
@@ -47,10 +48,10 @@ async function getAudiencesByOwner(req, res) {
 
 async function getAudience(req, res) {
 	try {
-		const campaignId = req.params.campaignId
+		const { id } = req.params
 		const audiencesCol = db.getMongo().collection('audience')
 		const audience = await audiencesCol.findOne(
-			{ campaignId },
+			{ id },
 			{ projection: { _id: 0 } }
 		)
 
@@ -66,13 +67,13 @@ async function getAudience(req, res) {
 }
 
 function updateAudience(req, res) {
-	const campaignId = req.params.campaignId
+	const { id } = req.params
 	const audiencesCol = db.getMongo().collection('audience')
 	const audience = req.body
 	audience.updated = new Date()
 
 	return audiencesCol.findOneAndUpdate(
-		{ campaignId },
+		{ id },
 		{
 			$set: audience,
 		},
@@ -89,12 +90,11 @@ function updateAudience(req, res) {
 
 async function postAudience(req, res) {
 	try {
-		const campaignId = req.params.campaignId
-		const identity = req.identity
 		const audience = req.body
-		audience.owner = identity
+		audience.owner = req.identity
 		audience.created = new Date()
-		audience.campaignId = campaignId + 1
+		audience.campaignId = req.params.campaignId
+		audience.id = sha256(Buffer.from(JSON.stringify({ ...audience })))
 		const audiencesCol = db.getMongo().collection('audiences')
 
 		await audiencesCol.insertOne(audience)
