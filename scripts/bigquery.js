@@ -89,16 +89,15 @@ async function createAdSlotTable() {
 			.find()
 			.sort({ _id: -1 })
 			.stream(),
-		function(adSlot) {
+		async function(adSlot) {
 			if (!adSlot) return
-			getRequest(`${ADEX_MARKET_URL}/slots/${adSlot.ipfs}`).then(res => {
-				console.log(res)
-				return {
-					id: 'test_id',
-					owner: 'test_owner',
-					type: 'test_type',
-				}
-			})
+			const res = await getRequest(`${ADEX_MARKET_URL}/slots/${adSlot.ipfs}`)
+			console.log(res)
+			return {
+				id: 'test_id',
+				owner: 'test_owner',
+				type: 'test_type',
+			}
 
 			// return {
 			// 	id: adSlot.ipfs,
@@ -190,7 +189,8 @@ function startImport(tableName, stream, map) {
 		const toInsert = [].concat(queue)
 		try {
 			queue = []
-			await dataset.table(tableName).insert(toInsert)
+			const resolved = await Promise.all(toInsert)
+			await dataset.table(tableName).insert(resolved)
 			done += toInsert.length
 			checkReady()
 		} catch (e) {
