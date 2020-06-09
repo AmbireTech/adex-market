@@ -34,7 +34,7 @@ async function createWebsitesTable() {
 			],
 		},
 	})
-	startImport(
+	return startImport(
 		WEBSITES_TABLE_NAME,
 		getMongo()
 			.collection(WEBSITES_TABLE_NAME)
@@ -82,7 +82,7 @@ async function createAdSlotTable() {
 			],
 		},
 	})
-	startImport(
+	return startImport(
 		ADSLOTS_TABLE_NAME,
 		getMongo()
 			.collection(ADSLOTS_TABLE_NAME)
@@ -92,27 +92,21 @@ async function createAdSlotTable() {
 		async function(adSlot) {
 			if (!adSlot) return
 			const res = await getRequest(`${ADEX_MARKET_URL}/slots/${adSlot.ipfs}`)
-			console.log(res)
+			const { slot, acceptedReferrers, alexaRank, categories } = res
 			return {
-				id: 'test_id',
-				owner: 'test_owner',
-				type: 'test_type',
+				id: adSlot.ipfs,
+				owner: slot.owner,
+				type: slot.type,
+				title: slot.title,
+				description: slot.description,
+				created: slot.created
+					? parseInt(new Date(slot.created).getTime() / 1000)
+					: null,
+				archived: slot.archived,
+				alexaRank,
+				acceptedReferrers,
+				categories,
 			}
-
-			// return {
-			// 	id: adSlot.ipfs,
-			// 	owner: adSlot.owner,
-			// 	type: adSlot.type,
-			// 	ttile: adSlot.title,
-			// 	description: adSlot.description,
-			// 	created: adSlot.created
-			// 		? parseInt(new Date(adSlot.created).getTime() / 1000)
-			// 		: null,
-			// 	archived: adSlot.archived,
-			// 	alexaRank: adSlot.alexaRank || null,
-			// 	categories: adSlot.categories || [],
-			// 	acceptedReferrers: adSlot.acceptedReferrers || [],
-			// }
 		}
 	)
 }
@@ -124,12 +118,15 @@ async function deleteTableAndImport(websiteName, createTableFunc) {
 	} catch (error) {
 		console.log(error)
 	}
-	createTableFunc()
+	return createTableFunc()
 }
 
 function importTables(cb) {
-	deleteTableAndImport(WEBSITES_TABLE_NAME, createWebsitesTable)
-	deleteTableAndImport(ADSLOTS_TABLE_NAME, createAdSlotTable)
+	Promise.all([
+		deleteTableAndImport(WEBSITES_TABLE_NAME, createWebsitesTable),
+		deleteTableAndImport(ADSLOTS_TABLE_NAME, createAdSlotTable),
+	]).then(() => process.exit(0))
+
 	cb()
 }
 
@@ -159,10 +156,14 @@ function startImport(tableName, stream, map) {
 	let done = 0
 	let queue = []
 
-	stream.on('data', processObj)
-	stream.on('end', function() {
-		ready = true
-		checkReady()
+	return new Promise((resolve, reject) => {
+		stream.on('data', processObj)
+		stream.on('end', async () => {
+			ready = true
+			const isReady = await checkReady()
+			resolve(isReady)
+		})
+		stream.on('error', err => reject(err))
 	})
 
 	function processObj(data) {
@@ -193,7 +194,7 @@ function startImport(tableName, stream, map) {
 			const resolved = await Promise.all(toInsert)
 			await dataset.table(tableName).insert(resolved)
 			done += toInsert.length
-			checkReady()
+			return checkReady()
 		} catch (e) {
 			if (e && e.errors) {
 				e.errors.forEach(e => {
@@ -207,9 +208,9 @@ function startImport(tableName, stream, map) {
 
 	function checkReady() {
 		console.log('DONE/' + tableName + ': ' + done)
-		if (ready && queue.length) flush()
+		if (ready && queue.length) return flush()
 		if (ready && done === found) {
-			isReady()
+			return isReady()
 		}
 		if (found - done < 100) stream.resume()
 	}
@@ -218,6 +219,7 @@ function startImport(tableName, stream, map) {
 		console.log(
 			'-> READY, IMPORTED ' + done + ' ITEMS INTO BIGQUERY/' + tableName
 		)
+		return true
 	}
 }
 
