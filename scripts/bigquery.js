@@ -7,7 +7,7 @@ const getRequest = require('../helpers/getRequest')
 const ADEX_MARKET_URL = process.env.ADEX_MARKET_URL || 'http://localhost:3012'
 const WEBSITES_TABLE_NAME = 'websites'
 const ADSLOTS_TABLE_NAME = 'adSlots'
-const BIGQUERY_MIN_LIMIT = 2 // There is a limit of 2 min between delete and insert
+const BIGQUERY_RATE_LIMIT = 5 // There is a limit of ~ 2-5 min between delete and insert
 const DATASET_NAME = process.env.DATASET_NAME || 'development'
 const options = {
 	keyFilename: './credentials/adex-bigquery.json',
@@ -117,12 +117,12 @@ async function deleteTableAndImport(websiteName, createTableFunc) {
 	try {
 		const [metaResponse] = await dataset.table(websiteName).getMetadata()
 		const timeFromLastModified = +Date.now() - metaResponse.lastModifiedTime
-		if (timeFromLastModified > 60 * BIGQUERY_MIN_LIMIT * 1000) {
+		if (timeFromLastModified > 60 * BIGQUERY_RATE_LIMIT * 1000) {
 			await dataset.table(websiteName).delete()
 			console.log('deleted:', websiteName)
 		} else {
 			console.log(
-				`You need to wait at least ${BIGQUERY_MIN_LIMIT} min to reinsert table => ${websiteName}`
+				`You need to wait at least ${BIGQUERY_RATE_LIMIT} min to reinsert table => ${websiteName}`
 			)
 			return false
 		}
@@ -137,7 +137,6 @@ function importTables(cb) {
 		deleteTableAndImport(WEBSITES_TABLE_NAME, createWebsitesTable),
 		deleteTableAndImport(ADSLOTS_TABLE_NAME, createAdSlotTable),
 	]).then(() => process.exit(0))
-
 	cb()
 }
 
@@ -152,7 +151,7 @@ async function init() {
 		if (!datasetExists) dataset = await dataset.create()
 
 		// Create Tables
-		importTables(() => console.log('Init called'))
+		await importTables(() => console.log('> initiated importTables'))
 	} catch (error) {
 		console.log(error.message)
 		process.exit(1)
