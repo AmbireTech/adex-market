@@ -3,9 +3,11 @@ const { getMongo, connect } = require('../db')
 const { BigQuery } = require('@google-cloud/bigquery')
 const getRequest = require('../helpers/getRequest')
 
+// make sure you use the corresponding market to the db you use
 const ADEX_MARKET_URL = process.env.ADEX_MARKET_URL || 'http://localhost:3012'
-const WEBSITES_TABLE_NAME = 'websites' //use the same table name from the db
-const ADSLOTS_TABLE_NAME = 'adSlots' //use the same table name from the db
+const WEBSITES_TABLE_NAME = 'websites'
+const ADSLOTS_TABLE_NAME = 'adSlots'
+const BIGQUERY_MIN_LIMIT = 2 // There is a limit of 2 min between delete and insert
 const DATASET_NAME = process.env.DATASET_NAME || 'development'
 const options = {
 	keyFilename: './credentials/adex-bigquery.json',
@@ -37,7 +39,7 @@ async function createWebsitesTable() {
 	return startImport(
 		WEBSITES_TABLE_NAME,
 		getMongo()
-			.collection(WEBSITES_TABLE_NAME)
+			.collection('websites')
 			.find()
 			.sort({ _id: -1 })
 			.stream(),
@@ -85,7 +87,7 @@ async function createAdSlotTable() {
 	return startImport(
 		ADSLOTS_TABLE_NAME,
 		getMongo()
-			.collection(ADSLOTS_TABLE_NAME)
+			.collection('adSlots')
 			.find()
 			.sort({ _id: -1 })
 			.stream(),
@@ -113,10 +115,19 @@ async function createAdSlotTable() {
 
 async function deleteTableAndImport(websiteName, createTableFunc) {
 	try {
-		await dataset.table(websiteName).delete()
-		console.log('deleted:', websiteName)
+		const [metaResponse] = await dataset.table(websiteName).getMetadata()
+		const timeFromLastModified = +Date.now() - metaResponse.lastModifiedTime
+		if (timeFromLastModified > 60 * BIGQUERY_MIN_LIMIT * 1000) {
+			await dataset.table(websiteName).delete()
+			console.log('deleted:', websiteName)
+		} else {
+			console.log(
+				`You need to wait at least ${BIGQUERY_MIN_LIMIT} min to reinsert table => ${websiteName}`
+			)
+			return false
+		}
 	} catch (error) {
-		console.log(error)
+		console.log(error.message)
 	}
 	return createTableFunc()
 }
@@ -140,8 +151,6 @@ async function init() {
 		const [datasetExists] = await dataset.exists()
 		if (!datasetExists) dataset = await dataset.create()
 
-		// There is a time limit restriction
-		// TODO: add when table fill is ran under 2 min
 		// Create Tables
 		importTables(() => console.log('Init called'))
 	} catch (error) {
