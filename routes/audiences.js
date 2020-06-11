@@ -8,7 +8,7 @@ const { sha256 } = require('ethers').utils
 
 const router = express.Router()
 
-router.get('/by-owner', noCache, getAudiencesByOwner)
+router.get('/', noCache, getAudiencesByOwner)
 router.get('/:id', getAudience)
 router.put(
 	'/:id',
@@ -23,21 +23,21 @@ router.post(
 
 // TODO: schemas
 
-function getByOwnerQuery(creator) {
+function getByOwnerQuery(owner) {
 	return {
-		owner: { $in: [creator.toLowerCase(), getAddress(creator)] },
+		owner: { $in: [owner.toLowerCase(), getAddress(owner)] },
 	}
 }
 
 async function getAudiencesByOwner(req, res) {
 	try {
 		const identity = req.identity
-		const audiencesCol = db.getMongo().collection('audience')
+		const audiencesCol = db.getMongo().collection('audiences')
 
-		const audiences =
-			(await audiencesCol
-				.find(getByOwnerQuery(identity), { projection: { _id: 0 } })
-				.toArray()) || []
+		console.log('identity', identity)
+		const audiences = await audiencesCol
+			.find(getByOwnerQuery(identity), { projection: { _id: 0 } })
+			.toArray()
 
 		return res.json({ audiences })
 	} catch (err) {
@@ -49,7 +49,7 @@ async function getAudiencesByOwner(req, res) {
 async function getAudience(req, res) {
 	try {
 		const { id } = req.params
-		const audiencesCol = db.getMongo().collection('audience')
+		const audiencesCol = db.getMongo().collection('audiences')
 		const audience = await audiencesCol.findOne(
 			{ id },
 			{ projection: { _id: 0 } }
@@ -68,7 +68,7 @@ async function getAudience(req, res) {
 
 function updateAudience(req, res) {
 	const { id } = req.params
-	const audiencesCol = db.getMongo().collection('audience')
+	const audiencesCol = db.getMongo().collection('audiences')
 	const audience = req.body
 	audience.updated = new Date()
 
