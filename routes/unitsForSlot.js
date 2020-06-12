@@ -63,7 +63,7 @@ async function getUnitsForSlot(req) {
 		'adSlot.categories': categories,
 		'adSlot.hostname': adSlot.website
 			? url.parse(adSlot.website).hostname
-			: undefined,
+			: '',
 		'adSlot.alexaRank': typeof alexaRank === 'number' ? alexaRank : undefined,
 	}
 
