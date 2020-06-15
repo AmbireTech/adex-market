@@ -16,7 +16,7 @@ router.put(
 	updateAudience
 )
 router.post(
-	'/:id',
+	'/',
 	// celebrate({ body: schemas.audience }),
 	postAudience
 )
@@ -34,7 +34,6 @@ async function getAudiencesByOwner(req, res) {
 		const identity = req.identity
 		const audiencesCol = db.getMongo().collection('audiences')
 
-		console.log('identity', identity)
 		const audiences = await audiencesCol
 			.find(getByOwnerQuery(identity), { projection: { _id: 0 } })
 			.toArray()
@@ -93,7 +92,6 @@ async function postAudience(req, res) {
 		const audience = req.body
 		audience.owner = req.identity
 		audience.created = new Date()
-		audience.campaignId = req.params.campaignId
 		audience.id = sha256(Buffer.from(JSON.stringify({ ...audience })))
 		const audiencesCol = db.getMongo().collection('audiences')
 
