@@ -168,6 +168,7 @@ function mapCampaign(campaign) {
 		spec: {
 			withdrawPeriodStart: campaign.spec.withdrawPeriodStart,
 			activeFrom: campaign.spec.activeFrom,
+			created: campaign.spec.created,
 			validators: campaign.spec.validators,
 		},
 	}
