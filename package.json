@@ -26,12 +26,12 @@
   "license": "MIT",
   "dependencies": {
     "adex-adview-manager": "^2.0.1",
-    "adex-models": "git+https://git@github.com/AdExBlockchain/adex-models.git#6b9051c54ba70c619838122ea85198ea8979a4c2",
+    "adex-models": "git+https://git@github.com/AdExBlockchain/adex-models.git#d93ddc594344dc53fc3b76c365cccfddfcd23cce",
     "bn.js": "^4.11.8",
     "body-parser": "^1.18.3",
     "celebrate": "^9.1.0",
     "dotenv": "^6.2.0",
-    "eth-sig-util": "^2.1.1",
+    "eth-sig-util": "^2.1.1",\
     "ethereumjs-util": "^6.1.0",
     "ethers": "^4.0.18",
     "express": "^4.16.4",
