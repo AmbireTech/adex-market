@@ -198,6 +198,7 @@ async function postAdSlot(req, res) {
 
 function putAdSlot(req, res) {
 	const adSlot = new AdSlot(req.body)
+	adSlot.modified = new Date()
 	const adSlotsCol = db.getMongo().collection('adSlots')
 	const ipfs = req.params.id
 	return adSlotsCol.findOneAndUpdate(
