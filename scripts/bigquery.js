@@ -5,10 +5,11 @@ const getRequest = require('../helpers/getRequest')
 
 // make sure you use the corresponding market to the db you use
 const ADEX_MARKET_URL = process.env.ADEX_MARKET_URL || 'http://localhost:3012'
-const WEBSITES_TABLE_NAME = 'websites2'
-const ADSLOTS_TABLE_NAME = 'adSlots2'
+const WEBSITES_TABLE_NAME = 'websites3'
+const ADSLOTS_TABLE_NAME = 'adSlots3'
+const CAMPAIGNS_TABLE_NAME = 'campaings5'
 const BIGQUERY_RATE_LIMIT = 10 // There is a limit of ~ 2-10 min between delete and insert
-const DATASET_NAME = process.env.DATASET_NAME || 'development'
+const DATASET_NAME = process.env.DATASET_NAME || 'development777'
 const options = {
 	keyFilename: './credentials/adex-bigquery.json',
 	projectId: process.env.GOOGLE_CLOUD_PROJECT,
@@ -61,6 +62,45 @@ async function createWebsitesTable() {
 				rank: website.rank,
 				reachPerMillion: parseFloat(website.reachPerMillion),
 				webshrinkerCategories: website.webshrinkerCategories || [],
+			}
+		}
+	)
+}
+
+async function createCampaignsTable() {
+	// Create the dataset
+	await dataset.createTable(CAMPAIGNS_TABLE_NAME, {
+		schema: {
+			fields: [
+				{ name: 'campaignId', type: 'STRING', mode: 'REQUIRED' },
+				{ name: 'creator', type: 'STRING', mode: 'REQUIRED' },
+				{ name: 'depositAmount', type: 'STRING', mode: 'NULLABLE' },
+				{ name: 'createdDate', type: 'TIMESTAMP', mode: 'NULLABLE' },
+				{ name: 'adUnits', type: 'STRING', mode: 'REPEATED' },
+				{ name: 'validUntil', type: 'TIMESTAMP', mode: 'NULLABLE' },
+				{ name: 'status', type: 'STRING', mode: 'NULLABLE' },
+			],
+		},
+	})
+	return startImport(
+		CAMPAIGNS_TABLE_NAME,
+		getMongo()
+			.collection('campaigns')
+			.find()
+			.sort({ _id: -1 })
+			.stream(),
+		function(campaing) {
+			if (!campaing) return
+			return {
+				campaignId: campaing._id.toString(),
+				creator: campaing.creator.toString(),
+				depositAmount: campaing.depositAmount,
+				createdDate: campaing.spec.created
+					? parseInt(new Date(campaing.spec.created).getTime() / 1000)
+					: null,
+				adUnits: campaing.spec.adUnits.map(i => i.ipfs),
+				validUntil: campaing.validUntil || null,
+				status: campaing.status.name,
 			}
 		}
 	)
@@ -136,9 +176,15 @@ async function deleteTableAndImport(websiteName, createTableFunc) {
 
 function importTables(cb) {
 	Promise.all([
-		deleteTableAndImport(WEBSITES_TABLE_NAME, createWebsitesTable),
-		deleteTableAndImport(ADSLOTS_TABLE_NAME, createAdSlotTable),
-	]).then(() => process.exit(0))
+		// deleteTableAndImport(WEBSITES_TABLE_NAME, createWebsitesTable),
+		// deleteTableAndImport(ADSLOTS_TABLE_NAME, createAdSlotTable),
+		deleteTableAndImport(CAMPAIGNS_TABLE_NAME, createCampaignsTable),
+	])
+		.then(() => process.exit(0))
+		.catch(e => {
+			console.log(e)
+			process.exit(1)
+		})
 	cb()
 }
 
@@ -150,7 +196,10 @@ async function init() {
 		// Make sure there is a dataset with that name otherwise create it
 		dataset = bigqueryClient.dataset(DATASET_NAME)
 		const [datasetExists] = await dataset.exists()
-		if (!datasetExists) dataset = await dataset.create()
+		if (!datasetExists) {
+			await dataset.create()
+			dataset = bigqueryClient.dataset(DATASET_NAME)
+		}
 
 		// Create Tables
 		await importTables(() => console.log('> initiated importTables'))
@@ -207,12 +256,15 @@ function startImport(tableName, stream, map) {
 			return checkReady()
 		} catch (e) {
 			if (e && e.errors) {
-				e.errors.forEach(e => {
+				e.errors.slice(0, 4).forEach(e => {
 					console.error('table.insert catch err', e)
 				})
+				if (e.errors.length > 6)
+					console.log(`There are ${e.errors.length - 5} more errors...`)
 			} else {
 				console.error('table.insert catch', e)
 			}
+			process.exit(1)
 		}
 	}
 
