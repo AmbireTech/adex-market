@@ -1,8 +1,8 @@
 const express = require('express')
 const db = require('../db')
 const { noCache } = require('../helpers/cache')
-// const { schemas } = require('adex-models')
-// const { celebrate } = require('celebrate')
+const { schemas, Audience } = require('adex-models')
+const { celebrate } = require('celebrate')
 const { getAddress } = require('ethers/utils')
 const { sha256 } = require('ethers').utils
 
@@ -10,16 +10,8 @@ const router = express.Router()
 
 router.get('/', noCache, getAudiencesByOwner)
 router.get('/:id', getAudience)
-router.put(
-	'/:id',
-	// celebrate({ body: schemas.audience }),
-	updateAudience
-)
-router.post(
-	'/',
-	// celebrate({ body: schemas.audience }),
-	postAudience
-)
+router.put('/:id', celebrate({ body: schemas.audiencePut }), updateAudience)
+router.post('/', celebrate({ body: schemas.audiencePost }), postAudience)
 
 // TODO: schemas
 
@@ -68,13 +60,13 @@ async function getAudience(req, res) {
 function updateAudience(req, res) {
 	const { id } = req.params
 	const audiencesCol = db.getMongo().collection('audiences')
-	const audience = req.body
-	audience.updated = new Date()
+	const audience = new Audience(req.body)
+	audience.modified = new Date()
 
 	return audiencesCol.findOneAndUpdate(
 		{ id },
 		{
-			$set: audience,
+			$set: audience.marketDbUpdate,
 		},
 		{ returnOriginal: false },
 		(err, result) => {
