@@ -109,3 +109,12 @@ However, the more general reasons are:
 
 - To allow easy changes of policy without having to modify every record in the database
 - To avoid having to do "housekeeping" tasks, e.g. if we use a field `categories` rather than computing them query-time, we'll have to update it every time we set some override in `webshrinkerCategoriesOverrides`
+
+
+### "Catch all" campaigns
+
+This is not directly related to verification, but it plays an important role in how traffic is moderated.
+
+For a publisher to appear in the platform list of publishers, they need to have received a significant number of impressions. But without appearing there, they can't receive any number of impressions - so it's essentially a chicken-and-egg problem.
+
+To solve this, we have to ensure there are always "catch all" campaigns - those are campaigns with no targeting set, in other words: all criteria is set to "All".
