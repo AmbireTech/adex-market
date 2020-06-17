@@ -5,9 +5,9 @@ const getRequest = require('../helpers/getRequest')
 
 // make sure you use the corresponding market to the db you use
 const ADEX_MARKET_URL = process.env.ADEX_MARKET_URL || 'http://localhost:3012'
-const WEBSITES_TABLE_NAME = 'websites3'
-const ADSLOTS_TABLE_NAME = 'adSlots3'
-const CAMPAIGNS_TABLE_NAME = 'campaings5'
+const WEBSITES_TABLE_NAME = 'websites'
+const ADSLOTS_TABLE_NAME = 'adSlots'
+const CAMPAIGNS_TABLE_NAME = 'campaings'
 const BIGQUERY_RATE_LIMIT = 10 // There is a limit of ~ 2-10 min between delete and insert
 const DATASET_NAME = process.env.DATASET_NAME || 'development777'
 const options = {
@@ -176,8 +176,8 @@ async function deleteTableAndImport(websiteName, createTableFunc) {
 
 function importTables(cb) {
 	Promise.all([
-		// deleteTableAndImport(WEBSITES_TABLE_NAME, createWebsitesTable),
-		// deleteTableAndImport(ADSLOTS_TABLE_NAME, createAdSlotTable),
+		deleteTableAndImport(WEBSITES_TABLE_NAME, createWebsitesTable),
+		deleteTableAndImport(ADSLOTS_TABLE_NAME, createAdSlotTable),
 		deleteTableAndImport(CAMPAIGNS_TABLE_NAME, createCampaignsTable),
 	])
 		.then(() => process.exit(0))
