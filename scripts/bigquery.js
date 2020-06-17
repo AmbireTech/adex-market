@@ -11,7 +11,8 @@ const CAMPAIGNS_TABLE_NAME = 'campaings'
 const BIGQUERY_RATE_LIMIT = 10 // There is a limit of ~ 2-10 min between delete and insert
 const DATASET_NAME = process.env.DATASET_NAME || 'development777'
 const options = {
-	keyFilename: './credentials/adex-bigquery.json',
+	keyFilename:
+		process.env.PATH_TO_KEY_FILE || './credentials/adex-bigquery.json',
 	projectId: process.env.GOOGLE_CLOUD_PROJECT,
 }
 
