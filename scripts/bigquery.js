@@ -220,8 +220,8 @@ function startImport(tableName, stream, map) {
 		stream.on('data', processObj)
 		stream.on('end', async () => {
 			ready = true
-			const isReady = await checkReady()
-			resolve(isReady)
+			const resolved = await checkReady()
+			resolve(resolved)
 		})
 		stream.on('error', err => reject(err))
 	})
