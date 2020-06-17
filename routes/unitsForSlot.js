@@ -20,7 +20,7 @@ router.get('/:id', getUnitsForSlotRoute)
 function getUnitsForSlotRoute(req, res) {
 	getUnitsForSlot(req)
 		.then(resp => {
-			res.set('Cache-Control', 'public, max-age=60')
+			res.set('Cache-Control', 'public, max-age=20')
 			if (!resp) res.sendStatus(404)
 			else res.send(resp)
 		})
@@ -63,7 +63,7 @@ async function getUnitsForSlot(req) {
 		'adSlot.categories': categories,
 		'adSlot.hostname': adSlot.website
 			? url.parse(adSlot.website).hostname
-			: undefined,
+			: '',
 		'adSlot.alexaRank': typeof alexaRank === 'number' ? alexaRank : undefined,
 	}
 
@@ -102,10 +102,7 @@ async function getUnitsForSlot(req) {
 			const units = campaign.spec.adUnits.filter(u => u.type === adSlot.type)
 			if (!units.length) return null
 
-			const targetingRules =
-				campaign.targetingRules ||
-				campaign.spec.targetingRules ||
-				shimTargetingRules(campaign)
+			const targetingRules = campaign.targetingRules || campaign.spec.targetingRules || []
 			const adSlotRules = Array.isArray(adSlot.rules) ? adSlot.rules : []
 
 			const campaignInput = targetingInputGetter.bind(
@@ -113,6 +110,9 @@ async function getUnitsForSlot(req) {
 				targetingInputBase,
 				campaign
 			)
+			const onTypeErr = function onTypeErr(e, rule) {
+				console.error(`WARNING: rule for ${campaign.id} failing with:`, e, rule)
+			}
 			const matchingUnits = units
 				.map(u => {
 					const input = campaignInput.bind(null, u)
@@ -121,12 +121,7 @@ async function getUnitsForSlot(req) {
 						show: true,
 						'price.IMPRESSION': minPrice,
 					}
-					const onTypeErr = (e, rule) =>
-						console.error(
-							`WARNING: rule for ${campaign.id} failing with:`,
-							e,
-							rule
-						)
+
 					output = evaluateMultiple(input, output, targetingRules, onTypeErr)
 
 					if (output.show === false) return null
@@ -164,39 +159,6 @@ async function getUnitsForSlot(req) {
 	}
 }
 
-// @TODO remove that
-function shimTargetingRules(campaign) {
-	let categories = []
-	for (const unit of campaign.spec.adUnits) {
-		for (const tag of unit.targeting) {
-			if (tag.tag === 'cryptocurrency' || tag.tag === 'crypto') {
-				categories.push('IAB13')
-				categories.push('IAB13-11')
-			}
-			if (tag.tag === 'entertainment media') {
-				categories.push('IAB1')
-				categories.push('IAB1-5')
-			}
-			if (tag.tag === 'stremio' || tag.tag === 'stremio_user') {
-				// or just add a rule that only matches stremio
-				categories.push('IAB1')
-				categories.push('IAB1-5')
-			}
-		}
-	}
-	return [
-		//{ onlyShowIf: { intersects: [{ get: 'adSlot.categories' }, categories] } },
-		// @TODO unless three's a tag in any of the units
-		{ onlyShowIf: { nin: [{ get: 'adSlot.categories' }, 'Incentive'] } },
-		// one rule with an adview input var, so that we can test that and implement freq cap
-		{
-			onlyShowIf: {
-				gt: [{ get: 'adView.secondsSinceCampaignImpression' }, 900],
-			},
-		},
-	]
-}
-
 function mapCampaign(campaign) {
 	return {
 		id: campaign.id,
@@ -206,6 +168,7 @@ function mapCampaign(campaign) {
 		spec: {
 			withdrawPeriodStart: campaign.spec.withdrawPeriodStart,
 			activeFrom: campaign.spec.activeFrom,
+			created: campaign.spec.created,
 			validators: campaign.spec.validators,
 		},
 	}
