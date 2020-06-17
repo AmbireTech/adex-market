@@ -13,8 +13,6 @@ router.get('/:id', getAudience)
 router.put('/:id', celebrate({ body: schemas.audiencePut }), updateAudience)
 router.post('/', celebrate({ body: schemas.audiencePost }), postAudience)
 
-// TODO: schemas
-
 function getByOwnerQuery(owner) {
 	return {
 		owner: { $in: [owner.toLowerCase(), getAddress(owner)] },
