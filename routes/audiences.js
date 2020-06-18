@@ -3,8 +3,7 @@ const db = require('../db')
 const { noCache } = require('../helpers/cache')
 const { schemas, Audience } = require('adex-models')
 const { celebrate } = require('celebrate')
-const { getAddress } = require('ethers/utils')
-const { sha256 } = require('ethers').utils
+const crypto = require('crypto')
 
 const router = express.Router()
 
@@ -13,19 +12,13 @@ router.get('/:id', getAudience)
 router.put('/:id', celebrate({ body: schemas.audiencePut }), updateAudience)
 router.post('/', celebrate({ body: schemas.audiencePost }), postAudience)
 
-function getByOwnerQuery(owner) {
-	return {
-		owner: { $in: [owner.toLowerCase(), getAddress(owner)] },
-	}
-}
-
 async function getAudiencesByOwner(req, res) {
 	try {
-		const identity = req.identity
+		const owner = req.identity
 		const audiencesCol = db.getMongo().collection('audiences')
 
 		const audiences = await audiencesCol
-			.find(getByOwnerQuery(identity), { projection: { _id: 0 } })
+			.find({ owner }, { projection: { _id: 0 } })
 			.toArray()
 
 		return res.json({ audiences })
@@ -82,7 +75,13 @@ async function postAudience(req, res) {
 		const audience = req.body
 		audience.owner = req.identity
 		audience.created = new Date()
-		audience.id = sha256(Buffer.from(JSON.stringify({ ...audience })))
+
+		const id = crypto
+			.createHash('sha256')
+			.update(JSON.stringify({ ...audience }))
+			.digest('hex')
+
+		audience.id = '0x' + id
 		const audiencesCol = db.getMongo().collection('audiences')
 
 		await audiencesCol.insertOne(audience)
