@@ -296,8 +296,7 @@ async function getTargetingData(req, res) {
 					$match: {
 						$and: [
 							{ owner: { $exists: true } },
-							{ website: { $exists: true } },
-							{ website: { $ne: '' } },
+							{ website: { $nin: [null, ''] } },
 						],
 					},
 				},
