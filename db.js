@@ -62,6 +62,7 @@ function createIndexes(db) {
 		{ publisher: 1, hostname: 1 },
 		{ unique: true }
 	)
+	db.collection('audiences').createIndex({ id: 1 })
 }
 
 module.exports = { connect, getMongo }
