@@ -175,6 +175,7 @@ async function closeCampaign(req, res) {
 function updateCampaign(req, res) {
 	const id = req.params.id
 	const campaign = new Campaign(req.body)
+	campaign.modified = new Date()
 	const campaignsCol = db.getMongo().collection('campaigns')
 
 	return campaignsCol.findOneAndUpdate(
