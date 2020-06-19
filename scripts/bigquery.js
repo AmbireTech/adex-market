@@ -2,6 +2,7 @@ require('dotenv').config()
 const { getMongo, connect } = require('../db')
 const { BigQuery } = require('@google-cloud/bigquery')
 const getRequest = require('../helpers/getRequest')
+const { formatUnits } = require('ethers/utils')
 
 // make sure you use the corresponding market to the db you use
 const ADEX_MARKET_URL = process.env.ADEX_MARKET_URL || 'http://localhost:3012'
@@ -10,6 +11,7 @@ const ADSLOTS_TABLE_NAME = 'adSlots'
 const CAMPAIGNS_TABLE_NAME = 'campaings'
 const BIGQUERY_RATE_LIMIT = 10 // There is a limit of ~ 2-10 min between delete and insert
 const DATASET_NAME = process.env.DATASET_NAME || 'development'
+const TOKEN_DECIMALS = process.env.TOKEN_DECIMALS || 18
 const options = {
 	keyFilename:
 		process.env.PATH_TO_KEY_FILE || './credentials/adex-bigquery.json',
@@ -33,7 +35,7 @@ async function createWebsitesTable() {
 				{ name: 'verifiedOwnership', type: 'BOOL', mode: 'NULLABLE' },
 				{ name: 'websiteUrl', type: 'STRING', mode: 'NULLABLE' },
 				{ name: 'rank', type: 'INT64', mode: 'NULLABLE' },
-				{ name: 'reachPerMillion', type: 'FLOAT64', mode: 'NULLABLE' },
+				{ name: 'reachPerMillion', type: 'NUMERIC', mode: 'NULLABLE' },
 				{ name: 'webshrinkerCategories', type: 'STRING', mode: 'REPEATED' },
 			],
 		},
@@ -75,7 +77,7 @@ async function createCampaignsTable() {
 			fields: [
 				{ name: 'campaignId', type: 'STRING', mode: 'REQUIRED' },
 				{ name: 'creator', type: 'STRING', mode: 'REQUIRED' },
-				{ name: 'depositAmount', type: 'STRING', mode: 'NULLABLE' },
+				{ name: 'depositAmount', type: 'NUMERIC', mode: 'NULLABLE' },
 				{ name: 'createdDate', type: 'TIMESTAMP', mode: 'NULLABLE' },
 				{ name: 'adUnits', type: 'STRING', mode: 'REPEATED' },
 				{ name: 'validUntil', type: 'TIMESTAMP', mode: 'NULLABLE' },
@@ -95,7 +97,9 @@ async function createCampaignsTable() {
 			return {
 				campaignId: campaing._id.toString(),
 				creator: campaing.creator.toString(),
-				depositAmount: campaing.depositAmount,
+				depositAmount: Number(
+					formatUnits(campaing.depositAmount, TOKEN_DECIMALS)
+				),
 				createdDate: campaing.spec.created
 					? parseInt(new Date(campaing.spec.created).getTime() / 1000)
 					: null,
