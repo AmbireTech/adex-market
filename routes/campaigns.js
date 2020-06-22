@@ -11,7 +11,7 @@ const { getAddress } = require('ethers/utils')
 const BN = require('bn.js')
 const router = express.Router()
 
-const MAX_LIMIT = 500
+const MAX_LIMIT = 666
 const EARNINGS_LIMIT = new BN(cfg.limitedIdentityEarningsLimit)
 
 router.get('/', getCampaigns)
@@ -94,7 +94,7 @@ async function getCampaignsFromQuery(query) {
 async function getCampaigns(req, res) {
 	try {
 		const campaigns = await getCampaignsFromQuery(req.query)
-		res.set('Cache-Control', 'public, max-age=300')
+		res.set('Cache-Control', 'public, max-age=30')
 		return res.send(campaigns)
 	} catch (err) {
 		console.error('Error getting campaigns', err)
@@ -175,6 +175,7 @@ async function closeCampaign(req, res) {
 function updateCampaign(req, res) {
 	const id = req.params.id
 	const campaign = new Campaign(req.body)
+	campaign.modified = new Date()
 	const campaignsCol = db.getMongo().collection('campaigns')
 
 	return campaignsCol.findOneAndUpdate(
