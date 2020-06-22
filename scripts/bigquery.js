@@ -197,7 +197,10 @@ async function init() {
 	try {
 		await connect()
 		const bigqueryClient = new BigQuery(options)
-
+		const testAdSlot = await getMongo()
+			.collection('adSlots')
+			.findOne()
+		await getRequest(`${ADEX_MARKET_URL}/slots/${testAdSlot.ipfs}`) // Tests if market is running
 		// Make sure there is a dataset with that name otherwise create it
 		dataset = bigqueryClient.dataset(DATASET_NAME)
 		const [datasetExists] = await dataset.exists()
