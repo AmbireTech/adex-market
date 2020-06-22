@@ -13,6 +13,7 @@ const signatureCheck = require('../helpers/signatureCheck')
 const router = express.Router()
 
 router.get('/', getAdSlots)
+router.get('/targeting-data', getTargetingData)
 router.get('/:id', getAdSlotById)
 router.post(
 	'/verify-website',
@@ -197,6 +198,7 @@ async function postAdSlot(req, res) {
 
 function putAdSlot(req, res) {
 	const adSlot = new AdSlot(req.body)
+	adSlot.modified = new Date()
 	const adSlotsCol = db.getMongo().collection('adSlots')
 	const ipfs = req.params.id
 	return adSlotsCol.findOneAndUpdate(
@@ -279,6 +281,79 @@ async function verifyWebsite(req, res) {
 		})
 	} catch (err) {
 		console.error('Error verifyWebsite', err)
+		return res.status(500).send(err.toString())
+	}
+}
+
+async function getTargetingData(req, res) {
+	try {
+		const adSlotsCol = db.getMongo().collection('adSlots')
+		const websitesCol = db.getMongo().collection('websites')
+
+		const websitesWithSlots = await adSlotsCol
+			.aggregate([
+				{
+					$match: {
+						$and: [
+							{ owner: { $exists: true } },
+							{ website: { $nin: [null, ''] } },
+						],
+					},
+				},
+				{
+					$group: {
+						_id: { website: '$website' },
+						owners: {
+							$addToSet: { owner: '$owner', type: '$type' },
+						},
+					},
+				},
+				{
+					$project: {
+						_id: 0,
+						website: '$_id.website',
+						owners: '$owners',
+					},
+				},
+			])
+			.toArray()
+
+		const websitesWithInfo = (
+			await Promise.all(
+				websitesWithSlots.map(async ({ website, owners }) => {
+					const websiteInfo = (
+						await Promise.all(
+							owners.map(async ({ owner }) => ({
+								owner,
+								...(await getWebsitesInfo(websitesCol, {
+									owner,
+									website,
+								})),
+							}))
+						)
+					).find(
+						x => !!x && !!x.acceptedReferrers && x.acceptedReferrers.length
+					)
+
+					if (websiteInfo) {
+						return {
+							hostname: url.parse(website).hostname,
+							website,
+							...websiteInfo,
+							types: owners
+								.filter(({ owner }) => owner === websiteInfo.owner)
+								.map(({ type }) => type)
+								.filter((t, i, all) => all.indexOf(t) === i),
+						}
+					}
+				})
+			)
+		).filter(x => !!x && x.owner)
+
+		res.set('Cache-Control', `public, max-age=${15 * 60}`)
+		res.json(websitesWithInfo)
+	} catch (err) {
+		console.error('Error getting targeting data', err)
 		return res.status(500).send(err.toString())
 	}
 }
