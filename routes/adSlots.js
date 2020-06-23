@@ -2,8 +2,6 @@ const express = require('express')
 const url = require('url')
 const { celebrate } = require('celebrate')
 const { schemas, AdSlot } = require('adex-models')
-const { getAddress, bigNumberify } = require('ethers/utils')
-
 const db = require('../db')
 const { verifyPublisher, validQuery } = require('../lib/publisherVerification')
 const { getWebsitesInfo } = require('../lib/publisherWebsitesInfo')
@@ -43,10 +41,8 @@ async function getAdSlots(req, res) {
 
 		const query = {}
 
-		const publisherIds = [identity.toLowerCase(), getAddress(identity)]
-
 		if (identity) {
-			query['owner'] = { $in: publisherIds }
+			query['owner'] = identity
 		}
 
 		const slots = await adSlotsCol
@@ -347,6 +343,7 @@ async function getTargetingData(req, res) {
 			])
 			.toArray()
 
+		// TODO: Make this mapping in the pipeline
 		const targetingData = validWebsites.map(({ adSlots, ...rest }) => {
 			const types = adSlots.reduce(
 				(types, slot) => {
