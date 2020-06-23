@@ -2,7 +2,7 @@ const express = require('express')
 const url = require('url')
 const { celebrate } = require('celebrate')
 const { schemas, AdSlot } = require('adex-models')
-const { getAddress } = require('ethers/utils')
+const { getAddress, bigNumberify } = require('ethers/utils')
 
 const db = require('../db')
 const { verifyPublisher, validQuery } = require('../lib/publisherVerification')
@@ -287,71 +287,85 @@ async function verifyWebsite(req, res) {
 
 async function getTargetingData(req, res) {
 	try {
-		const adSlotsCol = db.getMongo().collection('adSlots')
 		const websitesCol = db.getMongo().collection('websites')
 
-		const websitesWithSlots = await adSlotsCol
+		const validWebsites = await websitesCol
 			.aggregate([
 				{
 					$match: {
-						$and: [
-							{ owner: { $exists: true } },
-							{ website: { $nin: [null, ''] } },
-						],
+						...validQuery,
+						webshrinkerCategories: { $exists: true, $not: { $size: 0 } },
 					},
 				},
 				{
 					$group: {
-						_id: { website: '$website' },
-						owners: {
-							$addToSet: { owner: '$owner', type: '$type' },
+						_id: {
+							hostname: '$hostname',
 						},
+						hostname: {
+							$first: '$hostname',
+						},
+						categories: {
+							$first: '$webshrinkerCategories',
+						},
+						owner: {
+							$first: '$publisher',
+						},
+						alexaRank: {
+							$first: '$rank',
+						},
+						alexaDataUrl: {
+							$first: '$alexaDataUrl',
+						},
+						reachPerMillion: {
+							$first: '$reachPerMillion',
+						},
+					},
+				},
+				{
+					$lookup: {
+						from: 'adSlots',
+						localField: 'owner',
+						foreignField: 'owner',
+						as: 'adSlots',
 					},
 				},
 				{
 					$project: {
 						_id: 0,
-						website: '$_id.website',
-						owners: '$owners',
+						hostname: 1,
+						owner: 1,
+						categories: 1,
+						alexaRank: 1,
+						alexaDataUrl: 1,
+						reachPerMillion: 1,
+						adSlots: {
+							type: 1,
+						},
 					},
 				},
 			])
 			.toArray()
 
-		const websitesWithInfo = (
-			await Promise.all(
-				websitesWithSlots.map(async ({ website, owners }) => {
-					const websiteInfo = (
-						await Promise.all(
-							owners.map(async ({ owner }) => ({
-								owner,
-								...(await getWebsitesInfo(websitesCol, {
-									owner,
-									website,
-								})),
-							}))
-						)
-					).find(
-						x => !!x && !!x.acceptedReferrers && x.acceptedReferrers.length
-					)
+		const targetingData = validWebsites.map(({ adSlots, ...rest }) => {
+			const types = adSlots.reduce(
+				(types, slot) => {
+					types.add(slot.type)
 
-					if (websiteInfo) {
-						return {
-							hostname: url.parse(website).hostname,
-							website,
-							...websiteInfo,
-							types: owners
-								.filter(({ owner }) => owner === websiteInfo.owner)
-								.map(({ type }) => type)
-								.filter((t, i, all) => all.indexOf(t) === i),
-						}
-					}
-				})
+					return types
+				},
+
+				new Set()
 			)
-		).filter(x => !!x && x.owner)
+
+			return {
+				...rest,
+				types: Array.from(types),
+			}
+		})
 
 		res.set('Cache-Control', `public, max-age=${15 * 60}`)
-		res.json(websitesWithInfo)
+		res.json(targetingData)
 	} catch (err) {
 		console.error('Error getting targeting data', err)
 		return res.status(500).send(err.toString())
