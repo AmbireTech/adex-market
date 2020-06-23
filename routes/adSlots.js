@@ -341,7 +341,6 @@ async function getTargetingData(req, res) {
 						reachPerMillion: 1,
 						adSlots: {
 							type: 1,
-							minPerImpression: 1,
 						},
 					},
 				},
@@ -349,39 +348,19 @@ async function getTargetingData(req, res) {
 			.toArray()
 
 		const targetingData = validWebsites.map(({ adSlots, ...rest }) => {
-			const { types, minPerImpressionByType } = adSlots.reduce(
-				(data, slot) => {
-					data.types.add(slot.type)
+			const types = adSlots.reduce(
+				(types, slot) => {
+					types.add(slot.type)
 
-					// NOTE: Ignore minPerImpression toke address as it is DAI or SAI for legacy slot data
-					// TODO: Get min per impression from slot.rules
-					Object.entries(slot.minPerImpression || {}).forEach(
-						([key, value]) => {
-							const currentMaxValue = bigNumberify(
-								data.minPerImpressionByType[slot.type] || '0'
-							)
-							const currentValue = bigNumberify(value)
-							data.minPerImpressionByType[slot.type] = (currentMaxValue.gte(
-								currentValue
-							)
-								? currentMaxValue
-								: currentValue
-							).toString()
-						}
-					)
-
-					return data
+					return types
 				},
-				{
-					types: new Set(),
-					minPerImpressionByType: {},
-				}
+
+				new Set()
 			)
 
 			return {
 				...rest,
 				types: Array.from(types),
-				minPerImpressionByType,
 			}
 		})
 
