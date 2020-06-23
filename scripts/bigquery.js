@@ -13,8 +13,7 @@ const BIGQUERY_RATE_LIMIT = 10 // There is a limit of ~ 2-10 min between delete 
 const DATASET_NAME = process.env.DATASET_NAME || 'development'
 const TOKEN_DECIMALS = process.env.TOKEN_DECIMALS || 18
 const options = {
-	keyFilename:
-		process.env.PATH_TO_KEY_FILE || './credentials/adex-bigquery.json',
+	keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
 	projectId: process.env.GOOGLE_CLOUD_PROJECT,
 }
 
