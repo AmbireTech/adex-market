@@ -60,6 +60,10 @@ async function getUnitsForSlot(req) {
 		secondsSinceEpoch: Math.floor(Date.now() / 1000),
 		userAgentOS: ua.os.name,
 		userAgentBrowserFamily: ua.browser.name,
+	}
+	// We return those in the result (which means AdView would have those) but we don't actually use them
+	// we do that in order to have the same variables as the validator, so that the `price` is the same
+	const targetingInputExtra = {
 		'adSlot.categories': categories,
 		'adSlot.hostname': adSlot.website
 			? url.parse(adSlot.website).hostname
@@ -152,7 +156,7 @@ async function getUnitsForSlot(req) {
 		.filter(x => x)
 
 	return {
-		targetingInputBase,
+		targetingInputBase: { ...targetingInputBase, ...targetingInputExtra },
 		acceptedReferrers,
 		fallbackUnit,
 		campaigns,
