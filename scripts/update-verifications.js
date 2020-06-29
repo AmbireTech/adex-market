@@ -26,7 +26,7 @@ async function run() {
 		console.log('WARNING: records over 2000, script needs rewrite!')
 	}
 
-	const limit = pLimit(10)
+	const limit = pLimit(8)
 	const verifyAndUpdate = async website => {
 		// @TODO we can't re-verify integration cause we don't have the original URL at which it was verified
 		const publisher = website.publisher
