@@ -74,7 +74,7 @@ async function getAdSlots(req, res) {
 					hostname: {
 						$in: Object.keys(hosts),
 					},
-					publisher: { $in: publisherIds },
+					publisher: identity,
 				})
 				.toArray()
 
@@ -84,7 +84,7 @@ async function getAdSlots(req, res) {
 						hostname: {
 							$in: publisherWebsites.map(({ hostname }) => hostname),
 						},
-						publisher: { $nin: publisherIds },
+						publisher: { $ne: identity },
 						...validQuery,
 					},
 					{ projection: { hostname: 1 } }
@@ -259,28 +259,6 @@ function getWebsiteIssues(websiteRecord, existingFromOthers) {
 	return issues
 }
 
-async function verifyWebsite(req, res) {
-	try {
-		const { websiteRecord, existingFromOthers } = await getWebsiteData(
-			req.identity,
-			req.body.websiteUrl
-		)
-
-		const issues = getWebsiteIssues(websiteRecord, existingFromOthers)
-
-		await updateWebsite(websiteRecord)
-
-		return res.status(200).send({
-			hostname: websiteRecord.hostname,
-			issues,
-			updated: websiteRecord.updated,
-		})
-	} catch (err) {
-		console.error('Error verifyWebsite', err)
-		return res.status(500).send(err.toString())
-	}
-}
-
 const DefaultMinCPMByCategory = {
 	IAB1: 0.5, // 'Arts & Entertainment'
 	IAB2: 0.5, // 'Automotive'
@@ -315,6 +293,50 @@ const DefaultCoefficientByCountryTier = {
 	TIER_2: 2.5,
 	TIER_3: 1.5,
 	TIER_4: 1,
+}
+
+function getLevelOneCategory(cat) {
+	cat.split('-')[0]
+}
+
+const MIN_SLOT_CPM_OVERALL_MULTIPLIER = 0.42
+
+function getMinSuggestedCPM(categories) {
+	const minCpm =
+		categories
+			.map(
+				c =>
+					DefaultMinCPMByCategory[getLevelOneCategory(c)] *
+					DefaultCoefficientByCountryTier['TIER_4'] *
+					MIN_SLOT_CPM_OVERALL_MULTIPLIER
+			)
+			.sort()[0] || 0.1
+
+	return minCpm.toFixed(2)
+}
+
+async function verifyWebsite(req, res) {
+	try {
+		const { websiteRecord, existingFromOthers } = await getWebsiteData(
+			req.identity,
+			req.body.websiteUrl
+		)
+
+		const issues = getWebsiteIssues(websiteRecord, existingFromOthers)
+
+		await updateWebsite(websiteRecord)
+
+		return res.status(200).send({
+			hostname: websiteRecord.hostname,
+			issues,
+			categories: websiteRecord.webshrinkerCategories,
+			suggestedMinCPM: getMinSuggestedCPM(websiteRecord.webshrinkerCategories),
+			updated: websiteRecord.updated,
+		})
+	} catch (err) {
+		console.error('Error verifyWebsite', err)
+		return res.status(500).send(err.toString())
+	}
 }
 
 async function getTargetingData(req, res) {
