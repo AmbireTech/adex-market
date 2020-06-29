@@ -259,6 +259,8 @@ function getWebsiteIssues(websiteRecord, existingFromOthers) {
 	return issues
 }
 
+const DEFAULT_MIN_CPM = 0.1
+
 const DefaultMinCPMByCategory = {
 	IAB1: 0.5, // 'Arts & Entertainment'
 	IAB2: 0.5, // 'Automotive'
@@ -283,7 +285,7 @@ const DefaultMinCPMByCategory = {
 	IAB21: 0.9, //'Real Estate'
 	IAB22: 0.6, //'Shopping'
 	IAB23: 3, // 'Religion & Spirituality'
-	IAB24: 0.1, //'Uncategorize'
+	IAB24: DEFAULT_MIN_CPM, //'Uncategorize'
 	IAB25: 0.2, //"Non-Standard Content"
 	IAB26: 3, //'Illegal Content'
 }
@@ -296,23 +298,22 @@ const DefaultCoefficientByCountryTier = {
 }
 
 function getLevelOneCategory(cat) {
-	cat.split('-')[0]
+	return cat.split('-')[0]
 }
 
-const MIN_SLOT_CPM_OVERALL_MULTIPLIER = 0.42
+const MIN_SLOT_CPM_OVERALL_MULTIPLIER = 0.7777
 
 function getMinSuggestedCPM(categories) {
 	const minCpm =
 		categories
-			.map(
-				c =>
-					DefaultMinCPMByCategory[getLevelOneCategory(c)] *
-					DefaultCoefficientByCountryTier['TIER_4'] *
-					MIN_SLOT_CPM_OVERALL_MULTIPLIER
-			)
-			.sort()[0] || 0.1
+			.map(c => DefaultMinCPMByCategory[getLevelOneCategory(c)])
+			.sort()[0] || DEFAULT_MIN_CPM
 
-	return minCpm.toFixed(2)
+	return (
+		minCpm *
+		DefaultCoefficientByCountryTier['TIER_4'] *
+		MIN_SLOT_CPM_OVERALL_MULTIPLIER
+	).toFixed(2)
 }
 
 async function verifyWebsite(req, res) {
