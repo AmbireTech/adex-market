@@ -2,8 +2,6 @@ const express = require('express')
 const url = require('url')
 const { celebrate } = require('celebrate')
 const { schemas, AdSlot } = require('adex-models')
-const { getAddress, bigNumberify } = require('ethers/utils')
-
 const db = require('../db')
 const { verifyPublisher, validQuery } = require('../lib/publisherVerification')
 const { getWebsitesInfo } = require('../lib/publisherWebsitesInfo')
@@ -43,10 +41,8 @@ async function getAdSlots(req, res) {
 
 		const query = {}
 
-		const publisherIds = [identity.toLowerCase(), getAddress(identity)]
-
 		if (identity) {
-			query['owner'] = { $in: publisherIds }
+			query['owner'] = identity
 		}
 
 		const slots = await adSlotsCol
@@ -78,7 +74,7 @@ async function getAdSlots(req, res) {
 					hostname: {
 						$in: Object.keys(hosts),
 					},
-					publisher: { $in: publisherIds },
+					publisher: identity,
 				})
 				.toArray()
 
@@ -88,7 +84,7 @@ async function getAdSlots(req, res) {
 						hostname: {
 							$in: publisherWebsites.map(({ hostname }) => hostname),
 						},
-						publisher: { $nin: publisherIds },
+						publisher: { $ne: identity },
 						...validQuery,
 					},
 					{ projection: { hostname: 1 } }
@@ -263,6 +259,63 @@ function getWebsiteIssues(websiteRecord, existingFromOthers) {
 	return issues
 }
 
+const DEFAULT_MIN_CPM = 0.1
+
+const DefaultMinCPMByCategory = {
+	IAB1: 0.5, // 'Arts & Entertainment'
+	IAB2: 0.5, // 'Automotive'
+	IAB3: 0.6, //'Business'
+	IAB4: 0.69, //'Careers'
+	IAB5: 0.42, //'Education'
+	IAB6: 0.33, //'Family & Parenting'
+	IAB7: 0.69, //'Health & Fitness'
+	IAB8: 0.28, //'Food & Drink'
+	IAB9: 0.5, //'Hobbies & Interests'
+	IAB10: 0.2, //'Home & Garden'
+	IAB11: 3, //'Law, Government, & Politics'
+	IAB12: 0.6, //'News / Weather / Information'
+	IAB13: 1, //'Personal Finance'
+	IAB14: 0.2, //'Society'
+	IAB15: 0.42, //'Science'
+	IAB16: 0.4, //'Pets'
+	IAB17: 0.72, //'Sports'
+	IAB18: 0.69, //'Style & Fashion'
+	IAB19: 0.314, //'Technology & Computing'
+	IAB20: 0.7, //'Travel'
+	IAB21: 0.9, //'Real Estate'
+	IAB22: 0.6, //'Shopping'
+	IAB23: 3, // 'Religion & Spirituality'
+	IAB24: DEFAULT_MIN_CPM, //'Uncategorize'
+	IAB25: 0.2, //"Non-Standard Content"
+	IAB26: 3, //'Illegal Content'
+}
+
+const DefaultCoefficientByCountryTier = {
+	TIER_1: 4,
+	TIER_2: 2.5,
+	TIER_3: 1.5,
+	TIER_4: 1,
+}
+
+function getLevelOneCategory(cat) {
+	return cat.split('-')[0]
+}
+
+const MIN_SLOT_CPM_OVERALL_MULTIPLIER = 0.7777
+
+function getMinSuggestedCPM(categories) {
+	const minCpm =
+		categories
+			.map(c => DefaultMinCPMByCategory[getLevelOneCategory(c)])
+			.sort()[0] || DEFAULT_MIN_CPM
+
+	return (
+		minCpm *
+		DefaultCoefficientByCountryTier['TIER_4'] *
+		MIN_SLOT_CPM_OVERALL_MULTIPLIER
+	).toFixed(2)
+}
+
 async function verifyWebsite(req, res) {
 	try {
 		const { websiteRecord, existingFromOthers } = await getWebsiteData(
@@ -277,6 +330,8 @@ async function verifyWebsite(req, res) {
 		return res.status(200).send({
 			hostname: websiteRecord.hostname,
 			issues,
+			categories: websiteRecord.webshrinkerCategories,
+			suggestedMinCPM: getMinSuggestedCPM(websiteRecord.webshrinkerCategories),
 			updated: websiteRecord.updated,
 		})
 	} catch (err) {
@@ -347,6 +402,7 @@ async function getTargetingData(req, res) {
 			])
 			.toArray()
 
+		// TODO: Make this mapping in the pipeline
 		const targetingData = validWebsites.map(({ adSlots, ...rest }) => {
 			const types = adSlots.reduce(
 				(types, slot) => {
@@ -364,8 +420,11 @@ async function getTargetingData(req, res) {
 			}
 		})
 
+		const minByCategory = DefaultMinCPMByCategory
+		const countryTiersCoefficients = DefaultCoefficientByCountryTier
+
 		res.set('Cache-Control', `public, max-age=${15 * 60}`)
-		res.json(targetingData)
+		res.json({ targetingData, minByCategory, countryTiersCoefficients })
 	} catch (err) {
 		console.error('Error getting targeting data', err)
 		return res.status(500).send(err.toString())
