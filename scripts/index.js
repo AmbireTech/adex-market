@@ -1,4 +1,3 @@
-require('dotenv').config()
 const { BigQuery } = require('@google-cloud/bigquery')
 
 const DATASET_NAME = process.env.DATASET_NAME || 'adex'

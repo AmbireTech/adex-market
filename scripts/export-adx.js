@@ -3,7 +3,7 @@
 /**
  * Export ADX data to Biquery
  */
-
+require('dotenv').config()
 const fetch = require('node-fetch')
 const {
 	bigQueryTables,
