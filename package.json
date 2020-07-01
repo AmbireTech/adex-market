@@ -16,6 +16,7 @@
     "lint": "eslint . && echo Linting check finished",
     "lint:fix": "eslint --fix . && echo Linting fix finished",
     "eslint-check": "eslint --print-config src/App.js | eslint-config-prettier-check",
+    "export-adx": "./scripts/export-adx.js",
     "bq": "node ./scripts/bigquery.js"
   },
   "keywords": [
