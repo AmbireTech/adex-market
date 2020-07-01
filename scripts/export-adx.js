@@ -3,7 +3,6 @@
 /**
  * Export ADX data to Biquery
  */
-require('dotenv').config()
 const fetch = require('node-fetch')
 const {
 	bigQueryTables,
@@ -12,7 +11,7 @@ const {
 	getTableClient,
 	DATASET_NAME,
 	GOOGLE_CLOUD_PROJECT,
-} = require('./index')
+} = require('../lib/bigquery')
 
 const ADEX_COIN_ID = 'adex'
 
