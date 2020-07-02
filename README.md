@@ -80,21 +80,13 @@ The current policy of determining the `categories` of an ad slot (as returned fr
 
 The `incentivized` boolean is automatically set by the `update-verifications` script by using `detectExtraFlags`, and cannot be automatically unset. It can only be unset manually, but then the system may flag the website as incentivized again. If we want to permanently dissociate a website from this category, we can use `'webshrinkerCategoriesOverrides.remove': ['IAB25-7']`.
 
-### Contagious blacklisting
-
-Contagious blacklisting is an automatic process: if one verification record is blacklisted, all other records with the same hostname will eventually get auto-blacklisted as well.
-
-Please note, it is not contagious on account basis: meaning that an account may have one blacklisted hostname, but still keep using their other hostnames.
-
-This is implemented in the `update-verifications.js` script.
-
 ### Scripts
 
 There are a few scripts to moderate publisher verification:
 
 `./scripts/verify-publisher.js publisherAddr websiteUrl [--force|--blacklist]`: trigger verification of a publisher or update their verification; `--force` will make it verified regardless of whether the automated checks pass, and `--blacklist` will blacklist it
 
-`./scripts/update-verifications.js`: updates all existing verification records by re-running the check; also blacklists in a "contagious" manner: if one verification record is blacklisted, all other records with the same hostname will be too; should be ran every 24 hours
+`./scripts/update-verifications.js`: updates all existing verification records by re-running the check; should be ran every 24 hours
 
 There's also `unverified-adslots.js`, but this is no longer relevant.
 
