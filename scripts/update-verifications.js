@@ -89,7 +89,7 @@ async function run() {
 			hostname: { $in: allHostnames },
 			blacklisted: { $ne: true },
 		},
-		{ $set: { blacklisted: true } }
+		{ $set: { blacklisted: true, blacklistedReason: 'contagious' } }
 	)
 
 	process.exit(0)
