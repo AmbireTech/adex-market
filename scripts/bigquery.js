@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 require('dotenv').config()
 const { getMongo, connect } = require('../db')
 const { BigQuery } = require('@google-cloud/bigquery')
