@@ -343,13 +343,14 @@ async function verifyWebsite(req, res) {
 async function getTargetingData(req, res) {
 	try {
 		const websitesCol = db.getMongo().collection('websites')
+		const campaignsCol = db.getMongo().collection('campaigns')
 
 		const validWebsites = await websitesCol
 			.aggregate([
 				{
 					$match: {
 						...validQuery,
-						webshrinkerCategories: { $exists: true, $not: { $size: 0 } },
+						//NOTE: check for webshrinkerCategories at the platform
 					},
 				},
 				{
@@ -402,8 +403,44 @@ async function getTargetingData(req, res) {
 			])
 			.toArray()
 
+		const publishersWithRevenue = {}
+
+		await campaignsCol
+			.aggregate([
+				{
+					$match: {
+						'status.lastApprovedBalances': { $exists: true },
+					},
+				},
+				{
+					$project: {
+						publishers: {
+							$map: {
+								input: { $objectToArray: '$status.lastApprovedBalances' },
+								as: 'kv',
+								in: '$$kv',
+							},
+						},
+					},
+				},
+				{
+					$unwind: '$publishers',
+				},
+				{
+					$group: {
+						_id: '$publishers.k',
+						campaignsEarnedFrom: {
+							$sum: 1,
+						},
+					},
+				},
+			])
+			.forEach(
+				item => (publishersWithRevenue[item._id] = item.campaignsEarnedFrom)
+			)
+
 		// TODO: Make this mapping in the pipeline
-		const targetingData = validWebsites.map(({ adSlots, ...rest }) => {
+		const targetingData = validWebsites.map(({ adSlots, owner, ...rest }) => {
 			const types = adSlots.reduce(
 				(types, slot) => {
 					types.add(slot.type)
@@ -415,7 +452,10 @@ async function getTargetingData(req, res) {
 			)
 
 			return {
+				owner,
 				...rest,
+				// NOTE: this is per owner, no by slot
+				campaignsEarnedFrom: publishersWithRevenue[publishersWithRevenue],
 				types: Array.from(types),
 			}
 		})
@@ -424,7 +464,11 @@ async function getTargetingData(req, res) {
 		const countryTiersCoefficients = DefaultCoefficientByCountryTier
 
 		res.set('Cache-Control', `public, max-age=${15 * 60}`)
-		res.json({ targetingData, minByCategory, countryTiersCoefficients })
+		res.json({
+			targetingData,
+			minByCategory,
+			countryTiersCoefficients,
+		})
 	} catch (err) {
 		console.error('Error getting targeting data', err)
 		return res.status(500).send(err.toString())
