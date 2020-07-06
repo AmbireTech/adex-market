@@ -455,7 +455,7 @@ async function getTargetingData(req, res) {
 				owner,
 				...rest,
 				// NOTE: this is per owner, no by slot
-				campaignsEarnedFrom: publishersWithRevenue[publishersWithRevenue],
+				campaignsEarnedFrom: publishersWithRevenue[owner],
 				types: Array.from(types),
 			}
 		})
