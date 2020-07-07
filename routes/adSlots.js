@@ -483,7 +483,6 @@ async function getTargetingData(req, res) {
 			targetingData,
 			minByCategory,
 			countryTiersCoefficients,
-			publishersWithRevenue,
 		})
 	} catch (err) {
 		console.error('Error getting targeting data', err)
