@@ -2,6 +2,7 @@ const express = require('express')
 const url = require('url')
 const { celebrate } = require('celebrate')
 const { schemas, AdSlot } = require('adex-models')
+const { Decimal128 } = require('mongodb')
 const db = require('../db')
 const { verifyPublisher, validQuery } = require('../lib/publisherVerification')
 const { getWebsitesInfo } = require('../lib/publisherWebsitesInfo')
@@ -432,12 +433,23 @@ async function getTargetingData(req, res) {
 						campaignsEarnedFrom: {
 							$sum: 1,
 						},
+						totalEarned: { $sum: { $toDecimal: '$publishers.v' } },
+					},
+				},
+				{
+					$project: {
+						_id: 1,
+						campaignsEarnedFrom: 1,
+						totalEarned: { $toString: '$totalEarned' },
 					},
 				},
 			])
-			.forEach(
-				item => (publishersWithRevenue[item._id] = item.campaignsEarnedFrom)
-			)
+			.forEach(item => {
+				publishersWithRevenue[item._id] = {
+					campaignsEarnedFrom: item.campaignsEarnedFrom,
+					totalEarned: item.totalEarned,
+				}
+			})
 
 		// TODO: Make this mapping in the pipeline
 		const targetingData = validWebsites.map(({ adSlots, owner, ...rest }) => {
@@ -451,11 +463,14 @@ async function getTargetingData(req, res) {
 				new Set()
 			)
 
+			const publisherData = publishersWithRevenue[owner] || {}
+
 			return {
 				owner,
 				...rest,
 				// NOTE: this is per owner, no by slot
-				campaignsEarnedFrom: publishersWithRevenue[owner],
+				campaignsEarnedFrom: publisherData.campaignsEarnedFrom,
+				totalEarned: publisherData.totalEarned,
 				types: Array.from(types),
 			}
 		})
@@ -468,6 +483,7 @@ async function getTargetingData(req, res) {
 			targetingData,
 			minByCategory,
 			countryTiersCoefficients,
+			publishersWithRevenue,
 		})
 	} catch (err) {
 		console.error('Error getting targeting data', err)
