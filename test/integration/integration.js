@@ -48,19 +48,19 @@ const brokenAuthObj = {
 	typedData: [{ type: 'uint', name: 'Auth token', value: '7036680048500819' }],
 }
 
-const mockAdUnit = {
-	type: 'legacy_160x600',
-	mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
-	mediaMime: 'image/jpeg',
-	targetUrl: 'https://google.com',
-	created: Date.now(),
-	title: 'Test ad unit',
-	description: 'test ad unit for seeding db',
-	tags: [
-		{ tag: 'movies', score: 42 },
-		{ tag: 'usa', score: 60 },
-	],
-}
+// const mockAdUnit = {
+// 	type: 'legacy_160x600',
+// 	mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
+// 	mediaMime: 'image/jpeg',
+// 	targetUrl: 'https://google.com',
+// 	created: Date.now(),
+// 	title: 'Test ad unit',
+// 	description: 'test ad unit for seeding db',
+// 	tags: [
+// 		{ tag: 'movies', score: 42 },
+// 		{ tag: 'usa', score: 60 },
+// 	],
+// }
 
 const brokenAdUnit = {
 	type: 'legacy_160x600',
@@ -76,21 +76,21 @@ const brokenAdUnit = {
 	],
 }
 
-const mockAdSlot = {
-	type: 'legacy_250x250',
-	tags: [
-		{ tag: 'games', score: 42 },
-		{ tag: 'usa', score: 60 },
-	],
-	created: Date.now(),
-	fallbackUnit: 'QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
-	title: 'Test slot 1',
-	description: 'Test slot for running integration tests',
-	archived: false,
-	modified: Date.now(),
-	minPerImpression: { balance: '100' },
-	website: 'https://adex.network',
-}
+// const mockAdSlot = {
+// 	type: 'legacy_250x250',
+// 	tags: [
+// 		{ tag: 'games', score: 42 },
+// 		{ tag: 'usa', score: 60 },
+// 	],
+// 	created: Date.now(),
+// 	fallbackUnit: 'QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
+// 	title: 'Test slot 1',
+// 	description: 'Test slot for running integration tests',
+// 	archived: false,
+// 	modified: Date.now(),
+// 	minPerImpression: { balance: '100' },
+// 	website: 'https://adex.network',
+// }
 
 const brokenAdSlot = {
 	type: 'legacy_251x250',
