@@ -6,10 +6,11 @@ TIMESTAMP=`date +%s`
 PORT=3013
 MONGO="testAdexMarket${TIMESTAMP}"
 TEST_MARKET_URL="http://localhost:$PORT"
+RELAYER_HOST="http://goerli-relayer.adex.network"
 
 # echo "Seeding database complete"
 
-PORT=$PORT DB_MONGO_NAME=$MONGO NODE_ENV="test" npm start &
+PORT=$PORT DB_MONGO_NAME=$MONGO NODE_ENV="test" RELAYER_HOST=$RELAYER_HOST npm start &
 sleep 6
 
 TEST_MARKET_URL=$TEST_MARKET_URL node ./test/integration/integration.js
