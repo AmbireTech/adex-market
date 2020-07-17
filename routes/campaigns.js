@@ -37,7 +37,7 @@ function getFindQuery(query) {
 	const status = query.status ? query.status.split(',') : ['Active', 'Ready']
 	// If request query has ?all it doesn't query for status
 	let findQuery = query.hasOwnProperty('all')
-		? {}
+		? { 'status': { $exists: true } }
 		: { 'status.name': { $in: status } }
 
 	if (query.hasOwnProperty('depositAsset')) {
