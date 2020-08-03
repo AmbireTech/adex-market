@@ -52,7 +52,7 @@ async function createWebsitesTable() {
 			if (!website) return
 			return {
 				id: website._id.toString(),
-				hostname: website.hostname.toString(),
+				hostname: website.hostname.toString().replace('www.', ''),
 				publisher: website.publisher.toString(),
 				created: website.created
 					? parseInt(new Date(website.created).getTime() / 1000)
@@ -130,7 +130,7 @@ async function createAdSlotTable() {
 				{ name: 'archived', type: 'BOOL', mode: 'NULLABLE' },
 				{ name: 'alexaRank', type: 'INT64', mode: 'NULLABLE' },
 				{ name: 'categories', type: 'STRING', mode: 'REPEATED' },
-				{ name: 'acceptedReferrers', type: 'STRING', mode: 'REPEATED' },
+				{ name: 'hostname', type: 'STRING', mode: 'NULLABLE' },
 			],
 		},
 	})
@@ -145,6 +145,10 @@ async function createAdSlotTable() {
 			if (!adSlot) return
 			const res = await getRequest(`${ADEX_MARKET_URL}/slots/${adSlot.ipfs}`)
 			const { slot, acceptedReferrers, alexaRank, categories } = res
+			const hostname =
+				acceptedReferrers && acceptedReferrers.length > 0
+					? new URL(acceptedReferrers[0]).hostname.replace('www.', '')
+					: MISSING_DATA_FILLER
 			return {
 				id: adSlot.ipfs,
 				owner: slot.owner,
@@ -156,10 +160,7 @@ async function createAdSlotTable() {
 					: null,
 				archived: slot.archived,
 				alexaRank,
-				acceptedReferrers:
-					acceptedReferrers && acceptedReferrers.length > 0
-						? acceptedReferrers
-						: [MISSING_DATA_FILLER],
+				hostname: hostname,
 				categories:
 					categories && categories.length > 0
 						? categories
