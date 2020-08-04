@@ -11,7 +11,7 @@ const { getAddress } = require('ethers/utils')
 const BN = require('bn.js')
 const router = express.Router()
 
-const MAX_LIMIT = 666
+const MAX_LIMIT = 777
 const EARNINGS_LIMIT = new BN(cfg.limitedIdentityEarningsLimit)
 
 router.get('/', getCampaigns)
