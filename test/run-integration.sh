@@ -10,6 +10,23 @@ RELAYER_HOST="http://goerli-relayer.adex.network"
 
 # echo "Seeding database complete"
 
+
+# running relayer
+
+
+if [ -n "${RELAYER_PATH}" ]
+then
+    echo "Starting relayer..."
+    __dir="$(cd "$(dirname "${RELAYER_PATH}")" && pwd)"
+    bash ${__dir}/adex-market/test/start-relayer.sh &
+    RELAYER_PATH=$RELAYER_PATH "${__dir}/adex-market/test/start-relayer.sh"
+    RELAYER_HOST="http://localhost:1934"
+    sleep 10
+else
+    echo "No RELAYER_PATH variable provided. Running goerli relayer"
+fi
+
+
 PORT=$PORT DB_MONGO_NAME=$MONGO NODE_ENV="test" RELAYER_HOST=$RELAYER_HOST npm start &
 sleep 6
 
