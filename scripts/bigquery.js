@@ -4,6 +4,7 @@ const { getMongo, connect } = require('../db')
 const { BigQuery } = require('@google-cloud/bigquery')
 const getRequest = require('../helpers/getRequest')
 const { formatUnits } = require('ethers/utils')
+const { getCategories } = require('../lib/publisherWebsitesInfo')
 
 // make sure you use the corresponding market to the db you use
 const MISSING_DATA_FILLER = 'N/A'
@@ -50,6 +51,8 @@ async function createWebsitesTable() {
 			.stream(),
 		function(website) {
 			if (!website) return
+			const webshrinkerFilledCategories = getCategories(website)
+			website.webshrinkerCategories = webshrinkerFilledCategories
 			return {
 				id: website._id.toString(),
 				hostname: website.hostname.toString().replace('www.', ''),
@@ -130,7 +133,9 @@ async function createAdSlotTable() {
 				{ name: 'archived', type: 'BOOL', mode: 'NULLABLE' },
 				{ name: 'alexaRank', type: 'INT64', mode: 'NULLABLE' },
 				{ name: 'categories', type: 'STRING', mode: 'REPEATED' },
+				{ name: 'website', type: 'STRING', mode: 'REQUIRED' },
 				{ name: 'hostname', type: 'STRING', mode: 'NULLABLE' },
+				{ name: 'acceptedReferrers', type: 'STRING', mode: 'REPEATED' },
 			],
 		},
 	})
@@ -145,10 +150,9 @@ async function createAdSlotTable() {
 			if (!adSlot) return
 			const res = await getRequest(`${ADEX_MARKET_URL}/slots/${adSlot.ipfs}`)
 			const { slot, acceptedReferrers, alexaRank, categories } = res
-			const hostname =
-				acceptedReferrers && acceptedReferrers.length > 0
-					? new URL(acceptedReferrers[0]).hostname.replace('www.', '')
-					: MISSING_DATA_FILLER
+			const hostname = slot.website
+				? new URL(slot.website).hostname.replace('www.', '')
+				: MISSING_DATA_FILLER
 			return {
 				id: adSlot.ipfs,
 				owner: slot.owner,
@@ -160,7 +164,9 @@ async function createAdSlotTable() {
 					: null,
 				archived: slot.archived,
 				alexaRank,
+				website: slot.website || MISSING_DATA_FILLER,
 				hostname: hostname,
+				acceptedReferrers: acceptedReferrers,
 				categories:
 					categories && categories.length > 0
 						? categories
