@@ -104,7 +104,7 @@ const testData = {
 			mediaMime: 'image/jpeg',
 			targetUrl: 'https://google.com',
 			targeting: [{ tag: 'games', score: 100 }],
-			created: Date.now(),
+			created: new Date(Date.now()),
 			title: 'Test ad unit',
 			description: 'test ad unit for seeding db',
 			tags: [
@@ -118,7 +118,7 @@ const testData = {
 			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 			mediaMime: 'image/jpeg',
 			targetUrl: 'https://google.com',
-			created: Date.now(),
+			created: new Date(Date.now()),
 			title: 'Test ad unit',
 			description: 'test ad unit for seeding db',
 			tags: [
@@ -133,7 +133,7 @@ const testData = {
 			mediaMime: 'image/jpeg',
 			targetUrl: 'https://google.com',
 			targeting: [{ tag: 'music', score: 100 }],
-			created: Date.now(),
+			created: new Date(Date.now()),
 			title: 'Test ad unit',
 			description: 'test ad unit for seeding db',
 			tags: [
@@ -151,13 +151,13 @@ const testData = {
 			{ tag: 'usa', score: 60 },
 		],
 		owner: identityAddr,
-		created: Date.now(),
+		created: new Date(Date.now()),
 		fallbackUnit: 'QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 		ipfs: 'QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 		title: 'Test slot 1',
 		description: 'Test slot for running integration tests',
 		archived: false,
-		modified: Date.now(),
+		modified: new Date(Date.now()),
 	}),
 }
 
