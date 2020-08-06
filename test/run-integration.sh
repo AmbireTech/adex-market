@@ -12,15 +12,15 @@ RELAYER_HOST="http://goerli-relayer.adex.network"
 
 
 # running relayer
-
-
 if [ -n "${RELAYER_PATH}" ]
 then
     echo "Starting relayer..."
-    __dir="$(cd "$(dirname "${RELAYER_PATH}")" && pwd)"
-    bash ${__dir}/adex-market/test/start-relayer.sh &
+    __dir=$PWD
+    cd $RELAYER_PATH
+    PORT=1935 npm run start &
+    cd $__dir
     RELAYER_PATH=$RELAYER_PATH "${__dir}/adex-market/test/start-relayer.sh"
-    RELAYER_HOST="http://localhost:1934"
+    RELAYER_HOST="http://localhost:${PORT}"
     sleep 10
 else
     echo "No RELAYER_PATH variable provided. Running goerli relayer"
@@ -36,6 +36,8 @@ exitCode=$?
 
 # end all processes
 pkill -P $$
+# kill relayer instance
+lsof -ti tcp:$PORT | xargs kill
 
 if [ $exitCode -eq 0 ]; then
     echo "cleaning up DB"
