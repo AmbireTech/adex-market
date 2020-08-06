@@ -34,6 +34,21 @@ For more information, see [adex-protocol](https://github.com/adexnetwork/adex-pr
 npm start
 ```
 
+## How to run tests
+#### Unit tests:
+```
+npm test
+```
+
+#### Integration tests:
+```
+npm run test-integration
+```
+You can also make the integration tests execute using a local relayer by passing an environment variable with the path to a relayer like this:
+```
+RELAYER_PATH="../adex-relayer" npm run test-integration
+```
+
 
 ## Build a Docker image
 
