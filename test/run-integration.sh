@@ -11,6 +11,9 @@ RELAYER_HOST="http://goerli-relayer.adex.network"
 
 # echo "Seeding database complete"
 
+# running ipfs
+ipfs daemon &
+sleep 6
 
 # running relayer
 if [ -n "${RELAYER_PATH}" ]
@@ -30,7 +33,7 @@ fi
 PORT=$MARKET_PORT DB_MONGO_NAME=$MONGO NODE_ENV="test" RELAYER_HOST=$RELAYER_HOST npm start &
 sleep 6
 
-TEST_MARKET_URL=$TEST_MARKET_URL node ./test/integration/integration.js
+TEST_MARKET_URL=$TEST_MARKET_URL IPFSHOST="127.0.0.1" IPFSPORT="8080" IPFSPROTOCOL="http" node ./test/integration/integration.js
 
 exitCode=$?
 
