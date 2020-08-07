@@ -4,7 +4,10 @@ const { getMongo, connect } = require('../db')
 const { BigQuery } = require('@google-cloud/bigquery')
 const getRequest = require('../helpers/getRequest')
 const { formatUnits } = require('ethers/utils')
-const { getCategories } = require('../lib/publisherWebsitesInfo')
+const {
+	getCategories,
+	getWebsitesInfo,
+} = require('../lib/publisherWebsitesInfo')
 
 // make sure you use the corresponding market to the db you use
 const MISSING_DATA_FILLER = 'N/A'
@@ -119,6 +122,15 @@ async function createCampaignsTable() {
 	)
 }
 
+async function getSlotInfo(ipfs) {
+	const adSlotsCol = getMongo().collection('adSlots')
+	const websitesCol = getMongo().collection('websites')
+
+	const slot = await adSlotsCol.findOne({ ipfs }, { projection: { _id: 0 } })
+
+	return { slot, ...(await getWebsitesInfo(websitesCol, slot)) }
+}
+
 async function createAdSlotTable() {
 	// Create the dataset
 	await dataset.createTable(ADSLOTS_TABLE_NAME, {
@@ -148,7 +160,7 @@ async function createAdSlotTable() {
 			.stream(),
 		async function(adSlot) {
 			if (!adSlot) return
-			const res = await getRequest(`${ADEX_MARKET_URL}/slots/${adSlot.ipfs}`)
+			const res = await getSlotInfo(adSlot.ipfs)
 			const { slot, acceptedReferrers, alexaRank, categories } = res
 			const hostname = slot.website
 				? new URL(slot.website).hostname.replace('www.', '')
