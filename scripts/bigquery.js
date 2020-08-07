@@ -93,6 +93,7 @@ async function createCampaignsTable() {
 				{ name: 'adUnits', type: 'STRING', mode: 'REPEATED' },
 				{ name: 'validUntil', type: 'TIMESTAMP', mode: 'NULLABLE' },
 				{ name: 'status', type: 'STRING', mode: 'NULLABLE' },
+				{ name: 'title', type: 'STRING', mode: 'NULLABLE' },
 			],
 		},
 	})
@@ -117,6 +118,7 @@ async function createCampaignsTable() {
 				adUnits: campaign.spec.adUnits.map(i => i.ipfs),
 				validUntil: campaign.validUntil || null,
 				status: campaign.status.name,
+				title: campaign.title || campaign.spec.title,
 			}
 		}
 	)
