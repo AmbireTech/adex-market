@@ -4,12 +4,14 @@ const { getMongo, connect } = require('../db')
 const { BigQuery } = require('@google-cloud/bigquery')
 const getRequest = require('../helpers/getRequest')
 const { formatUnits } = require('ethers/utils')
+const { getCategories } = require('../lib/publisherWebsitesInfo')
 
 // make sure you use the corresponding market to the db you use
+const MISSING_DATA_FILLER = 'N/A'
 const ADEX_MARKET_URL = process.env.ADEX_MARKET_URL || 'http://localhost:3012'
 const WEBSITES_TABLE_NAME = 'websites'
 const ADSLOTS_TABLE_NAME = 'adSlots'
-const CAMPAIGNS_TABLE_NAME = 'campaings'
+const CAMPAIGNS_TABLE_NAME = 'campaigns'
 const BIGQUERY_RATE_LIMIT = 10 // There is a limit of ~ 2-10 min between delete and insert
 const DATASET_NAME = process.env.DATASET_NAME || 'development'
 const TOKEN_DECIMALS = process.env.TOKEN_DECIMALS || 18
@@ -49,9 +51,11 @@ async function createWebsitesTable() {
 			.stream(),
 		function(website) {
 			if (!website) return
+			const webshrinkerFilledCategories = getCategories(website)
+			website.webshrinkerCategories = webshrinkerFilledCategories
 			return {
 				id: website._id.toString(),
-				hostname: website.hostname.toString(),
+				hostname: website.hostname.toString().replace('www.', ''),
 				publisher: website.publisher.toString(),
 				created: website.created
 					? parseInt(new Date(website.created).getTime() / 1000)
@@ -64,7 +68,11 @@ async function createWebsitesTable() {
 				websiteUrl: website.websiteUrl,
 				rank: website.rank,
 				reachPerMillion: parseFloat(website.reachPerMillion),
-				webshrinkerCategories: website.webshrinkerCategories || [],
+				webshrinkerCategories:
+					website.webshrinkerCategories &&
+					website.webshrinkerCategories.length > 0
+						? website.webshrinkerCategories
+						: [MISSING_DATA_FILLER],
 			}
 		}
 	)
@@ -92,20 +100,20 @@ async function createCampaignsTable() {
 			.find()
 			.sort({ _id: -1 })
 			.stream(),
-		function(campaing) {
-			if (!campaing) return
+		function(campaign) {
+			if (!campaign) return
 			return {
-				campaignId: campaing._id.toString(),
-				creator: campaing.creator.toString(),
+				campaignId: campaign._id.toString(),
+				creator: campaign.creator.toString(),
 				depositAmount: Number(
-					formatUnits(campaing.depositAmount, TOKEN_DECIMALS)
+					formatUnits(campaign.depositAmount, TOKEN_DECIMALS)
 				),
-				createdDate: campaing.spec.created
-					? parseInt(new Date(campaing.spec.created).getTime() / 1000)
+				createdDate: campaign.spec.created
+					? parseInt(new Date(campaign.spec.created).getTime() / 1000)
 					: null,
-				adUnits: campaing.spec.adUnits.map(i => i.ipfs),
-				validUntil: campaing.validUntil || null,
-				status: campaing.status.name,
+				adUnits: campaign.spec.adUnits.map(i => i.ipfs),
+				validUntil: campaign.validUntil || null,
+				status: campaign.status.name,
 			}
 		}
 	)
@@ -125,6 +133,8 @@ async function createAdSlotTable() {
 				{ name: 'archived', type: 'BOOL', mode: 'NULLABLE' },
 				{ name: 'alexaRank', type: 'INT64', mode: 'NULLABLE' },
 				{ name: 'categories', type: 'STRING', mode: 'REPEATED' },
+				{ name: 'website', type: 'STRING', mode: 'REQUIRED' },
+				{ name: 'hostname', type: 'STRING', mode: 'NULLABLE' },
 				{ name: 'acceptedReferrers', type: 'STRING', mode: 'REPEATED' },
 			],
 		},
@@ -140,6 +150,9 @@ async function createAdSlotTable() {
 			if (!adSlot) return
 			const res = await getRequest(`${ADEX_MARKET_URL}/slots/${adSlot.ipfs}`)
 			const { slot, acceptedReferrers, alexaRank, categories } = res
+			const hostname = slot.website
+				? new URL(slot.website).hostname.replace('www.', '')
+				: MISSING_DATA_FILLER
 			return {
 				id: adSlot.ipfs,
 				owner: slot.owner,
@@ -151,8 +164,13 @@ async function createAdSlotTable() {
 					: null,
 				archived: slot.archived,
 				alexaRank,
-				acceptedReferrers,
-				categories,
+				website: slot.website || MISSING_DATA_FILLER,
+				hostname: hostname,
+				acceptedReferrers: acceptedReferrers,
+				categories:
+					categories && categories.length > 0
+						? categories
+						: [MISSING_DATA_FILLER],
 			}
 		}
 	)
