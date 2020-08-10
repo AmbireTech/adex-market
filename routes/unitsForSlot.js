@@ -121,23 +121,25 @@ async function getUnitsForSlot(req) {
 				.map(u => {
 					const input = campaignInput.bind(null, u)
 					const [minPrice, maxPrice] = getPricingBounds(campaign)
-					const price = BN.max(
-						minPrice,
-						BN.min(maxPrice, output['price.IMPRESSION'])
-					)
+
 					let output = {
 						show: true,
-						'price.IMPRESSION': price,
+						'price.IMPRESSION': minPrice,
 					}
 
 					output = evaluateMultiple(input, output, targetingRules, onTypeErr)
 
 					if (output.show === false) return null
 
+					const price = BN.max(
+						minPrice,
+						BN.min(maxPrice, output['price.IMPRESSION'])
+					)
 					if (price.lt(GLOBAL_MIN_IMPRESSION_PRICE)) return null
 
 					// Execute the adSlot rules after we've taken the price since they're not
 					// allowed to change the price
+					output['price.IMPRESSION'] = price
 					if (!evaluateMultiple(input, output, adSlotRules, onTypeErr).show)
 						return null
 
