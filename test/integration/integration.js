@@ -48,19 +48,19 @@ const brokenAuthObj = {
 	typedData: [{ type: 'uint', name: 'Auth token', value: '7036680048500819' }],
 }
 
-// const mockAdUnit = {
-// 	type: 'legacy_160x600',
-// 	mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
-// 	mediaMime: 'image/jpeg',
-// 	targetUrl: 'https://google.com',
-// 	created: Date.now(),
-// 	title: 'Test ad unit',
-// 	description: 'test ad unit for seeding db',
-// 	tags: [
-// 		{ tag: 'movies', score: 42 },
-// 		{ tag: 'usa', score: 60 },
-// 	],
-// }
+const mockAdUnit = {
+	type: 'legacy_160x600',
+	mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
+	mediaMime: 'image/jpeg',
+	targetUrl: 'https://google.com',
+	created: Date.now(),
+	title: 'Test ad unit',
+	description: 'test ad unit for seeding db',
+	tags: [
+		{ tag: 'movies', score: 42 },
+		{ tag: 'usa', score: 60 },
+	],
+}
 
 const brokenAdUnit = {
 	type: 'legacy_160x600',
@@ -76,21 +76,21 @@ const brokenAdUnit = {
 	],
 }
 
-// const mockAdSlot = {
-// 	type: 'legacy_250x250',
-// 	tags: [
-// 		{ tag: 'games', score: 42 },
-// 		{ tag: 'usa', score: 60 },
-// 	],
-// 	created: Date.now(),
-// 	fallbackUnit: 'QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
-// 	title: 'Test slot 1',
-// 	description: 'Test slot for running integration tests',
-// 	archived: false,
-// 	modified: Date.now(),
-// 	minPerImpression: { balance: '100' },
-// 	website: 'https://adex.network',
-// }
+const mockAdSlot = {
+	type: 'legacy_250x250',
+	tags: [
+		{ tag: 'games', score: 42 },
+		{ tag: 'usa', score: 60 },
+	],
+	created: Date.now(),
+	fallbackUnit: 'QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
+	title: 'Test slot 1',
+	description: 'Test slot for running integration tests',
+	archived: false,
+	modified: Date.now(),
+	minPerImpression: { balance: '100' },
+	website: 'https://adex.network',
+}
 
 const brokenAdSlot = {
 	type: 'legacy_251x250',
@@ -536,84 +536,82 @@ tape('===== Authorized routes =====', t => {
 						'ad unit has the correct type'
 					)
 				})
-			//! NOTE: Tests posting media to the IPFS node will fail if the IP is not whitelisted,
-			//! which would result in making the test unreliant
-			// const postMedia = fetch(`${marketUrl}/media`, {
-			// 	method: 'POST',
-			// 	headers: {
-			// 		'x-user-signature': signature,
-			// 	},
-			// 	body: form,
-			// })
-			// 	.then(res => res.json())
-			// 	.then(res => {
-			// 		t.comment('POST on /media')
-			// 		t.equals(typeof res, 'object', 'Something is returned')
-			// 		t.ok(res.hasOwnProperty('ipfs'), 'Returns something called ipfs')
-			// 		t.equals(typeof res.ipfs, 'string', 'IPFS is a string')
-			// 	})
+			const postMedia = fetch(`${marketUrl}/media`, {
+				method: 'POST',
+				headers: {
+					'x-user-signature': signature,
+				},
+				body: form,
+			})
+				.then(res => res.json())
+				.then(res => {
+					t.comment('POST on /media')
+					t.equals(typeof res, 'object', 'Something is returned')
+					t.ok(res.hasOwnProperty('ipfs'), 'Returns something called ipfs')
+					t.equals(typeof res.ipfs, 'string', 'IPFS is a string')
+				})
 
-			// const postAdUnit = fetch(`${marketUrl}/units`, {
-			// 	method: 'POST',
-			// 	headers: {
-			// 		'Content-type': 'application/json',
-			// 		'x-user-signature': signature,
-			// 	},
-			// 	identity: identityAddr,
-			// 	body: JSON.stringify(mockAdUnit),
-			// })
-			// 	.then(res => {
-			// 		t.comment('POST /units tests')
-			// 		t.equals(res.status, 200, 'adunit submitted successfully')
-			// 		return res.json()
-			// 	})
-			// 	.then(res => {
-			// 		fetch(`${marketUrl}/units/?identity=${identityAddr}`)
-			// 			.then(getRes => getRes.json())
-			// 			.then(getRes => {
-			// 				t.ok(Array.isArray(getRes), 'an array with units is returned')
-			// 				t.equals(getRes.length, 4, 'new element is added') // 3 from test data + new one
-			// 			})
-			// 		fetch(`${marketUrl}/units/${res.ipfs}`, {
-			// 			headers: { 'x-user-signature': signature },
-			// 		})
-			// 			.then(getRes => getRes.json())
-			// 			.then(getRes => {
-			// 				t.equals(
-			// 					getRes.unit.ipfs,
-			// 					res.ipfs,
-			// 					'returns item with correct ipfs hash'
-			// 				)
-			// 				fetch(`${marketUrl}/units/${res.ipfs}`, {
-			// 					method: 'PUT',
-			// 					headers: {
-			// 						'Content-type': 'application/json',
-			// 						'x-user-signature': signature,
-			// 					},
-			// 					identity: identityAddr,
-			// 					body: JSON.stringify({
-			// 						title: 'Test slot 1',
-			// 						description: 'Test description for test slot 1',
-			// 						archived: true,
-			// 					}),
-			// 				})
-			// 					.then(putRes => {
-			// 						t.comment('PUT /units/:id tests')
-			// 						t.equals(putRes.status, 200, 'AdUnit edited successfully')
-			// 						return putRes.json()
-			// 					})
-			// 					.then(putRes => {
-			// 						const updated = putRes.value
-			// 						t.equals(updated.ipfs, res.ipfs, 'Returned unit is the same')
-			// 						t.equals(
-			// 							updated.archived,
-			// 							true,
-			// 							'Test unit archived successfully'
-			// 						)
-			// 						t.ok(updated.modified, 'Modified is not null anymore')
-			// 					})
-			// 			})
-			// 	})
+			const postAdUnit = fetch(`${marketUrl}/units`, {
+				method: 'POST',
+				headers: {
+					'Content-type': 'application/json',
+					'x-user-signature': signature,
+				},
+				identity: identityAddr,
+				body: JSON.stringify(mockAdUnit),
+			})
+				.then(res => {
+					t.comment('POST /units tests')
+					t.equals(res.status, 200, 'adunit submitted successfully')
+					return res.json()
+				})
+				.then(res => {
+					fetch(`${marketUrl}/units/?identity=${identityAddr}`)
+						.then(getRes => getRes.json())
+						.then(getRes => {
+							t.ok(Array.isArray(getRes), 'an array with units is returned')
+							t.equals(getRes.length, 4, 'new element is added') // 3 from test data + new one
+						})
+					fetch(`${marketUrl}/units/${res.ipfs}`, {
+						headers: { 'x-user-signature': signature },
+					})
+						.then(getRes => getRes.json())
+						.then(getRes => {
+							t.equals(
+								getRes.unit.ipfs,
+								res.ipfs,
+								'returns item with correct ipfs hash'
+							)
+							fetch(`${marketUrl}/units/${res.ipfs}`, {
+								method: 'PUT',
+								headers: {
+									'Content-type': 'application/json',
+									'x-user-signature': signature,
+								},
+								identity: identityAddr,
+								body: JSON.stringify({
+									title: 'Test slot 1',
+									description: 'Test description for test slot 1',
+									archived: true,
+								}),
+							})
+								.then(putRes => {
+									t.comment('PUT /units/:id tests')
+									t.equals(putRes.status, 200, 'AdUnit edited successfully')
+									return putRes.json()
+								})
+								.then(putRes => {
+									const updated = putRes.value
+									t.equals(updated.ipfs, res.ipfs, 'Returned unit is the same')
+									t.equals(
+										updated.archived,
+										true,
+										'Test unit archived successfully'
+									)
+									t.ok(updated.modified, 'Modified is not null anymore')
+								})
+						})
+				})
 
 			const postBadAdUnit = fetch(`${marketUrl}/units`, {
 				method: 'POST',
@@ -627,66 +625,66 @@ tape('===== Authorized routes =====', t => {
 				t.equals(res.status, 500, 'not allowed to submit broken data')
 			})
 
-			// const postAdSlot = fetch(`${marketUrl}/slots`, {
-			// 	method: 'POST',
-			// 	headers: {
-			// 		'Content-type': 'application/json',
-			// 		'x-user-signature': signature,
-			// 	},
-			// 	identity: identityAddr,
-			// 	body: JSON.stringify(mockAdSlot),
-			// })
-			// 	.then(res => {
-			// 		t.comment('POST /slots')
-			// 		t.equals(res.status, 200, 'ad slot submitted successfully')
-			// 		return res.json()
-			// 	})
-			// 	.then(res => {
-			// 		fetch(`${marketUrl}/slots/?identity=${identityAddr}`)
-			// 			.then(getRes => getRes.json())
-			// 			.then(getRes => {
-			// 				t.ok(Array.isArray(getRes), 'an array is returned')
-			// 				t.equals(getRes.length, 2, 'new element is added')
-			// 			})
-			// 		fetch(`${marketUrl}/slots/${res.ipfs}`, {
-			// 			headers: { 'x-user-signature': signature },
-			// 		})
-			// 			.then(getRes => getRes.json())
-			// 			.then(getRes => {
-			// 				t.equals(getRes.slot.ipfs, res.ipfs, 'slot ipfs hash is correct')
-			// 				t.equals(getRes.slot.owner, identityAddr, 'owner is correct')
-			// 				fetch(`${marketUrl}/slots/${res.ipfs}`, {
-			// 					method: 'PUT',
-			// 					headers: {
-			// 						'Content-type': 'application/json',
-			// 						'x-user-signature': signature,
-			// 					},
-			// 					identity: identityAddr,
-			// 					body: JSON.stringify({
-			// 						title: res.title,
-			// 						description: res.description,
-			// 						fallbackUnit: res.fallbackUnit,
-			// 						minPerImpression: res.minPerImpression,
-			// 						archived: true,
-			// 					}),
-			// 				})
-			// 					.then(putRes => {
-			// 						t.comment('PUT /slots/:id tests')
-			// 						t.equals(putRes.status, 200, 'AdSlot edited successfully')
-			// 						return putRes.json()
-			// 					})
-			// 					.then(putRes => {
-			// 						const updated = putRes.value
-			// 						t.equals(updated.ipfs, res.ipfs, 'Returned slot is the same')
-			// 						t.equals(
-			// 							updated.archived,
-			// 							true,
-			// 							'Test slot archived successfully'
-			// 						)
-			// 						t.ok(updated.modified, 'Modified is not null anymore')
-			// 					})
-			// 			})
-			// 	})
+			const postAdSlot = fetch(`${marketUrl}/slots`, {
+				method: 'POST',
+				headers: {
+					'Content-type': 'application/json',
+					'x-user-signature': signature,
+				},
+				identity: identityAddr,
+				body: JSON.stringify(mockAdSlot),
+			})
+				.then(res => {
+					t.comment('POST /slots')
+					t.equals(res.status, 200, 'ad slot submitted successfully')
+					return res.json()
+				})
+				.then(res => {
+					fetch(`${marketUrl}/slots/?identity=${identityAddr}`)
+						.then(getRes => getRes.json())
+						.then(getRes => {
+							t.ok(Array.isArray(getRes), 'an array is returned')
+							t.equals(getRes.length, 2, 'new element is added')
+						})
+					fetch(`${marketUrl}/slots/${res.ipfs}`, {
+						headers: { 'x-user-signature': signature },
+					})
+						.then(getRes => getRes.json())
+						.then(getRes => {
+							t.equals(getRes.slot.ipfs, res.ipfs, 'slot ipfs hash is correct')
+							t.equals(getRes.slot.owner, identityAddr, 'owner is correct')
+							fetch(`${marketUrl}/slots/${res.ipfs}`, {
+								method: 'PUT',
+								headers: {
+									'Content-type': 'application/json',
+									'x-user-signature': signature,
+								},
+								identity: identityAddr,
+								body: JSON.stringify({
+									title: res.title,
+									description: res.description,
+									fallbackUnit: res.fallbackUnit,
+									minPerImpression: res.minPerImpression,
+									archived: true,
+								}),
+							})
+								.then(putRes => {
+									t.comment('PUT /slots/:id tests')
+									t.equals(putRes.status, 200, 'AdSlot edited successfully')
+									return putRes.json()
+								})
+								.then(putRes => {
+									const updated = putRes.value
+									t.equals(updated.ipfs, res.ipfs, 'Returned slot is the same')
+									t.equals(
+										updated.archived,
+										true,
+										'Test slot archived successfully'
+									)
+									t.ok(updated.modified, 'Modified is not null anymore')
+								})
+						})
+				})
 
 			const postBadAdSlot = fetch(`${marketUrl}/slots`, {
 				method: 'POST',
@@ -717,10 +715,10 @@ tape('===== Authorized routes =====', t => {
 				})
 
 			Promise.all([
-				// postMedia,
-				// postAdUnit,
+				postMedia,
+				postAdUnit,
 				postBadAdUnit,
-				// postAdSlot,
+				postAdSlot,
 				postBadAdSlot,
 				getAdUnits,
 				queryAdUnitsForType,

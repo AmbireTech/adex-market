@@ -41,6 +41,8 @@ exitCode=$?
 pkill -P $$
 # kill relayer instance
 lsof -ti tcp:$RELAYER_PORT | xargs kill
+# kill ipfs port
+lsof -ti tcp:$IPFSPORT | xargs kill
 
 if [ $exitCode -eq 0 ]; then
     echo "cleaning up DB"
