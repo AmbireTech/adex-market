@@ -1,7 +1,8 @@
 /* eslint-disable no-undef */
 const { AdSlot, AdUnit } = require('adex-models')
 const identityAddr = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
-const identityAddrFilter = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258666'
+const identityAddrFilter = '0x3d9C9C9673B2E3e9046137E752C5F8dCE823A1bB'
+const byEarnerIdentity = '0x3d9C9C9673B2E3e9046137E752C5F8dCE823A1bB'
 const cfg = require('../../cfg')
 const fs = require('fs')
 const util = require('util')
@@ -17,7 +18,7 @@ const activeCampaignData = {
 		lastApprovedBalances: {},
 	},
 }
-activeCampaignData.status.lastApprovedBalances[identityAddr] =
+activeCampaignData.status.lastApprovedBalances[byEarnerIdentity] =
 	'1000000000000000000'
 const activeCampaignDataOtherId = {
 	status: {
@@ -40,7 +41,7 @@ const campaignLimitDataNoFiltering = [
 		status: {
 			name: 'Expired',
 			lastApprovedBalances: {
-				[identityAddr]: '1000000000000000000',
+				[byEarnerIdentity]: '1000000000000000000',
 			},
 		},
 	}),
