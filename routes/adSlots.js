@@ -2,7 +2,6 @@ const express = require('express')
 const url = require('url')
 const { celebrate } = require('celebrate')
 const { schemas, AdSlot } = require('adex-models')
-const { Decimal128 } = require('mongodb')
 const db = require('../db')
 const { verifyPublisher, validQuery } = require('../lib/publisherVerification')
 const { getWebsitesInfo } = require('../lib/publisherWebsitesInfo')
@@ -341,7 +340,7 @@ async function verifyWebsite(req, res) {
 	}
 }
 
-async function getTargetingData(req, res) {
+async function getTargetingData(res) {
 	try {
 		const websitesCol = db.getMongo().collection('websites')
 		const campaignsCol = db.getMongo().collection('campaigns')
