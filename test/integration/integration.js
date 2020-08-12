@@ -7,7 +7,7 @@ const { testData } = require('../prep-db/seedDb')
 const FormData = require('form-data')
 const cfg = require('../../cfg')
 const BN = require('bn.js')
-const identityAddr = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
+const identityAddr = process.env.IDENTITY_ADDR || '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
 const byEarnerIdentity = '0x3d9C9C9673B2E3e9046137E752C5F8dCE823A1bB'
 const identityAddrFilter = '0x3d9C9C9673B2E3e9046137E752C5F8dCE823A1bB'
 const signerAddr = `0x2aecF52ABe359820c48986046959B4136AfDfbe2`
@@ -643,8 +643,9 @@ tape('===== Authorized routes =====', t => {
 					fetch(`${marketUrl}/slots/?identity=${identityAddr}`)
 						.then(getRes => getRes.json())
 						.then(getRes => {
-							t.ok(Array.isArray(getRes), 'an array is returned')
-							t.equals(getRes.length, 2, 'new element is added')
+							console.log(getRes)
+							t.ok(Array.isArray(getRes.slots), 'an array is returned')
+							t.equals(getRes.slots.length, 2, 'new element is added')
 						})
 					fetch(`${marketUrl}/slots/${res.ipfs}`, {
 						headers: { 'x-user-signature': signature },
