@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 const { AdSlot, AdUnit } = require('adex-models')
-const identityAddr = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
+const identityAddr = process.env.IDENTITY_ADDR || '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
 const identityAddrFilter = '0x3d9C9C9673B2E3e9046137E752C5F8dCE823A1bB'
 const byEarnerIdentity = '0x3d9C9C9673B2E3e9046137E752C5F8dCE823A1bB'
 const cfg = require('../../cfg')
