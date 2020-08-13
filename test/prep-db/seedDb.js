@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 const { AdSlot, AdUnit } = require('adex-models')
-const identityAddr = process.env.IDENTITY_ADDR || '0x0020A2770c762fb39278fEdD4C5539f59e298dda'
+const identityAddr =
+	process.env.IDENTITY_ADDR || '0x0020A2770c762fb39278fEdD4C5539f59e298dda'
 const identityAddrFilter = '0x3d9C9C9673B2E3e9046137E752C5F8dCE823A1bB'
 const byEarnerIdentity = '0x3d9C9C9673B2E3e9046137E752C5F8dCE823A1bB'
 const cfg = require('../../cfg')
@@ -16,6 +17,14 @@ const activeCampaignData = {
 			follower: new Date(Date.now()).toISOString(),
 		},
 		lastApprovedBalances: {},
+		closedDate: null,
+		humanFriendlyName: 'Active',
+		lastApprovedSigs: [],
+		// TODO write tests for the below properties
+		verified: true,
+		lastChecked: 1597319283851,
+		usdEstimate: 0,
+		fundsDistributedRatio: 0,
 	},
 }
 activeCampaignData.status.lastApprovedBalances[byEarnerIdentity] =
@@ -30,6 +39,13 @@ const activeCampaignDataOtherId = {
 		lastApprovedBalances: {
 			'0x0000000000000000000000000000000000000001': '1000000000000000000',
 		},
+		closedDate: null,
+		humanFriendlyName: 'Active',
+		lastApprovedSigs: [],
+		verified: true,
+		lastChecked: 1597319283851,
+		usdEstimate: 0,
+		fundsDistributedRatio: 0,
 	},
 }
 
@@ -72,17 +88,11 @@ const testData = {
 	validators: [
 		{
 			_id: 'awesomeLeader',
-			id: 'awesomeLeader',
 			url: 'https://tom.adex.network',
-			status: 'active',
-			addr: '0x000000000000000078787874656e746163696f6e',
 		},
 		{
 			_id: 'awesomeFollower',
-			id: 'awesomeFollower',
 			url: 'https://jerry.adex.network',
-			status: 'active',
-			addr: '0x0000000000000000667265652036697839696e65',
 		},
 	],
 	user: {
@@ -113,6 +123,7 @@ const testData = {
 				{ tag: 'usa', score: 60 },
 			],
 			owner: identityAddr,
+			ipfs: 'Qmasg8FrbuSQpjFu3kRnZF9beg8rEBFrqgi1uXDRwCbX5f',
 		}),
 		new AdUnit({
 			type: 'legacy_160x600',
@@ -127,6 +138,7 @@ const testData = {
 				{ tag: 'usa', score: 60 },
 			],
 			owner: identityAddr,
+			ipfs: 'Qmasg8FrbuSQpjFu3kRnZF9beg8rEBFrqgi1uXDRwCbX5f',
 		}),
 		new AdUnit({
 			type: 'legacy_728x90',
@@ -143,6 +155,7 @@ const testData = {
 			],
 			owner: identityAddr,
 			archived: true,
+			ipfs: 'Qmasg8FrbuSQpjFu3kRnZF9beg8rEBFrqgi1uXDRwCbX5f',
 		}),
 	],
 	adSlot: new AdSlot({
