@@ -224,60 +224,10 @@ tape('GET /validators', t => {
 		.then(res => {
 			t.ok(Array.isArray(res), 'returns array')
 			t.equals(res.length, 2, 'two validators are returned')
-			t.ok(res[0].hasOwnProperty('id'), 'validator has property id ')
+			t.ok(res[0].hasOwnProperty('_id'), 'validator has property id ')
 			t.ok(res[0].hasOwnProperty('url'), 'validator has property url ')
-			t.ok(res[0].hasOwnProperty('status'), 'validator has property status ')
-			t.ok(res[0].hasOwnProperty('addr'), 'validator has property addr ')
-			t.equals(typeof res[0].id, 'string', 'property id is of type string ')
+			t.equals(typeof res[0]._id, 'string', 'property id is of type string ')
 			t.equals(typeof res[0].url, 'string', 'property url is of type string ')
-			t.equals(
-				typeof res[0].status,
-				'string',
-				'property status is of type string '
-			)
-			t.equals(typeof res[0].addr, 'string', 'property addr is of type string ')
-			t.ok(
-				addrRegex40.test(res[0].addr),
-				'First validator address is a real address'
-			)
-			t.ok(
-				addrRegex40.test(res[1].addr),
-				'Second validator address is a real address'
-			)
-			t.equals(res[0].status, 'active', 'first validator is loaded and active')
-			t.equals(res[1].status, 'active', 'second validator is loaded and active')
-			t.end()
-		})
-		.catch(err => t.fail(err))
-})
-
-tape('GET /validators?status=status', t => {
-	fetch(`${marketUrl}/validators?status=active`)
-		.then(res => res.json())
-		.then(res => {
-			t.ok(Array.isArray(res), 'returns array')
-			t.equals(res.length, 2, 'two validators are returned')
-			t.equals(res[0].status, 'active', 'first validator is loaded and active')
-			t.equals(res[1].status, 'active', 'second validator is loaded and active')
-			t.end()
-		})
-		.catch(err => t.fail(err))
-})
-
-tape('GET /validators?addr=addr', t => {
-	fetch(
-		`${marketUrl}/validators?addr=0x000000000000000078787874656e746163696f6e`
-	)
-		.then(res => res.json())
-		.then(res => {
-			t.ok(Array.isArray(res), 'returns array')
-			t.equals(res.length, 1, 'only one validator is returned')
-			t.equals(
-				res[0].id,
-				'awesomeLeader',
-				'validator with correct id is returned'
-			)
-			t.equals(res[0].status, 'active', 'returned validator is of right status')
 			t.end()
 		})
 		.catch(err => t.fail(err))
