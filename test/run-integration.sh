@@ -15,21 +15,6 @@ RELAYER_HOST="http://goerli-relayer.adex.network"
 ipfs daemon &
 sleep 6
 
-# running relayer
-if [ -n "${RELAYER_PATH}" ]
-then
-    echo "Starting relayer..."
-    __dir=$PWD
-    cd $RELAYER_PATH
-    PORT=$RELAYER_PORT npm run start &
-    cd $__dir
-    RELAYER_HOST="http://localhost:${RELAYER_PORT}"
-    sleep 10
-else
-    echo "No RELAYER_PATH variable provided. Running goerli relayer"
-fi
-
-
 PORT=$MARKET_PORT DB_MONGO_NAME=$MONGO NODE_ENV="test" RELAYER_HOST=$RELAYER_HOST IPFSHOST="127.0.0.1" IPFSPORT="5001" IPFSPROTOCOL="http" npm start &
 sleep 6
 

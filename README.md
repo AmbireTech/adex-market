@@ -58,14 +58,7 @@ npm test
 ```
 npm run test-integration
 ```
-You can also make the integration tests execute using a local relayer by passing an environment variable with the path to a relayer like this:
-```
-RELAYER_PATH="../adex-relayer" npm run test-integration
-```
-If you use a local instance of the relayer, the default identity address used for the authroized routes might be invalid. Therefore you will have to provide one with an environment variable:
-```
-IDENTITY_ADDR="0x..."
-```
+The tests require IPFS installed locally.
 
 ## Build a Docker image
 
