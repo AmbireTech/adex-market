@@ -1,8 +1,6 @@
 const express = require('express')
-const url = require('url')
 const { celebrate } = require('celebrate')
 const { schemas, AdSlot } = require('adex-models')
-const { Decimal128 } = require('mongodb')
 const db = require('../db')
 const { verifyPublisher, validQuery } = require('../lib/publisherVerification')
 const { getWebsitesInfo } = require('../lib/publisherWebsitesInfo')
@@ -54,27 +52,19 @@ async function getAdSlots(req, res) {
 
 		if (identity) {
 			const websitesCol = db.getMongo().collection('websites')
-			const { hosts, passbacks } = slots.reduce(
-				(items, { website, fallbackUnit }) => {
-					if (website) {
-						const { hostname } = url.parse(website)
-						items.hosts[hostname] = true
-					}
-
+			const { passbacks } = slots.reduce(
+				(items, { fallbackUnit }) => {
 					if (fallbackUnit) {
 						items.passbacks[fallbackUnit] = true
 					}
 
 					return items
 				},
-				{ hosts: {}, passbacks: {} }
+				{ passbacks: {} }
 			)
 
 			const publisherWebsites = await websitesCol
 				.find({
-					hostname: {
-						$in: Object.keys(hosts),
-					},
 					publisher: identity,
 				})
 				.toArray()
