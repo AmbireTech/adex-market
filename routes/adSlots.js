@@ -87,7 +87,9 @@ async function getAdSlots(req, res) {
 					id: hostname,
 					issues: getWebsiteIssues(
 						rest,
-						othersWebsites.some(({ hostname }) => hostname === hostname)
+						othersWebsites.some(
+							({ hostname: otherHostname }) => hostname === otherHostname
+						)
 					),
 					updated,
 				})
