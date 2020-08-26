@@ -265,7 +265,7 @@ const DefaultMinCPMByCategory = {
 	IAB8: 0.28, //'Food & Drink'
 	IAB9: 0.5, //'Hobbies & Interests'
 	IAB10: 0.2, //'Home & Garden'
-	IAB11: 3, //'Law, Government, & Politics'
+	IAB11: 2.444, //'Law, Government, & Politics'
 	IAB12: 0.6, //'News / Weather / Information'
 	IAB13: 1, //'Personal Finance'
 	IAB14: 0.2, //'Society'
@@ -277,15 +277,15 @@ const DefaultMinCPMByCategory = {
 	IAB20: 0.7, //'Travel'
 	IAB21: 0.9, //'Real Estate'
 	IAB22: 0.6, //'Shopping'
-	IAB23: 3, // 'Religion & Spirituality'
+	IAB23: 2.666, // 'Religion & Spirituality'
 	IAB24: DEFAULT_MIN_CPM, //'Uncategorize'
 	IAB25: 0.2, //"Non-Standard Content"
-	IAB26: 3, //'Illegal Content'
+	IAB26: 2.69, //'Illegal Content'
 }
 
 const DefaultCoefficientByCountryTier = {
-	TIER_1: 4,
-	TIER_2: 2.5,
+	TIER_1: 2.5,
+	TIER_2: 2,
 	TIER_3: 1.5,
 	TIER_4: 1,
 }
