@@ -1,8 +1,6 @@
 const express = require('express')
-const url = require('url')
 const { celebrate } = require('celebrate')
 const { schemas, AdSlot } = require('adex-models')
-const { Decimal128 } = require('mongodb')
 const db = require('../db')
 const { verifyPublisher, validQuery } = require('../lib/publisherVerification')
 const { getWebsitesInfo } = require('../lib/publisherWebsitesInfo')
@@ -54,27 +52,19 @@ async function getAdSlots(req, res) {
 
 		if (identity) {
 			const websitesCol = db.getMongo().collection('websites')
-			const { hosts, passbacks } = slots.reduce(
-				(items, { website, fallbackUnit }) => {
-					if (website) {
-						const { hostname } = url.parse(website)
-						items.hosts[hostname] = true
-					}
-
+			const { passbacks } = slots.reduce(
+				(items, { fallbackUnit }) => {
 					if (fallbackUnit) {
 						items.passbacks[fallbackUnit] = true
 					}
 
 					return items
 				},
-				{ hosts: {}, passbacks: {} }
+				{ passbacks: {} }
 			)
 
 			const publisherWebsites = await websitesCol
 				.find({
-					hostname: {
-						$in: Object.keys(hosts),
-					},
 					publisher: identity,
 				})
 				.toArray()
@@ -97,7 +87,9 @@ async function getAdSlots(req, res) {
 					id: hostname,
 					issues: getWebsiteIssues(
 						rest,
-						othersWebsites.some(({ hostname }) => hostname === hostname)
+						othersWebsites.some(
+							({ hostname: otherHostname }) => hostname === otherHostname
+						)
 					),
 					updated,
 				})
@@ -273,7 +265,7 @@ const DefaultMinCPMByCategory = {
 	IAB8: 0.28, //'Food & Drink'
 	IAB9: 0.5, //'Hobbies & Interests'
 	IAB10: 0.2, //'Home & Garden'
-	IAB11: 3, //'Law, Government, & Politics'
+	IAB11: 2.444, //'Law, Government, & Politics'
 	IAB12: 0.6, //'News / Weather / Information'
 	IAB13: 1, //'Personal Finance'
 	IAB14: 0.2, //'Society'
@@ -285,15 +277,15 @@ const DefaultMinCPMByCategory = {
 	IAB20: 0.7, //'Travel'
 	IAB21: 0.9, //'Real Estate'
 	IAB22: 0.6, //'Shopping'
-	IAB23: 3, // 'Religion & Spirituality'
+	IAB23: 2.666, // 'Religion & Spirituality'
 	IAB24: DEFAULT_MIN_CPM, //'Uncategorize'
 	IAB25: 0.2, //"Non-Standard Content"
-	IAB26: 3, //'Illegal Content'
+	IAB26: 2.69, //'Illegal Content'
 }
 
 const DefaultCoefficientByCountryTier = {
-	TIER_1: 4,
-	TIER_2: 2.5,
+	TIER_1: 2.5,
+	TIER_2: 2,
 	TIER_3: 1.5,
 	TIER_4: 1,
 }
