@@ -233,7 +233,7 @@ async function queryValidators() {
 
 async function handleValidatorCalls(leaderUrl, followerUrl, newStateUrl) {
 	try {
-		let [dataLeader, dataFollower, dataLatestNewState] = await Promise.all([
+		const [dataLeader, dataFollower, dataLatestNewState] = await Promise.all([
 			getRequest(leaderUrl),
 			getRequest(followerUrl),
 			getRequest(newStateUrl),
