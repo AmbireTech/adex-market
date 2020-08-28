@@ -236,12 +236,13 @@ async function handleValidatorCalls(leaderUrl, followerUrl, newStateUrl) {
 	let dataFollower
 	let dataLatestNewState
 	try {
-		;[dataLeader, dataFollower, dataLatestNewState] = await Promise.all([
+		[dataLeader, dataFollower, dataLatestNewState] = await Promise.all([
 			getRequest(leaderUrl),
 			getRequest(followerUrl),
 			getRequest(newStateUrl),
 		])
 	} catch (e) {
+		console.error(e)
 		return { failed_calls: true }
 	}
 	return {
