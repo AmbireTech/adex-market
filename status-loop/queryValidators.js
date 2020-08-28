@@ -232,31 +232,19 @@ async function queryValidators() {
 }
 
 async function handleValidatorCalls(leaderUrl, followerUrl, newStateUrl) {
-	let failed_calls = false
 	let dataLeader
 	let dataFollower
 	let dataLatestNewState
 	try {
-		dataLeader = await getRequest(leaderUrl)
+		;[dataLeader, dataFollower, dataLatestNewState] = await Promise.all([
+			getRequest(leaderUrl),
+			getRequest(followerUrl),
+			getRequest(newStateUrl),
+		])
 	} catch (e) {
-		console.error(`Error when making call to Leader validator at ${leaderUrl}:`)
-		console.error(e)
 		return { failed_calls: true }
 	}
-
-	try {
-		dataFollower = await getRequest(followerUrl)
-		dataLatestNewState = await getRequest(newStateUrl)
-	} catch (e) {
-		console.error(
-			`Error when making call to Follower validator at ${followerUrl}:`
-		)
-		console.error(e)
-		return { failed_calls: true }
-	}
-
 	return {
-		failed_calls,
 		dataLeader,
 		dataFollower,
 		dataLatestNewState,
