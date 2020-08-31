@@ -13,6 +13,7 @@ const MISSING_DATA_FILLER = 'N/A'
 const IPFS_URL = process.env.IPFS_URL || 'https://ipfs.adex.network/ipfs/'
 const WEBSITES_TABLE_NAME = 'websites'
 const ADUNITS_TABLE_NAME = 'adUnits'
+const AUDIENCES_TABLE_NAME = 'audiences'
 const ADSLOTS_TABLE_NAME = 'adSlots'
 const CAMPAIGNS_TABLE_NAME = 'campaigns'
 const BIGQUERY_RATE_LIMIT = 10 // There is a limit of ~ 2-10 min between delete and insert
@@ -34,6 +35,20 @@ function ipfsSrc(src) {
 
 function dateToTimestamp(date) {
 	return date ? parseInt(new Date(date).getTime() / 1000) : null
+}
+
+function getAudienceDataSafe({
+	inputs,
+	target,
+	prop,
+	fallbackAsArray = false,
+	fillerAsBoolean = false,
+}) {
+	const dataFiller = fillerAsBoolean ? false : MISSING_DATA_FILLER
+	const fallback = fallbackAsArray ? [dataFiller] : dataFiller
+	return inputs && inputs[target] && inputs[target][prop]
+		? inputs[target][prop]
+		: fallback
 }
 
 async function createWebsitesTable() {
@@ -130,6 +145,130 @@ async function createAdUnitsTable() {
 				targetUrl: adUnit.targetUrl,
 				archived: adUnit.archived,
 				modified: dateToTimestamp(adUnit.modified),
+			}
+		}
+	)
+}
+
+async function createAudiencesTable() {
+	// Create the dataset
+	await dataset.createTable(AUDIENCES_TABLE_NAME, {
+		schema: {
+			fields: [
+				{ name: 'id', type: 'STRING', mode: 'REQUIRED' },
+				{ name: 'campaignId', type: 'STRING', mode: 'NULLABLE' },
+				{ name: 'title', type: 'STRING', mode: 'NULLABLE' },
+				{ name: 'created', type: 'TIMESTAMP', mode: 'REQUIRED' },
+				{ name: 'owner', type: 'STRING', mode: 'REQUIRED' },
+				{ name: 'locationApply', type: 'STRING', mode: 'REQUIRED' },
+				{ name: 'locationShowIn', type: 'STRING', mode: 'REPEATED' },
+				{ name: 'locationNotShowIn', type: 'STRING', mode: 'REPEATED' },
+				{ name: 'categoriesApply', type: 'STRING', mode: 'REPEATED' },
+				{ name: 'categoriesShowIn', type: 'STRING', mode: 'REPEATED' },
+				{ name: 'categoriesNotShowIn', type: 'STRING', mode: 'REPEATED' },
+				{ name: 'publishersApply', type: 'STRING', mode: 'REQUIRED' },
+				{ name: 'publishersShowIn', type: 'STRING', mode: 'REPEATED' },
+				{ name: 'publishersNotShowIn', type: 'STRING', mode: 'REPEATED' },
+				{ name: 'disableFrequencyCapping', type: 'BOOLEAN', mode: 'NULLABLE' },
+				{ name: 'includeIncentivized', type: 'BOOLEAN', mode: 'NULLABLE' },
+				{
+					name: 'limitDailyAverageSpending',
+					type: 'BOOLEAN',
+					mode: 'NULLABLE',
+				},
+			],
+		},
+	})
+	return startImport(
+		AUDIENCES_TABLE_NAME,
+		getMongo()
+			.collection('audiences')
+			.find()
+			.sort({ _id: -1 })
+			.stream(),
+		function(audiences) {
+			if (!audiences) return
+			const { inputs } = audiences
+			const location = 'location'
+			const categories = 'categories'
+			const publishers = 'publishers'
+			const advanced = 'advanced'
+			return {
+				id: audiences.id || audiences._id.toString(),
+				campaignId: audiences.campaignId,
+				title: audiences.title,
+				created: dateToTimestamp(audiences.created),
+				owner: audiences.owner,
+				locationApply: getAudienceDataSafe({
+					inputs: inputs,
+					target: location,
+					prop: 'apply',
+				}),
+				locationShowIn: getAudienceDataSafe({
+					inputs: inputs,
+					target: location,
+					prop: 'in',
+					fallbackAsArray: true,
+				}),
+				locationNotShowIn: getAudienceDataSafe({
+					inputs: inputs,
+					target: location,
+					prop: 'nin',
+					fallbackAsArray: true,
+				}),
+				categoriesApply: getAudienceDataSafe({
+					inputs: inputs,
+					target: categories,
+					prop: 'apply',
+					fallbackAsArray: true,
+				}),
+				categoriesShowIn: getAudienceDataSafe({
+					inputs: inputs,
+					target: categories,
+					prop: 'in',
+					fallbackAsArray: true,
+				}),
+				categoriesNotShowIn: getAudienceDataSafe({
+					inputs: inputs,
+					target: categories,
+					prop: 'nin',
+					fallbackAsArray: true,
+				}),
+				publishersApply: getAudienceDataSafe({
+					inputs: inputs,
+					target: publishers,
+					prop: 'apply',
+				}),
+				publishersShowIn: getAudienceDataSafe({
+					inputs: inputs,
+					target: publishers,
+					prop: 'in',
+					fallbackAsArray: true,
+				}),
+				publishersNotShowIn: getAudienceDataSafe({
+					inputs: inputs,
+					target: publishers,
+					prop: 'nin',
+					fallbackAsArray: true,
+				}),
+				disableFrequencyCapping: getAudienceDataSafe({
+					inputs: inputs,
+					target: advanced,
+					prop: 'disableFrequencyCapping',
+					fillerAsBoolean: true,
+				}),
+				includeIncentivized: getAudienceDataSafe({
+					inputs: inputs,
+					target: advanced,
+					prop: 'includeIncentivized',
+					fillerAsBoolean: true,
+				}),
+				limitDailyAverageSpending: getAudienceDataSafe({
+					inputs: inputs,
+					target: advanced,
+					prop: 'limitDailyAverageSpending',
+					fillerAsBoolean: true,
+				}),
 			}
 		}
 	)
@@ -269,6 +408,7 @@ function importTables(cb) {
 		deleteTableAndImport(ADSLOTS_TABLE_NAME, createAdSlotTable),
 		deleteTableAndImport(CAMPAIGNS_TABLE_NAME, createCampaignsTable),
 		deleteTableAndImport(ADUNITS_TABLE_NAME, createAdUnitsTable),
+		deleteTableAndImport(AUDIENCES_TABLE_NAME, createAudiencesTable),
 	])
 		.then(() => process.exit(0))
 		.catch(e => {
