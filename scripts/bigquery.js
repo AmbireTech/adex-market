@@ -13,7 +13,7 @@ const MISSING_DATA_FILLER = 'N/A'
 const IPFS_URL = process.env.IPFS_URL || 'https://ipfs.adex.network/ipfs/'
 const WEBSITES_TABLE_NAME = 'websites'
 const ADUNITS_TABLE_NAME = 'adUnits'
-const AUDIENCES_TABLE_NAME = 'audiences'
+const AUDIENCES_TABLE_NAME = 'audience'
 const ADSLOTS_TABLE_NAME = 'adSlots'
 const CAMPAIGNS_TABLE_NAME = 'campaigns'
 const BIGQUERY_RATE_LIMIT = 10 // There is a limit of ~ 2-10 min between delete and insert
@@ -186,19 +186,26 @@ async function createAudiencesTable() {
 			.find()
 			.sort({ _id: -1 })
 			.stream(),
-		function(audiences) {
-			if (!audiences) return
-			const { inputs } = audiences
+		async function(audience) {
+			const campaign = await getMongo()
+				.collection('campaigns')
+				.findOne({ id: audience.campaignId })
+			// updates the audience input with the one of the campaign
+			const { inputs } =
+				campaign && campaign.audienceInput
+					? campaign.audienceInput
+					: audience || {}
+			// if audience not found skip. there are some in the test db
 			const location = 'location'
 			const categories = 'categories'
 			const publishers = 'publishers'
 			const advanced = 'advanced'
 			return {
-				id: audiences.id || audiences._id.toString(),
-				campaignId: audiences.campaignId,
-				title: audiences.title,
-				created: dateToTimestamp(audiences.created),
-				owner: audiences.owner,
+				id: audience.id || audience._id.toString(),
+				campaignId: audience.campaignId,
+				title: audience.title,
+				created: dateToTimestamp(audience.created),
+				owner: audience.owner,
 				locationApply: getAudienceDataSafe({
 					inputs: inputs,
 					target: location,
@@ -287,6 +294,7 @@ async function createCampaignsTable() {
 				{ name: 'validUntil', type: 'TIMESTAMP', mode: 'NULLABLE' },
 				{ name: 'status', type: 'STRING', mode: 'NULLABLE' },
 				{ name: 'title', type: 'STRING', mode: 'NULLABLE' },
+				{ name: 'legacyTargeting', type: 'BOOLEAN', mode: 'REQUIRED' },
 			],
 		},
 	})
@@ -312,6 +320,7 @@ async function createCampaignsTable() {
 				validUntil: campaign.validUntil || null,
 				status: campaign.status.name,
 				title: campaign.title || campaign.spec.title,
+				legacyTargeting: !!campaign.spec.targetingRules,
 			}
 		}
 	)
@@ -480,7 +489,10 @@ function startImport(tableName, stream, map) {
 		try {
 			queue = []
 			const resolved = await Promise.all(toInsert)
-			await dataset.table(tableName).insert(resolved)
+			const filteredInserts = resolved.filter(i => !!i)
+			if (filteredInserts.length > 0) {
+				await dataset.table(tableName).insert(filteredInserts)
+			}
 			done += toInsert.length
 			return checkReady()
 		} catch (e) {
