@@ -13,7 +13,8 @@ const MISSING_DATA_FILLER = 'N/A'
 const IPFS_URL = process.env.IPFS_URL || 'https://ipfs.adex.network/ipfs/'
 const WEBSITES_TABLE_NAME = 'websites'
 const ADUNITS_TABLE_NAME = 'adUnits'
-const AUDIENCES_TABLE_NAME = 'audience'
+// ↓ this is updated as if the audience is updated in a campaign and is only applied for new campaigns with audiences
+const AUDIENCES_TABLE_NAME = 'campaignTargeting'
 const ADSLOTS_TABLE_NAME = 'adSlots'
 const CAMPAIGNS_TABLE_NAME = 'campaigns'
 const BIGQUERY_RATE_LIMIT = 10 // There is a limit of ~ 2-10 min between delete and insert
@@ -190,6 +191,7 @@ async function createAudiencesTable() {
 			const campaign = await getMongo()
 				.collection('campaigns')
 				.findOne({ id: audience.campaignId })
+			if (!campaign) return // skip if not used in campaign
 			// updates the audience input with the one of the campaign
 			const { inputs } =
 				campaign && campaign.audienceInput
