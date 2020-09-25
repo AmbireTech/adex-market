@@ -76,7 +76,7 @@ async function createWebsitesTable() {
 		WEBSITES_TABLE_NAME,
 		getMongo()
 			.collection('websites')
-			.find({ _id: { $exists: true, $ne: null } })
+			.find({ hostname: { $exists: true, $ne: null } })
 			.sort({ _id: -1 })
 			.stream(),
 		function(website) {
@@ -129,7 +129,7 @@ async function createAdUnitsTable() {
 		ADUNITS_TABLE_NAME,
 		getMongo()
 			.collection('adUnits')
-			.find({ _id: { $exists: true, $ne: null } })
+			.find({ ipfs: { $exists: true, $ne: null } })
 			.sort({ _id: -1 })
 			.stream(),
 		function(adUnit) {
@@ -301,12 +301,12 @@ async function createCampaignsTable() {
 		CAMPAIGNS_TABLE_NAME,
 		getMongo()
 			.collection('campaigns')
-			.find({ _id: { $exists: true, $ne: null } })
+			.find({ id: { $exists: true, $ne: null } })
 			.sort({ _id: -1 })
 			.stream(),
 		function(campaign) {
 			return {
-				campaignId: campaign._id.toString(),
+				campaignId: campaign.id.toString(),
 				creator: campaign.creator.toString(),
 				depositAmount: Number(
 					formatUnits(campaign.depositAmount, TOKEN_DECIMALS)
@@ -355,7 +355,7 @@ async function createAdSlotTable() {
 		ADSLOTS_TABLE_NAME,
 		getMongo()
 			.collection('adSlots')
-			.find({ _id: { $exists: true, $ne: null } })
+			.find({ ipfs: { $exists: true, $ne: null } })
 			.sort({ _id: -1 })
 			.stream(),
 		async function(adSlot) {
