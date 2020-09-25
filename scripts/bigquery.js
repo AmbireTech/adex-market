@@ -76,11 +76,10 @@ async function createWebsitesTable() {
 		WEBSITES_TABLE_NAME,
 		getMongo()
 			.collection('websites')
-			.find()
+			.find({ _id: { $exists: true, $ne: null } })
 			.sort({ _id: -1 })
 			.stream(),
 		function(website) {
-			if (!website) return
 			const webshrinkerFilledCategories = getCategories(website)
 			website.webshrinkerCategories = webshrinkerFilledCategories
 			return {
@@ -130,11 +129,10 @@ async function createAdUnitsTable() {
 		ADUNITS_TABLE_NAME,
 		getMongo()
 			.collection('adUnits')
-			.find()
+			.find({ _id: { $exists: true, $ne: null } })
 			.sort({ _id: -1 })
 			.stream(),
 		function(adUnit) {
-			if (!adUnit) return
 			return {
 				id: adUnit.ipfs,
 				type: adUnit.type,
@@ -303,11 +301,10 @@ async function createCampaignsTable() {
 		CAMPAIGNS_TABLE_NAME,
 		getMongo()
 			.collection('campaigns')
-			.find()
+			.find({ _id: { $exists: true, $ne: null } })
 			.sort({ _id: -1 })
 			.stream(),
 		function(campaign) {
-			if (!campaign) return
 			return {
 				campaignId: campaign._id.toString(),
 				creator: campaign.creator.toString(),
@@ -358,7 +355,7 @@ async function createAdSlotTable() {
 		ADSLOTS_TABLE_NAME,
 		getMongo()
 			.collection('adSlots')
-			.find()
+			.find({ _id: { $exists: true, $ne: null } })
 			.sort({ _id: -1 })
 			.stream(),
 		async function(adSlot) {
