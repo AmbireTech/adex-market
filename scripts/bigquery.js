@@ -359,7 +359,6 @@ async function createAdSlotTable() {
 			.sort({ _id: -1 })
 			.stream(),
 		async function(adSlot) {
-			if (!adSlot) return
 			const res = await getSlotInfo(adSlot.ipfs)
 			const { slot, acceptedReferrers, alexaRank, categories } = res
 			const hostname = slot.website
