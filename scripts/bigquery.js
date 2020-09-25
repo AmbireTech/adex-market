@@ -184,14 +184,13 @@ async function createAudiencesTable() {
 		AUDIENCES_TABLE_NAME,
 		getMongo()
 			.collection('audiences')
-			.find()
+			.find({ campaignId: { $exists: true, $ne: null } })
 			.sort({ _id: -1 })
 			.stream(),
 		async function(audience) {
 			const campaign = await getMongo()
 				.collection('campaigns')
 				.findOne({ id: audience.campaignId })
-			if (!campaign) return // skip if not used in campaign
 			// updates the audience input with the one of the campaign
 			const { inputs } =
 				campaign && campaign.audienceInput
