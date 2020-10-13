@@ -343,7 +343,8 @@ async function getTargetingData(req, res) {
 				{
 					$match: {
 						...validQuery,
-						//NOTE: check for webshrinkerCategories at the platform
+						hostname: { $type: 'string' },
+						// NOTE: check for webshrinkerCategories at the platform
 					},
 				},
 				{
