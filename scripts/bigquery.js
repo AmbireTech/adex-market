@@ -2,17 +2,19 @@
 require('dotenv').config()
 const { getMongo, connect } = require('../db')
 const { BigQuery } = require('@google-cloud/bigquery')
-const getRequest = require('../helpers/getRequest')
 const { formatUnits } = require('ethers/utils')
 const {
 	getCategories,
 	getWebsitesInfo,
 } = require('../lib/publisherWebsitesInfo')
-
+const { validations, helpers } = require('adex-models')
 // make sure you use the corresponding market to the db you use
 const MISSING_DATA_FILLER = 'N/A'
-const ADEX_MARKET_URL = process.env.ADEX_MARKET_URL || 'http://localhost:3012'
+const IPFS_URL = process.env.IPFS_URL || 'https://ipfs.adex.network/ipfs/'
 const WEBSITES_TABLE_NAME = 'websites'
+const ADUNITS_TABLE_NAME = 'adUnits'
+// ↓ this is updated as if the audience is updated in a campaign and is only applied for new campaigns with audiences
+const AUDIENCES_TABLE_NAME = 'campaignTargeting'
 const ADSLOTS_TABLE_NAME = 'adSlots'
 const CAMPAIGNS_TABLE_NAME = 'campaigns'
 const BIGQUERY_RATE_LIMIT = 10 // There is a limit of ~ 2-10 min between delete and insert
@@ -24,6 +26,31 @@ const options = {
 }
 
 let dataset = null
+
+function ipfsSrc(src) {
+	if (Boolean(src) && validations.Regexes.ipfsRegex.test(src)) {
+		return helpers.getMediaUrlWithProvider(src, IPFS_URL)
+	}
+	return src
+}
+
+function dateToTimestamp(date) {
+	return date ? parseInt(new Date(date).getTime() / 1000) : null
+}
+
+function getAudienceDataSafe({
+	inputs,
+	target,
+	prop,
+	fallbackAsArray = false,
+	fillerAsBoolean = false,
+}) {
+	const dataFiller = fillerAsBoolean ? false : MISSING_DATA_FILLER
+	const fallback = fallbackAsArray ? [dataFiller] : dataFiller
+	return inputs && inputs[target] && inputs[target][prop]
+		? inputs[target][prop]
+		: fallback
+}
 
 async function createWebsitesTable() {
 	// Create the dataset
@@ -49,11 +76,10 @@ async function createWebsitesTable() {
 		WEBSITES_TABLE_NAME,
 		getMongo()
 			.collection('websites')
-			.find()
+			.find({ hostname: { $exists: true, $ne: null } })
 			.sort({ _id: -1 })
 			.stream(),
 		function(website) {
-			if (!website) return
 			const webshrinkerFilledCategories = getCategories(website)
 			website.webshrinkerCategories = webshrinkerFilledCategories
 			return {
@@ -81,6 +107,179 @@ async function createWebsitesTable() {
 	)
 }
 
+async function createAdUnitsTable() {
+	// Create the dataset
+	await dataset.createTable(ADUNITS_TABLE_NAME, {
+		schema: {
+			fields: [
+				{ name: 'id', type: 'STRING', mode: 'REQUIRED' },
+				{ name: 'type', type: 'STRING', mode: 'REQUIRED' },
+				{ name: 'title', type: 'STRING', mode: 'REQUIRED' },
+				{ name: 'created', type: 'TIMESTAMP', mode: 'REQUIRED' },
+				{ name: 'owner', type: 'STRING', mode: 'REQUIRED' },
+				{ name: 'mediaUrl', type: 'STRING', mode: 'REQUIRED' },
+				{ name: 'mediaMime', type: 'STRING', mode: 'REQUIRED' },
+				{ name: 'targetUrl', type: 'STRING', mode: 'REQUIRED' },
+				{ name: 'archived', type: 'BOOLEAN', mode: 'NULLABLE' },
+				{ name: 'modified', type: 'TIMESTAMP', mode: 'NULLABLE' },
+			],
+		},
+	})
+	return startImport(
+		ADUNITS_TABLE_NAME,
+		getMongo()
+			.collection('adUnits')
+			.find({ ipfs: { $exists: true, $ne: null } })
+			.sort({ _id: -1 })
+			.stream(),
+		function(adUnit) {
+			return {
+				id: adUnit.ipfs,
+				type: adUnit.type,
+				title: adUnit.title,
+				owner: adUnit.owner,
+				created: dateToTimestamp(adUnit.created),
+				mediaUrl: ipfsSrc(adUnit.mediaUrl),
+				mediaMime: adUnit.mediaMime,
+				targetUrl: adUnit.targetUrl,
+				archived: adUnit.archived,
+				modified: dateToTimestamp(adUnit.modified),
+			}
+		}
+	)
+}
+
+async function createAudiencesTable() {
+	// Create the dataset
+	await dataset.createTable(AUDIENCES_TABLE_NAME, {
+		schema: {
+			fields: [
+				{ name: 'id', type: 'STRING', mode: 'REQUIRED' },
+				{ name: 'campaignId', type: 'STRING', mode: 'NULLABLE' },
+				{ name: 'title', type: 'STRING', mode: 'NULLABLE' },
+				{ name: 'created', type: 'TIMESTAMP', mode: 'REQUIRED' },
+				{ name: 'owner', type: 'STRING', mode: 'REQUIRED' },
+				{ name: 'locationApply', type: 'STRING', mode: 'REQUIRED' },
+				{ name: 'locationShowIn', type: 'STRING', mode: 'REPEATED' },
+				{ name: 'locationNotShowIn', type: 'STRING', mode: 'REPEATED' },
+				{ name: 'categoriesApply', type: 'STRING', mode: 'REPEATED' },
+				{ name: 'categoriesShowIn', type: 'STRING', mode: 'REPEATED' },
+				{ name: 'categoriesNotShowIn', type: 'STRING', mode: 'REPEATED' },
+				{ name: 'publishersApply', type: 'STRING', mode: 'REQUIRED' },
+				{ name: 'publishersShowIn', type: 'STRING', mode: 'REPEATED' },
+				{ name: 'publishersNotShowIn', type: 'STRING', mode: 'REPEATED' },
+				{ name: 'disableFrequencyCapping', type: 'BOOLEAN', mode: 'NULLABLE' },
+				{ name: 'includeIncentivized', type: 'BOOLEAN', mode: 'NULLABLE' },
+				{
+					name: 'limitDailyAverageSpending',
+					type: 'BOOLEAN',
+					mode: 'NULLABLE',
+				},
+			],
+		},
+	})
+	return startImport(
+		AUDIENCES_TABLE_NAME,
+		getMongo()
+			.collection('audiences')
+			.find({ campaignId: { $exists: true, $ne: null } })
+			.sort({ _id: -1 })
+			.stream(),
+		async function(audience) {
+			const campaign = await getMongo()
+				.collection('campaigns')
+				.findOne({ id: audience.campaignId })
+			// updates the audience input with the one of the campaign
+			const { inputs } =
+				campaign && campaign.audienceInput
+					? campaign.audienceInput
+					: audience || {}
+			// if audience not found skip. there are some in the test db
+			const location = 'location'
+			const categories = 'categories'
+			const publishers = 'publishers'
+			const advanced = 'advanced'
+			return {
+				id: audience.id || audience._id.toString(),
+				campaignId: audience.campaignId,
+				title: audience.title,
+				created: dateToTimestamp(audience.created),
+				owner: audience.owner,
+				locationApply: getAudienceDataSafe({
+					inputs: inputs,
+					target: location,
+					prop: 'apply',
+				}),
+				locationShowIn: getAudienceDataSafe({
+					inputs: inputs,
+					target: location,
+					prop: 'in',
+					fallbackAsArray: true,
+				}),
+				locationNotShowIn: getAudienceDataSafe({
+					inputs: inputs,
+					target: location,
+					prop: 'nin',
+					fallbackAsArray: true,
+				}),
+				categoriesApply: getAudienceDataSafe({
+					inputs: inputs,
+					target: categories,
+					prop: 'apply',
+					fallbackAsArray: true,
+				}),
+				categoriesShowIn: getAudienceDataSafe({
+					inputs: inputs,
+					target: categories,
+					prop: 'in',
+					fallbackAsArray: true,
+				}),
+				categoriesNotShowIn: getAudienceDataSafe({
+					inputs: inputs,
+					target: categories,
+					prop: 'nin',
+					fallbackAsArray: true,
+				}),
+				publishersApply: getAudienceDataSafe({
+					inputs: inputs,
+					target: publishers,
+					prop: 'apply',
+				}),
+				publishersShowIn: getAudienceDataSafe({
+					inputs: inputs,
+					target: publishers,
+					prop: 'in',
+					fallbackAsArray: true,
+				}),
+				publishersNotShowIn: getAudienceDataSafe({
+					inputs: inputs,
+					target: publishers,
+					prop: 'nin',
+					fallbackAsArray: true,
+				}),
+				disableFrequencyCapping: getAudienceDataSafe({
+					inputs: inputs,
+					target: advanced,
+					prop: 'disableFrequencyCapping',
+					fillerAsBoolean: true,
+				}),
+				includeIncentivized: getAudienceDataSafe({
+					inputs: inputs,
+					target: advanced,
+					prop: 'includeIncentivized',
+					fillerAsBoolean: true,
+				}),
+				limitDailyAverageSpending: getAudienceDataSafe({
+					inputs: inputs,
+					target: advanced,
+					prop: 'limitDailyAverageSpending',
+					fillerAsBoolean: true,
+				}),
+			}
+		}
+	)
+}
+
 async function createCampaignsTable() {
 	// Create the dataset
 	await dataset.createTable(CAMPAIGNS_TABLE_NAME, {
@@ -94,6 +293,7 @@ async function createCampaignsTable() {
 				{ name: 'validUntil', type: 'TIMESTAMP', mode: 'NULLABLE' },
 				{ name: 'status', type: 'STRING', mode: 'NULLABLE' },
 				{ name: 'title', type: 'STRING', mode: 'NULLABLE' },
+				{ name: 'legacyTargeting', type: 'BOOLEAN', mode: 'REQUIRED' },
 			],
 		},
 	})
@@ -101,13 +301,12 @@ async function createCampaignsTable() {
 		CAMPAIGNS_TABLE_NAME,
 		getMongo()
 			.collection('campaigns')
-			.find()
+			.find({ id: { $exists: true, $ne: null } })
 			.sort({ _id: -1 })
 			.stream(),
 		function(campaign) {
-			if (!campaign) return
 			return {
-				campaignId: campaign._id.toString(),
+				campaignId: campaign.id.toString(),
 				creator: campaign.creator.toString(),
 				depositAmount: Number(
 					formatUnits(campaign.depositAmount, TOKEN_DECIMALS)
@@ -119,6 +318,7 @@ async function createCampaignsTable() {
 				validUntil: campaign.validUntil || null,
 				status: campaign.status.name,
 				title: campaign.title || campaign.spec.title,
+				legacyTargeting: !!campaign.spec.targetingRules,
 			}
 		}
 	)
@@ -127,9 +327,7 @@ async function createCampaignsTable() {
 async function getSlotInfo(ipfs) {
 	const adSlotsCol = getMongo().collection('adSlots')
 	const websitesCol = getMongo().collection('websites')
-
 	const slot = await adSlotsCol.findOne({ ipfs }, { projection: { _id: 0 } })
-
 	return { slot, ...(await getWebsitesInfo(websitesCol, slot)) }
 }
 
@@ -157,11 +355,10 @@ async function createAdSlotTable() {
 		ADSLOTS_TABLE_NAME,
 		getMongo()
 			.collection('adSlots')
-			.find()
+			.find({ ipfs: { $exists: true, $ne: null } })
 			.sort({ _id: -1 })
 			.stream(),
 		async function(adSlot) {
-			if (!adSlot) return
 			const res = await getSlotInfo(adSlot.ipfs)
 			const { slot, acceptedReferrers, alexaRank, categories } = res
 			const hostname = slot.website
@@ -216,6 +413,8 @@ function importTables(cb) {
 		deleteTableAndImport(WEBSITES_TABLE_NAME, createWebsitesTable),
 		deleteTableAndImport(ADSLOTS_TABLE_NAME, createAdSlotTable),
 		deleteTableAndImport(CAMPAIGNS_TABLE_NAME, createCampaignsTable),
+		deleteTableAndImport(ADUNITS_TABLE_NAME, createAdUnitsTable),
+		deleteTableAndImport(AUDIENCES_TABLE_NAME, createAudiencesTable),
 	])
 		.then(() => process.exit(0))
 		.catch(e => {
@@ -229,10 +428,6 @@ async function init() {
 	try {
 		await connect()
 		const bigqueryClient = new BigQuery(options)
-		const testAdSlot = await getMongo()
-			.collection('adSlots')
-			.findOne()
-		await getRequest(`${ADEX_MARKET_URL}/slots/${testAdSlot.ipfs}`) // Tests if market is running
 		// Make sure there is a dataset with that name otherwise create it
 		dataset = bigqueryClient.dataset(DATASET_NAME)
 		const [datasetExists] = await dataset.exists()
@@ -291,7 +486,10 @@ function startImport(tableName, stream, map) {
 		try {
 			queue = []
 			const resolved = await Promise.all(toInsert)
-			await dataset.table(tableName).insert(resolved)
+			const filteredInserts = resolved.filter(i => !!i)
+			if (filteredInserts.length > 0) {
+				await dataset.table(tableName).insert(filteredInserts)
+			}
 			done += toInsert.length
 			return checkReady()
 		} catch (e) {
