@@ -37,7 +37,7 @@ function getFindQuery(query) {
 	const status = query.status ? query.status.split(',') : ['Active', 'Ready']
 	// If request query has ?all it doesn't query for status
 	let findQuery = query.hasOwnProperty('all')
-		? { 'status': { $exists: true } }
+		? { status: { $exists: true } }
 		: { 'status.name': { $in: status } }
 
 	if (query.hasOwnProperty('depositAsset')) {
@@ -65,11 +65,17 @@ function getFindQuery(query) {
 
 async function getCampaignsFromQuery(query) {
 	const campaignLimit = +query.limit || MAX_LIMIT
+	const statusOnly = !!query.statusOnly
 	const skip = +query.skip || 0
 	const mongoQuery = getFindQuery(query)
 	const campaignsCol = db.getMongo().collection('campaigns')
 	const allCampaigns = await campaignsCol
-		.find(mongoQuery, { projection: { _id: 0 } })
+		.find(mongoQuery, {
+			projection: {
+				_id: 0,
+				...(statusOnly && { id: 1, creator: 1, status: 1 }),
+			},
+		})
 		.skip(skip)
 		.limit(campaignLimit)
 		.toArray()
