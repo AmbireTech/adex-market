@@ -333,6 +333,8 @@ async function verifyWebsite(req, res) {
 	}
 }
 
+const RECENT_CAMPAIGNS_EXTRA_TIME = 3 * 24 * 60 * 60 * 1000 // 3 days
+
 async function getTargetingData(req, res) {
 	try {
 		const websitesCol = db.getMongo().collection('websites')
@@ -398,12 +400,26 @@ async function getTargetingData(req, res) {
 			.toArray()
 
 		const publishersWithRevenue = {}
+		const recentTime = Date.now() - RECENT_CAMPAIGNS_EXTRA_TIME
 
 		await campaignsCol
 			.aggregate([
 				{
 					$match: {
-						'status.lastApprovedBalances': { $exists: true },
+						$and: [
+							{ 'status.lastApprovedBalances': { $exists: true } },
+							{
+								'spec.withdrawPeriodStart': {
+									$gt: recentTime,
+								},
+							},
+							{
+								$or: [
+									{ 'status.closedDate': null },
+									{ 'status.closedDate': { $gt: recentTime } },
+								],
+							},
+						],
 					},
 				},
 				{
@@ -462,6 +478,7 @@ async function getTargetingData(req, res) {
 				owner,
 				...rest,
 				// NOTE: this is per owner, no by slot
+				// Only from recent campaigns
 				campaignsEarnedFrom: publisherData.campaignsEarnedFrom,
 				totalEarned: publisherData.totalEarned,
 				types: Array.from(types),
