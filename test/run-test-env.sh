@@ -7,13 +7,14 @@ PORT=3013
 MONGO="testAdexMarket${TIMESTAMP}"
 TEST_MARKET_URL="http://localhost:$PORT"
 RELAYER_HOST="http://goerli-relayer.adex.network"
+JS_SCRIPT_PATH=${JS_SCRIPT_PATH:="./test/integration/integration.js"}
 
-# echo "Seeding database complete"
+echo "Seeding database complete"
 
 PORT=$PORT DB_MONGO_NAME=$MONGO NODE_ENV="test" RELAYER_HOST=$RELAYER_HOST npm start &
 sleep 6
 
-TEST_MARKET_URL=$TEST_MARKET_URL node ./test/integration/integration.js
+TEST_MARKET_URL=$TEST_MARKET_URL node $JS_SCRIPT_PATH
 
 exitCode=$?
 
