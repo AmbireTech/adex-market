@@ -7,6 +7,131 @@ const fs = require('fs')
 const util = require('util')
 const readFile = util.promisify(fs.readFile)
 
+const adUnits = [
+	new AdUnit({
+		id: 'Qmasg8FrbuSQpjFu3kRnZF9beg8rEBFrqgi1uXDRwCbX5f',
+		type: 'legacy_250x250',
+		mediaUrl: 'ipfs://Qmasg8FrbuSQpjFu3kRnZF9beg8rEBFrqgi1uXDRwCbX5f',
+		mediaMime: 'image/jpeg',
+		targetUrl: 'https://www.adex.network/?stremio-test-banner-1',
+		targeting: [{ tag: 'games', score: 100 }],
+		created: Date.now(),
+		title: 'Test ad unit',
+		ipfs: 'Qmasg8FrbuSQpjFu3kRnZF9beg8rEBFrqgi1uXDRwCbX5f',
+		description: 'test ad unit for seeding db',
+		tags: [
+			{ tag: 'games', score: 42 },
+			{ tag: 'usa', score: 60 },
+		],
+		owner: identityAddr,
+	}),
+	new AdUnit({
+		ipfs: 'QmVhRDGXoM3Fg3HZD5xwMuxtb9ZErwC8wHt8CjsfxaiUbZ',
+		type: 'legacy_160x600',
+		mediaUrl: 'ipfs://QmVhRDGXoM3Fg3HZD5xwMuxtb9ZErwC8wHt8CjsfxaiUbZ',
+		mediaMime: 'image/jpeg',
+		targetUrl: 'https://www.adex.network/?adex-campaign=true&pub=stremio',
+		created: Date.now(),
+		title: 'Test ad unit',
+		description: 'test ad unit for seeding db',
+		tags: [
+			{ tag: 'movies', score: 42 },
+			{ tag: 'usa', score: 60 },
+		],
+		owner: identityAddr,
+	}),
+	new AdUnit({
+		ipfs: 'QmYwcpMjmqJfo9ot1jGe9rfXsszFV1WbEA59QS7dEVHfJi',
+		type: 'legacy_728x90',
+		mediaUrl: 'ipfs://QmYwcpMjmqJfo9ot1jGe9rfXsszFV1WbEA59QS7dEVHfJi',
+		mediaMime: 'image/jpeg',
+		targetUrl: 'https://www.adex.network/?adex-campaign=true',
+		targeting: [{ tag: 'music', score: 100 }],
+		created: Date.now(),
+		title: 'Test ad unit',
+		description: 'test ad unit for seeding db',
+		tags: [
+			{ tag: 'music', score: 42 },
+			{ tag: 'rap', score: 60 },
+		],
+		owner: identityAddr,
+		archived: true,
+	}),
+]
+
+const targetingRules = [
+	{
+		onlyShowIf: {
+			intersects: [{ get: 'adSlot.categories' }, ['IAB3', 'IAB13-7', 'IAB5']],
+		},
+	},
+]
+
+const testUfsCampaign = {
+	creator: '0x033ed90e0fec3f3ea1c9b005c724d704501e0196',
+	depositAmount: '1000000000000000000000',
+	depositAsset: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
+	id: '0x061d5e2a67d0a9a10f1c732bca12a676d83f79663a396f7d87b3e30b9b411088',
+	spec: {
+		title: 'Test campaign for UnitsForSlotRoute',
+		adUnits,
+		validators: [
+			{
+				id: '0xce07CbB7e054514D590a0262C93070D838bFBA2e',
+				url: 'https://jerry.moonicorn.network',
+				fee: '0',
+			},
+			{
+				id: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
+				url: 'https://tom.moonicorn.network',
+				fee: '598500000000000000',
+				feeAddr: '0xe3C19038238De9bcc3E735ec4968eCd45e04c837',
+			},
+		],
+		pricingBounds: {
+			IMPRESSION: { min: '100000000000000', max: '150000000000000' },
+		},
+		maxPerImpression: '10000000000000000000',
+		minPerImpression: '1000000000000000000',
+		targetingRules,
+		minTargetingScore: null,
+		created: 1564383600000,
+		nonce: '0',
+		withdrawPeriodStart: 4073414400000,
+		eventSubmission: {
+			allow: [],
+		},
+		activeFrom: 1602025500000,
+	},
+	targetingRules,
+	validUntil: 4102444800000,
+	status: {
+		name: 'Active',
+		closedDate: null,
+		humanFriendlyName: 'Active',
+		lastHeartbeat: {
+			leader: '2020-11-23T18:59:27.072Z',
+			follower: '2020-11-23T19:00:23.311Z',
+		},
+		lastApprovedSigs: [
+			'0x58148a79054b33e9b8b1d896052c33aa7aec6fc0499d9513d92c6f732c2969116c81ff39733920678c96142eda22fe8539920067bd963747d8c25acc45b3438c1c',
+			'0xf4b669cecf2acf0b1ecf60d2fc32ac052eb08faaa8640b94c9dcb6f6ab6f00bd3af171da2c5bca739a32ce62f80c7442e118660a0cb3a914bcb9cb634d5a95e31b',
+		],
+		lastApprovedBalances: {
+			'0xC0841555DBE77D20FCc53C593697D48986C0a576': '952413000000000000',
+			'0xdBdB35d77A663ab50870DC55F99b7eF55c34D258': '5068500000000000',
+			'0xf24E0c5b4045AE2d3Ce402E9f36e83dB43110664': '1860000000000000',
+			'0xba9D246a2c32859d9F66223D9A92437043fd5681': '5582278500000000000',
+			'0xe3C19038238De9bcc3E735ec4968eCd45e04c837': '492380000000000000',
+		},
+		verified: true,
+		lastChecked: 1606158035872,
+		usdEstimate: 8.55,
+		fundsDistributedRatio: 822,
+	},
+}
+
+
 const activeCampaignData = {
 	status: {
 		name: 'Active',
@@ -66,8 +191,13 @@ for (let i = 1; i <= cfg.maxChannelsEarningFrom + 10; i++) {
 	campaignsAboveLimit.push(campaign)
 }
 
+
 const testData = {
-	campaigns: [...campaignLimitDataNoFiltering, ...campaignsAboveLimit],
+	campaigns: [
+		...campaignLimitDataNoFiltering,
+		...campaignsAboveLimit,
+		testUfsCampaign,
+	],
 	validators: [
 		{
 			_id: 'awesomeLeader',
@@ -97,53 +227,7 @@ const testData = {
 		],
 		role: 'advertiser',
 	},
-	adUnits: [
-		new AdUnit({
-			type: 'legacy_250x250',
-			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
-			mediaMime: 'image/jpeg',
-			targetUrl: 'https://google.com',
-			targeting: [{ tag: 'games', score: 100 }],
-			created: Date.now(),
-			title: 'Test ad unit',
-			description: 'test ad unit for seeding db',
-			tags: [
-				{ tag: 'games', score: 42 },
-				{ tag: 'usa', score: 60 },
-			],
-			owner: identityAddr,
-		}),
-		new AdUnit({
-			type: 'legacy_160x600',
-			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
-			mediaMime: 'image/jpeg',
-			targetUrl: 'https://google.com',
-			created: Date.now(),
-			title: 'Test ad unit',
-			description: 'test ad unit for seeding db',
-			tags: [
-				{ tag: 'movies', score: 42 },
-				{ tag: 'usa', score: 60 },
-			],
-			owner: identityAddr,
-		}),
-		new AdUnit({
-			type: 'legacy_728x90',
-			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
-			mediaMime: 'image/jpeg',
-			targetUrl: 'https://google.com',
-			targeting: [{ tag: 'music', score: 100 }],
-			created: Date.now(),
-			title: 'Test ad unit',
-			description: 'test ad unit for seeding db',
-			tags: [
-				{ tag: 'music', score: 42 },
-				{ tag: 'rap', score: 60 },
-			],
-			owner: identityAddr,
-			archived: true,
-		}),
-	],
+	adUnits,
 	adSlot: new AdSlot({
 		type: 'legacy_250x250',
 		tags: [
@@ -152,8 +236,8 @@ const testData = {
 		],
 		owner: identityAddr,
 		created: Date.now(),
-		fallbackUnit: 'QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
-		ipfs: 'QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
+		fallbackUnit: null,
+		ipfs: 'QmVwXu9oEgYSsL6G1WZtUQy6dEReqs3Nz9iaW4Cq5QLV8C',
 		title: 'Test slot 1',
 		description: 'Test slot for running integration tests',
 		archived: false,
