@@ -116,7 +116,7 @@ const testUfsCampaign = {
 		lastApprovedSigs: [],
 		lastApprovedBalances: {},
 		verified: true,
-		lastChecked: Date.now()
+		lastChecked: Date.now(),
 	},
 }
 
