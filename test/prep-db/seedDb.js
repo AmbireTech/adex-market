@@ -110,27 +110,15 @@ const testUfsCampaign = {
 		closedDate: null,
 		humanFriendlyName: 'Active',
 		lastHeartbeat: {
-			leader: '2020-11-23T18:59:27.072Z',
-			follower: '2020-11-23T19:00:23.311Z',
+			leader: new Date(Date.now() - 20000).toISOString(),
+			follower: new Date(Date.now()).toISOString(),
 		},
-		lastApprovedSigs: [
-			'0x58148a79054b33e9b8b1d896052c33aa7aec6fc0499d9513d92c6f732c2969116c81ff39733920678c96142eda22fe8539920067bd963747d8c25acc45b3438c1c',
-			'0xf4b669cecf2acf0b1ecf60d2fc32ac052eb08faaa8640b94c9dcb6f6ab6f00bd3af171da2c5bca739a32ce62f80c7442e118660a0cb3a914bcb9cb634d5a95e31b',
-		],
-		lastApprovedBalances: {
-			'0xC0841555DBE77D20FCc53C593697D48986C0a576': '952413000000000000',
-			'0xdBdB35d77A663ab50870DC55F99b7eF55c34D258': '5068500000000000',
-			'0xf24E0c5b4045AE2d3Ce402E9f36e83dB43110664': '1860000000000000',
-			'0xba9D246a2c32859d9F66223D9A92437043fd5681': '5582278500000000000',
-			'0xe3C19038238De9bcc3E735ec4968eCd45e04c837': '492380000000000000',
-		},
+		lastApprovedSigs: [],
+		lastApprovedBalances: {},
 		verified: true,
-		lastChecked: 1606158035872,
-		usdEstimate: 8.55,
-		fundsDistributedRatio: 822,
+		lastChecked: Date.now()
 	},
 }
-
 
 const activeCampaignData = {
 	status: {
@@ -190,7 +178,6 @@ for (let i = 1; i <= cfg.maxChannelsEarningFrom + 10; i++) {
 	const campaign = getCampaign(campaignData)
 	campaignsAboveLimit.push(campaign)
 }
-
 
 const testData = {
 	campaigns: [
