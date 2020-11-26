@@ -118,3 +118,8 @@ This is not directly related to verification, but it plays an important role in 
 For a publisher to appear in the platform list of publishers, they need to have received a significant number of impressions. But without appearing there, they can't receive any number of impressions - so it's essentially a chicken-and-egg problem.
 
 To solve this, we have to ensure there are always "catch all" campaigns - those are campaigns with no targeting set, in other words: all criteria is set to "All".
+
+## Comparing market/supermarket output for /units-for-slot route
+
+1. Run `npm run units-for-slot-test-output`
+2. In `adex-supermarket` run `cargo test get_sample_units_for_slot_output -- --show-output --ignored`
