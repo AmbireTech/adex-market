@@ -119,6 +119,7 @@ const testUfsCampaign = {
 		eventSubmission: {
 			allow: [],
 		},
+		activeFrom: 1606136400000,
 	},
 	targetingRules,
 	validUntil: 4102444800000,
