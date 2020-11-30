@@ -7,6 +7,8 @@ const fs = require('fs')
 const util = require('util')
 const readFile = util.promisify(fs.readFile)
 
+const publisherAddr = '0xb7d3f81e857692d13e9d63b232a90f4a1793189e'
+
 const adUnits = [
 	new AdUnit({
 		id: 'Qmasg8FrbuSQpjFu3kRnZF9beg8rEBFrqgi1uXDRwCbX5f',
@@ -27,7 +29,7 @@ const adUnits = [
 	}),
 	new AdUnit({
 		ipfs: 'QmVhRDGXoM3Fg3HZD5xwMuxtb9ZErwC8wHt8CjsfxaiUbZ',
-		type: 'legacy_160x600',
+		type: 'legacy_250x250',
 		mediaUrl: 'ipfs://QmVhRDGXoM3Fg3HZD5xwMuxtb9ZErwC8wHt8CjsfxaiUbZ',
 		mediaMime: 'image/jpeg',
 		targetUrl: 'https://www.adex.network/?adex-campaign=true&pub=stremio',
@@ -42,10 +44,27 @@ const adUnits = [
 	}),
 	new AdUnit({
 		ipfs: 'QmYwcpMjmqJfo9ot1jGe9rfXsszFV1WbEA59QS7dEVHfJi',
-		type: 'legacy_728x90',
+		type: 'legacy_250x250',
 		mediaUrl: 'ipfs://QmYwcpMjmqJfo9ot1jGe9rfXsszFV1WbEA59QS7dEVHfJi',
 		mediaMime: 'image/jpeg',
 		targetUrl: 'https://www.adex.network/?adex-campaign=true',
+		targeting: [{ tag: 'music', score: 100 }],
+		created: Date.now(),
+		title: 'Test ad unit',
+		description: 'test ad unit for seeding db',
+		tags: [
+			{ tag: 'music', score: 42 },
+			{ tag: 'rap', score: 60 },
+		],
+		owner: identityAddr,
+		archived: true,
+	}),
+	new AdUnit({
+		ipfs: 'QmTAF3FsFDS7Ru8WChoD9ofiHTH8gAQfR4mYSnwxqTDpJH',
+		type: 'legacy_250x250',
+		mediaUrl: 'ipfs://QmQAcfBJpDDuH99A4p3pFtUmQwamS8UYStP5HxHC7bgYXY',
+		mediaMime: 'image/jpeg',
+		targetUrl: 'https://adex.network',
 		targeting: [{ tag: 'music', score: 100 }],
 		created: Date.now(),
 		title: 'Test ad unit',
@@ -78,14 +97,13 @@ const testUfsCampaign = {
 		validators: [
 			{
 				id: '0xce07CbB7e054514D590a0262C93070D838bFBA2e',
-				url: 'https://jerry.moonicorn.network',
-				fee: '0',
+				url: 'http://localhost:8005',
+				fee: '100000000000000000000',
 			},
 			{
-				id: '0x2892f6C41E0718eeeDd49D98D648C789668cA67d',
-				url: 'https://tom.moonicorn.network',
-				fee: '598500000000000000',
-				feeAddr: '0xe3C19038238De9bcc3E735ec4968eCd45e04c837',
+				id: '0xc91763d7f14ac5c5ddfbcd012e0d2a61ab9bded3',
+				url: 'http://localhost:8006',
+				fee: '100000000000000000000',
 			},
 		],
 		pricingBounds: {
@@ -101,7 +119,6 @@ const testUfsCampaign = {
 		eventSubmission: {
 			allow: [],
 		},
-		activeFrom: 1602025500000,
 	},
 	targetingRules,
 	validUntil: 4102444800000,
@@ -119,6 +136,23 @@ const testUfsCampaign = {
 		lastChecked: Date.now(),
 	},
 }
+
+const adSlot = new AdSlot({
+	type: 'legacy_250x250',
+	owner: publisherAddr,
+	created: Date.now(),
+	fallbackUnit: null,
+	ipfs: 'QmVwXu9oEgYSsL6G1WZtUQy6dEReqs3Nz9iaW4Cq5QLV8C',
+	title: 'Test slot 1',
+	description: 'Test slot for running integration tests',
+	archived: false,
+	modified: Date.now(),
+	website: 'https://adex.network',
+	minPerImpression: {
+		'0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359': '700000000000000',
+	},
+	rules: targetingRules,
+})
 
 const activeCampaignData = {
 	status: {
@@ -215,21 +249,15 @@ const testData = {
 		role: 'advertiser',
 	},
 	adUnits,
-	adSlot: new AdSlot({
-		type: 'legacy_250x250',
-		tags: [
-			{ tag: 'games', score: 42 },
-			{ tag: 'usa', score: 60 },
-		],
-		owner: identityAddr,
-		created: Date.now(),
-		fallbackUnit: null,
-		ipfs: 'QmVwXu9oEgYSsL6G1WZtUQy6dEReqs3Nz9iaW4Cq5QLV8C',
-		title: 'Test slot 1',
-		description: 'Test slot for running integration tests',
-		archived: false,
-		modified: Date.now(),
-	}),
+	adSlot,
+	website: {
+		publisher: publisherAddr,
+		hostname: 'adex.network',
+		webshrinkerCategories: ['IAB3', 'IAB13-7', 'IAB5'],
+		extraReferrers: [],
+		rank: 1337,
+		verifiedOwnership: true,
+	},
 }
 
 function seedDb(db) {
@@ -239,6 +267,7 @@ function seedDb(db) {
 		db.collection('users').insertOne(testData.user),
 		db.collection('adUnits').insertMany(testData.adUnits),
 		db.collection('adSlots').insertOne(testData.adSlot),
+		db.collection('websites').insertOne(testData.website),
 	])
 }
 

@@ -17,7 +17,12 @@ async function unitsForSlotTestOutput() {
 	const testSlots = await getTestSlots()
 	const slotIpfs = testSlots.slots[0].id
 	getCampaigns()
-	return fetch(`${marketUrl}/units-for-slot/${slotIpfs}`)
+	return fetch(`${marketUrl}/units-for-slot/${slotIpfs}`, {
+		headers: {
+			'User-Agent':
+				'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:83.0) Gecko/20100101 Firefox/83.0',
+		},
+	})
 		.then(res => res.json())
 		.then(res => {
 			console.log(JSON.stringify(res, null, 1))
