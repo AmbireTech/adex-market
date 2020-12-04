@@ -156,8 +156,9 @@ async function getUnitsForSlot(req) {
 							  })
 							: []
 
-					const minPrice = updatedMinPrice || specMinPrice
-					const maxPrice = updatedMaxPrice || specMaxPrice
+					// Ensure never goes over spec prices
+					const minPrice = BN.max(updatedMinPrice || specMinPrice, specMinPrice)
+					const maxPrice = BN.min(updatedMaxPrice || specMaxPrice, specMaxPrice)
 
 					let output = {
 						show: true,
