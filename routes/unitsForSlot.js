@@ -7,6 +7,7 @@ const {
 	targetingInputGetter,
 	getPricingBounds,
 } = require('adex-adview-manager/lib/helpers')
+const { helpers } = require('adex-models')
 const { getWebsitesInfo } = require('../lib/publisherWebsitesInfo')
 const db = require('../db')
 const cfg = require('../cfg')
@@ -35,6 +36,7 @@ async function getUnitsForSlot(req) {
 	const websitesCol = db.getMongo().collection('websites')
 	const campaignsCol = db.getMongo().collection('campaigns')
 	const adUnitCol = db.getMongo().collection('adUnits')
+	const audiencesCol = db.getMongo().collection('audiences')
 
 	const { id } = req.params
 	const adSlot = await adSlotsCol.findOne(
@@ -65,9 +67,7 @@ async function getUnitsForSlot(req) {
 	// we do that in order to have the same variables as the validator, so that the `price` is the same
 	const targetingInputExtra = {
 		'adSlot.categories': categories,
-		'adSlot.hostname': adSlot.website
-			? url.parse(adSlot.website).hostname
-			: '',
+		'adSlot.hostname': adSlot.website ? url.parse(adSlot.website).hostname : '',
 		'adSlot.alexaRank': typeof alexaRank === 'number' ? alexaRank : undefined,
 	}
 
@@ -100,13 +100,36 @@ async function getUnitsForSlot(req) {
 			? campaignsByEarner
 			: campaignsActive
 
+	const audiencesQuery = {
+		campaignId: {
+			$in: campaignsLimitedByEarner.map(({ id }) => id).filter(id => !!id),
+		},
+		pricingBoundsCPMUserInput: { $exists: true, $ne: null },
+	}
+	const pricingBoundsCPMUserInputByCampaign = (
+		await audiencesCol
+			.find(audiencesQuery, {
+				projection: { campaignId: 1, pricingBoundsCPMUserInput: 1 },
+			})
+			.toArray()
+	).reduce((prices, input) => {
+		prices[
+			input.campaignId
+		] = helpers.userInputPricingBoundsPerMileToRulesValue({
+			pricingBounds: input.pricingBoundsCPMUserInput,
+			decimals: 18, // TODO
+		})
+		return prices
+	}, {})
+
 	const campaigns = campaignsLimitedByEarner
 		.map(campaign => {
 			// properties we do not care about: validUntil
 			const units = campaign.spec.adUnits.filter(u => u.type === adSlot.type)
 			if (!units.length) return null
 
-			const targetingRules = campaign.targetingRules || campaign.spec.targetingRules || []
+			const targetingRules =
+				campaign.targetingRules || campaign.spec.targetingRules || []
 			const adSlotRules = Array.isArray(adSlot.rules) ? adSlot.rules : []
 
 			const campaignInput = targetingInputGetter.bind(
@@ -120,7 +143,21 @@ async function getUnitsForSlot(req) {
 			const matchingUnits = units
 				.map(u => {
 					const input = campaignInput.bind(null, u)
-					const [minPrice, maxPrice] = getPricingBounds(campaign)
+					const userPricingBounds =
+						campaign.pricingBounds && campaign.pricingBounds.IMPRESSION
+							? campaign.pricingBounds
+							: pricingBoundsCPMUserInputByCampaign[campaign.id]
+
+					const [specMinPrice, specMaxPrice] = getPricingBounds(campaign)
+					const [updatedMinPrice, updatedMaxPrice] =
+						userPricingBounds && userPricingBounds.IMPRESSION
+							? getPricingBounds({
+									spec: { pricingBounds: { ...userPricingBounds } },
+							  })
+							: []
+
+					const minPrice = updatedMinPrice || specMinPrice
+					const maxPrice = updatedMaxPrice || specMaxPrice
 
 					let output = {
 						show: true,
