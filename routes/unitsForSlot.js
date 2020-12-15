@@ -7,7 +7,6 @@ const {
 	targetingInputGetter,
 	getPricingBounds,
 } = require('adex-adview-manager/lib/helpers')
-const { helpers } = require('adex-models')
 const { getWebsitesInfo } = require('../lib/publisherWebsitesInfo')
 const db = require('../db')
 const cfg = require('../cfg')
@@ -36,7 +35,6 @@ async function getUnitsForSlot(req) {
 	const websitesCol = db.getMongo().collection('websites')
 	const campaignsCol = db.getMongo().collection('campaigns')
 	const adUnitCol = db.getMongo().collection('adUnits')
-	const audiencesCol = db.getMongo().collection('audiences')
 
 	const { id } = req.params
 	const adSlot = await adSlotsCol.findOne(
@@ -100,28 +98,6 @@ async function getUnitsForSlot(req) {
 			? campaignsByEarner
 			: campaignsActive
 
-	const audiencesQuery = {
-		campaignId: {
-			$in: campaignsLimitedByEarner.map(({ id }) => id).filter(id => !!id),
-		},
-		pricingBoundsCPMUserInput: { $exists: true, $ne: null },
-	}
-	const pricingBoundsCPMUserInputByCampaign = (
-		await audiencesCol
-			.find(audiencesQuery, {
-				projection: { campaignId: 1, pricingBoundsCPMUserInput: 1 },
-			})
-			.toArray()
-	).reduce((prices, input) => {
-		prices[
-			input.campaignId
-		] = helpers.userInputPricingBoundsPerMileToRulesValue({
-			pricingBounds: input.pricingBoundsCPMUserInput,
-			decimals: 18, // TODO
-		})
-		return prices
-	}, {})
-
 	const campaigns = campaignsLimitedByEarner
 		.map(campaign => {
 			// properties we do not care about: validUntil
@@ -143,22 +119,7 @@ async function getUnitsForSlot(req) {
 			const matchingUnits = units
 				.map(u => {
 					const input = campaignInput.bind(null, u)
-					const userPricingBounds =
-						campaign.pricingBounds && campaign.pricingBounds.IMPRESSION
-							? campaign.pricingBounds
-							: pricingBoundsCPMUserInputByCampaign[campaign.id]
-
-					const [specMinPrice, specMaxPrice] = getPricingBounds(campaign)
-					const [updatedMinPrice, updatedMaxPrice] =
-						userPricingBounds && userPricingBounds.IMPRESSION
-							? getPricingBounds({
-									spec: { pricingBounds: { ...userPricingBounds } },
-							  })
-							: []
-
-					// Ensure never goes over spec prices
-					const minPrice = BN.max(updatedMinPrice || specMinPrice, specMinPrice)
-					const maxPrice = BN.min(updatedMaxPrice || specMaxPrice, specMaxPrice)
+					const [minPrice, maxPrice] = getPricingBounds(campaign)
 
 					let output = {
 						show: true,
