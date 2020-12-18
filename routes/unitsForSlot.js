@@ -65,9 +65,7 @@ async function getUnitsForSlot(req) {
 	// we do that in order to have the same variables as the validator, so that the `price` is the same
 	const targetingInputExtra = {
 		'adSlot.categories': categories,
-		'adSlot.hostname': adSlot.website
-			? url.parse(adSlot.website).hostname
-			: '',
+		'adSlot.hostname': adSlot.website ? url.parse(adSlot.website).hostname : '',
 		'adSlot.alexaRank': typeof alexaRank === 'number' ? alexaRank : undefined,
 	}
 
@@ -106,7 +104,8 @@ async function getUnitsForSlot(req) {
 			const units = campaign.spec.adUnits.filter(u => u.type === adSlot.type)
 			if (!units.length) return null
 
-			const targetingRules = campaign.targetingRules || campaign.spec.targetingRules || []
+			const targetingRules =
+				campaign.targetingRules || campaign.spec.targetingRules || []
 			const adSlotRules = Array.isArray(adSlot.rules) ? adSlot.rules : []
 
 			const campaignInput = targetingInputGetter.bind(
