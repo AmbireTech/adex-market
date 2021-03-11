@@ -593,7 +593,6 @@ tape('===== Authorized routes =====', t => {
 					fetch(`${marketUrl}/slots/?identity=${identityAddr}`)
 						.then(getRes => getRes.json())
 						.then(getRes => {
-							console.log(getRes)
 							t.ok(Array.isArray(getRes.slots), 'an array is returned')
 							t.equals(getRes.slots.length, 2, 'new element is added')
 						})
