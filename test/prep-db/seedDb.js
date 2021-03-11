@@ -1,7 +1,9 @@
 /* eslint-disable no-undef */
 const { AdSlot, AdUnit } = require('adex-models')
-const identityAddr = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
-const identityAddrFilter = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258666'
+const identityAddr =
+	process.env.IDENTITY_ADDR || '0x0020A2770c762fb39278fEdD4C5539f59e298dda'
+const identityAddrFilter = '0x3d9C9C9673B2E3e9046137E752C5F8dCE823A1bB'
+const byEarnerIdentity = '0x3d9C9C9673B2E3e9046137E752C5F8dCE823A1bB'
 const cfg = require('../../cfg')
 const fs = require('fs')
 const util = require('util')
@@ -15,9 +17,17 @@ const activeCampaignData = {
 			follower: new Date(Date.now()).toISOString(),
 		},
 		lastApprovedBalances: {},
+		closedDate: null,
+		humanFriendlyName: 'Active',
+		lastApprovedSigs: [],
+		// TODO write tests for the below properties
+		verified: true,
+		lastChecked: 1597319283851,
+		usdEstimate: 0,
+		fundsDistributedRatio: 0,
 	},
 }
-activeCampaignData.status.lastApprovedBalances[identityAddr] =
+activeCampaignData.status.lastApprovedBalances[byEarnerIdentity] =
 	'1000000000000000000'
 const activeCampaignDataOtherId = {
 	status: {
@@ -29,6 +39,13 @@ const activeCampaignDataOtherId = {
 		lastApprovedBalances: {
 			'0x0000000000000000000000000000000000000001': '1000000000000000000',
 		},
+		closedDate: null,
+		humanFriendlyName: 'Active',
+		lastApprovedSigs: [],
+		verified: true,
+		lastChecked: 1597319283851,
+		usdEstimate: 0,
+		fundsDistributedRatio: 0,
 	},
 }
 
@@ -40,7 +57,7 @@ const campaignLimitDataNoFiltering = [
 		status: {
 			name: 'Expired',
 			lastApprovedBalances: {
-				[identityAddr]: '1000000000000000000',
+				[byEarnerIdentity]: '1000000000000000000',
 			},
 		},
 	}),
@@ -71,17 +88,11 @@ const testData = {
 	validators: [
 		{
 			_id: 'awesomeLeader',
-			id: 'awesomeLeader',
 			url: 'https://tom.adex.network',
-			status: 'active',
-			addr: '0x000000000000000078787874656e746163696f6e',
 		},
 		{
 			_id: 'awesomeFollower',
-			id: 'awesomeFollower',
 			url: 'https://jerry.adex.network',
-			status: 'active',
-			addr: '0x0000000000000000667265652036697839696e65',
 		},
 	],
 	user: {
@@ -104,7 +115,7 @@ const testData = {
 			mediaMime: 'image/jpeg',
 			targetUrl: 'https://google.com',
 			targeting: [{ tag: 'games', score: 100 }],
-			created: Date.now(),
+			created: new Date(Date.now()),
 			title: 'Test ad unit',
 			description: 'test ad unit for seeding db',
 			tags: [
@@ -112,13 +123,14 @@ const testData = {
 				{ tag: 'usa', score: 60 },
 			],
 			owner: identityAddr,
+			ipfs: 'Qmasg8FrbuSQpjFu3kRnZF9beg8rEBFrqgi1uXDRwCbX5f',
 		}),
 		new AdUnit({
 			type: 'legacy_160x600',
 			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 			mediaMime: 'image/jpeg',
 			targetUrl: 'https://google.com',
-			created: Date.now(),
+			created: new Date(Date.now()),
 			title: 'Test ad unit',
 			description: 'test ad unit for seeding db',
 			tags: [
@@ -126,6 +138,7 @@ const testData = {
 				{ tag: 'usa', score: 60 },
 			],
 			owner: identityAddr,
+			ipfs: 'Qmasg8FrbuSQpjFu3kRnZF9beg8rEBFrqgi1uXDRwCbX5f',
 		}),
 		new AdUnit({
 			type: 'legacy_728x90',
@@ -133,7 +146,7 @@ const testData = {
 			mediaMime: 'image/jpeg',
 			targetUrl: 'https://google.com',
 			targeting: [{ tag: 'music', score: 100 }],
-			created: Date.now(),
+			created: new Date(Date.now()),
 			title: 'Test ad unit',
 			description: 'test ad unit for seeding db',
 			tags: [
@@ -142,6 +155,7 @@ const testData = {
 			],
 			owner: identityAddr,
 			archived: true,
+			ipfs: 'Qmasg8FrbuSQpjFu3kRnZF9beg8rEBFrqgi1uXDRwCbX5f',
 		}),
 	],
 	adSlot: new AdSlot({
@@ -151,13 +165,13 @@ const testData = {
 			{ tag: 'usa', score: 60 },
 		],
 		owner: identityAddr,
-		created: Date.now(),
+		created: new Date(Date.now()),
 		fallbackUnit: 'QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 		ipfs: 'QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 		title: 'Test slot 1',
 		description: 'Test slot for running integration tests',
 		archived: false,
-		modified: Date.now(),
+		modified: new Date(Date.now()),
 	}),
 }
 

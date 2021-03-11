@@ -200,10 +200,14 @@ async function queryValidators() {
 	await channels.map(c => {
 		const targetingRules = c.targetingRules
 		delete c.targetingRules
-		campaignsCol.updateOne({ _id: c.id }, {
-			$setOnInsert: c,
-			$set: { targetingRules }
-		}, { upsert: true })
+		campaignsCol.updateOne(
+			{ _id: c.id },
+			{
+				$setOnInsert: c,
+				$set: { targetingRules },
+			},
+			{ upsert: true }
+		)
 	})
 
 	// If a campaign is in Expired, there's no way the state would ever change after that: so no point to update it
