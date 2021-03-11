@@ -7,8 +7,9 @@ const { testData } = require('../prep-db/seedDb')
 const FormData = require('form-data')
 const cfg = require('../../cfg')
 const BN = require('bn.js')
-const identityAddr = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258e65'
-const identityAddrFilter = '0x3F07d21bEDfB20Ad9aE797cE603cB4A3C7258666'
+const identityAddr = process.env.IDENTITY_ADDR || '0x0020A2770c762fb39278fEdD4C5539f59e298dda'
+const byEarnerIdentity = '0x3d9C9C9673B2E3e9046137E752C5F8dCE823A1bB'
+const identityAddrFilter = '0x3d9C9C9673B2E3e9046137E752C5F8dCE823A1bB'
 const signerAddr = `0x2aecF52ABe359820c48986046959B4136AfDfbe2`
 const { bigNumberify } = require('ethers/utils')
 // const earnerAddr = '0x712e40a78735af344f6ae3b79fa6952d698c3b37'
@@ -223,60 +224,10 @@ tape('GET /validators', t => {
 		.then(res => {
 			t.ok(Array.isArray(res), 'returns array')
 			t.equals(res.length, 2, 'two validators are returned')
-			t.ok(res[0].hasOwnProperty('id'), 'validator has property id ')
+			t.ok(res[0].hasOwnProperty('_id'), 'validator has property id ')
 			t.ok(res[0].hasOwnProperty('url'), 'validator has property url ')
-			t.ok(res[0].hasOwnProperty('status'), 'validator has property status ')
-			t.ok(res[0].hasOwnProperty('addr'), 'validator has property addr ')
-			t.equals(typeof res[0].id, 'string', 'property id is of type string ')
+			t.equals(typeof res[0]._id, 'string', 'property id is of type string ')
 			t.equals(typeof res[0].url, 'string', 'property url is of type string ')
-			t.equals(
-				typeof res[0].status,
-				'string',
-				'property status is of type string '
-			)
-			t.equals(typeof res[0].addr, 'string', 'property addr is of type string ')
-			t.ok(
-				addrRegex40.test(res[0].addr),
-				'First validator address is a real address'
-			)
-			t.ok(
-				addrRegex40.test(res[1].addr),
-				'Second validator address is a real address'
-			)
-			t.equals(res[0].status, 'active', 'first validator is loaded and active')
-			t.equals(res[1].status, 'active', 'second validator is loaded and active')
-			t.end()
-		})
-		.catch(err => t.fail(err))
-})
-
-tape('GET /validators?status=status', t => {
-	fetch(`${marketUrl}/validators?status=active`)
-		.then(res => res.json())
-		.then(res => {
-			t.ok(Array.isArray(res), 'returns array')
-			t.equals(res.length, 2, 'two validators are returned')
-			t.equals(res[0].status, 'active', 'first validator is loaded and active')
-			t.equals(res[1].status, 'active', 'second validator is loaded and active')
-			t.end()
-		})
-		.catch(err => t.fail(err))
-})
-
-tape('GET /validators?addr=addr', t => {
-	fetch(
-		`${marketUrl}/validators?addr=0x000000000000000078787874656e746163696f6e`
-	)
-		.then(res => res.json())
-		.then(res => {
-			t.ok(Array.isArray(res), 'returns array')
-			t.equals(res.length, 1, 'only one validator is returned')
-			t.equals(
-				res[0].id,
-				'awesomeLeader',
-				'validator with correct id is returned'
-			)
-			t.equals(res[0].status, 'active', 'returned validator is of right status')
 			t.end()
 		})
 		.catch(err => t.fail(err))
@@ -535,7 +486,6 @@ tape('===== Authorized routes =====', t => {
 						'ad unit has the correct type'
 					)
 				})
-
 			const postMedia = fetch(`${marketUrl}/media`, {
 				method: 'POST',
 				headers: {
@@ -643,8 +593,8 @@ tape('===== Authorized routes =====', t => {
 					fetch(`${marketUrl}/slots/?identity=${identityAddr}`)
 						.then(getRes => getRes.json())
 						.then(getRes => {
-							t.ok(Array.isArray(getRes), 'an array is returned')
-							t.equals(getRes.length, 2, 'new element is added')
+							t.ok(Array.isArray(getRes.slots), 'an array is returned')
+							t.equals(getRes.slots.length, 2, 'new element is added')
 						})
 					fetch(`${marketUrl}/slots/${res.ipfs}`, {
 						headers: { 'x-user-signature': signature },
@@ -715,11 +665,11 @@ tape('===== Authorized routes =====', t => {
 				})
 
 			Promise.all([
-				// postMedia,
-				// postAdUnit,
-				// postBadAdUnit,
-				// postAdSlot,
-				// postBadAdSlot,
+				postMedia,
+				postAdUnit,
+				postBadAdUnit,
+				postAdSlot,
+				postBadAdSlot,
 				getAdUnits,
 				queryAdUnitsForType,
 				getAdSlots,
@@ -830,70 +780,16 @@ tape('GET /tags', t => {
 		})
 })
 
-tape('GET /campaigns?limitForPublisher...  NO FILTERING', t => {
+tape('GET /campaigns?byEarner&limitForPublisher... FILTERING', t => {
 	fetch(
-		`${marketUrl}/campaigns?byEarner=${identityAddr}&limitForPublisher=${identityAddr}&status=Active,Ready`
+		`${marketUrl}/campaigns?byEarner=${identityAddrFilter}&limitForPublisher=${identityAddrFilter}&status=Active,Ready`
 	)
 		.then(res => res.json())
 		.then(res => {
 			t.ok(Array.isArray(res), 'returns array')
 			t.equals(
 				res.length,
-				testData.campaigns.length - 1, // All campaigns except the expired one
-				'right amount of campaigns are returned'
-			)
-			t.ok(
-				res.every(c => c.status.name === 'Active' || c.status.name === 'Ready'),
-				'no Expired campaigns'
-			)
-			t.end()
-		})
-		.catch(err => t.fail(err))
-})
-
-// tape('GET /campaigns?limitForPublisher... FILTERING', t => {
-// 	fetch(
-// 		`${marketUrl}/campaigns?byEarner=${identityAddrFilter}&limitForPublisher=${identityAddrFilter}&status=Active,Ready`
-// 	)
-// 		.then(res => res.json())
-// 		.then(res => {
-// 			t.ok(Array.isArray(res), 'returns array')
-// 			t.equals(
-// 				res.length,
-// 				cfg.maxChannelsEarningFrom,
-// 				'right amount of campaigns are returned'
-// 			)
-// 			t.ok(
-// 				res.every(c => c.status.name === 'Active' || c.status.name === 'Ready'),
-// 				'no Expired campaigns'
-// 			)
-// 			t.ok(
-// 				res.every(c =>
-// 					c.status.lastApprovedBalances.hasOwnProperty(identityAddrFilter)
-// 				),
-// 				'Each campaign contains identityAddrFilter in balances'
-// 			)
-// 			let isSorted = res.every(
-// 				(c, i) =>
-// 					i === 0 ||
-// 					new BN(c.status.lastApprovedBalances[identityAddrFilter]).lte(
-// 						new BN(res[i - 1].status.lastApprovedBalances[identityAddrFilter])
-// 					)
-// 			)
-// 			t.ok(isSorted, 'Array is sorted correctly')
-// 			t.end()
-// 		})
-// 		.catch(err => t.fail(err))
-// })
-
-tape('GET /campaigns?byEarner', t => {
-	fetch(`${marketUrl}/campaigns?status=Active,Ready&byEarner=${identityAddr}`)
-		.then(res => res.json())
-		.then(res => {
-			t.ok(Array.isArray(res), 'returns array')
-			t.equals(
-				res.length,
-				2, // Non-expired campaigns with identityAddr in lastApprovedBalances
+				cfg.maxChannelsEarningFrom, // There are 10 more channels than the limit so it should limit them
 				'right amount of campaigns are returned'
 			)
 			t.ok(
@@ -902,36 +798,45 @@ tape('GET /campaigns?byEarner', t => {
 			)
 			t.ok(
 				res.every(c =>
-					c.status.lastApprovedBalances.hasOwnProperty(identityAddr)
+					c.status.lastApprovedBalances.hasOwnProperty(identityAddrFilter)
 				),
-				'Each campaign contains identityAddr in balances'
+				'Each campaign contains identityAddrFilter in balances'
+			)
+			let isSorted = res.every(
+				(c, i) =>
+					i === 0 ||
+					new BN(c.status.lastApprovedBalances[identityAddrFilter]).lte(
+						new BN(res[i - 1].status.lastApprovedBalances[identityAddrFilter])
+					)
+			)
+			t.ok(isSorted, 'Array is sorted correctly')
+			t.end()
+		})
+		.catch(err => t.fail(err))
+})
+
+tape('GET /campaigns?byEarner', t => {
+	fetch(
+		`${marketUrl}/campaigns?status=Active,Ready&byEarner=${byEarnerIdentity}`
+	)
+		.then(res => res.json())
+		.then(res => {
+			t.ok(Array.isArray(res), 'returns array')
+			t.equals(
+				res.length,
+				37, // basically all test channels with this identity address, since we dont limit
+				'right amount of campaigns are returned'
+			)
+			t.ok(
+				res.every(c => c.status.name === 'Active' || c.status.name === 'Ready'),
+				'no Expired campaigns'
+			)
+			t.ok(
+				res.every(c =>
+					c.status.lastApprovedBalances.hasOwnProperty(byEarnerIdentity)
+				),
+				'Each campaign contains byEarnerIdentity in balances'
 			)
 			t.end()
 		})
 })
-
-// tape('GET /campaigns?byEarner&limitForPublisher', t => {
-// 	fetch(
-// 		`${marketUrl}/campaigns?status=Active,Ready&byEarner=${identityAddrFilter}&limitForPublisher=${identityAddrFilter}`
-// 	)
-// 		.then(res => res.json())
-// 		.then(res => {
-// 			t.ok(Array.isArray(res), 'returns array')
-// 			t.equals(
-// 				res.length,
-// 				20, // Non-expired campaigns with identityAddrFilter in lastApprovedBalances, limited for publisher
-// 				'right amount of campaigns are returned'
-// 			)
-// 			t.ok(
-// 				res.every(c => c.status.name === 'Active' || c.status.name === 'Ready'),
-// 				'no Expired campaigns'
-// 			)
-// 			t.ok(
-// 				res.every(c =>
-// 					c.status.lastApprovedBalances.hasOwnProperty(identityAddrFilter)
-// 				),
-// 				'Each campaign contains identityAddrFilter in balances'
-// 			)
-// 			t.end()
-// 		})
-// })
