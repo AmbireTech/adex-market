@@ -340,7 +340,7 @@ async function verifyWebsite(req, res) {
 	}
 }
 
-async function getTargetingData(res) {
+async function getTargetingData(req, res) {
 	try {
 		const websitesCol = db.getMongo().collection('websites')
 		const campaignsCol = db.getMongo().collection('campaigns')
