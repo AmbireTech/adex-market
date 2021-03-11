@@ -1,4 +1,4 @@
-const nowDate = new Date(Date.now()).toISOString()
+const nowDate = new Date().toISOString()
 const oldDate = new Date(Date.now() - 10000000).toISOString()
 const oldDateNoHex = (Date.now() - 1000000000) / 1000
 const oldDateTimestamp = Date.now() - 1000000000
