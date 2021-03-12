@@ -13,8 +13,8 @@ const activeCampaignData = {
 	status: {
 		name: 'Active',
 		lastHeartbeat: {
-			leader: new Date(Date.now()).toISOString(),
-			follower: new Date(Date.now()).toISOString(),
+			leader: new Date().toISOString(),
+			follower: new Date().toISOString(),
 		},
 		lastApprovedBalances: {},
 		closedDate: null,
@@ -33,8 +33,8 @@ const activeCampaignDataOtherId = {
 	status: {
 		name: 'Active',
 		lastHeartbeat: {
-			leader: new Date(Date.now()).toISOString(),
-			follower: new Date(Date.now()).toISOString(),
+			leader: new Date().toISOString(),
+			follower: new Date().toISOString(),
 		},
 		lastApprovedBalances: {
 			'0x0000000000000000000000000000000000000001': '1000000000000000000',
@@ -70,8 +70,8 @@ for (let i = 1; i <= cfg.maxChannelsEarningFrom + 10; i++) {
 		status: {
 			name: 'Active',
 			lastHeartbeat: {
-				leader: new Date(Date.now()).toISOString(),
-				follower: new Date(Date.now()).toISOString(),
+				leader: new Date().toISOString(),
+				follower: new Date().toISOString(),
 			},
 			lastApprovedBalances: {},
 		},
@@ -115,7 +115,7 @@ const testData = {
 			mediaMime: 'image/jpeg',
 			targetUrl: 'https://google.com',
 			targeting: [{ tag: 'games', score: 100 }],
-			created: new Date(Date.now()),
+			created: new Date(),
 			title: 'Test ad unit',
 			description: 'test ad unit for seeding db',
 			tags: [
@@ -130,7 +130,7 @@ const testData = {
 			mediaUrl: 'ipfs://QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 			mediaMime: 'image/jpeg',
 			targetUrl: 'https://google.com',
-			created: new Date(Date.now()),
+			created: new Date(),
 			title: 'Test ad unit',
 			description: 'test ad unit for seeding db',
 			tags: [
@@ -146,7 +146,7 @@ const testData = {
 			mediaMime: 'image/jpeg',
 			targetUrl: 'https://google.com',
 			targeting: [{ tag: 'music', score: 100 }],
-			created: new Date(Date.now()),
+			created: new Date(),
 			title: 'Test ad unit',
 			description: 'test ad unit for seeding db',
 			tags: [
@@ -165,13 +165,13 @@ const testData = {
 			{ tag: 'usa', score: 60 },
 		],
 		owner: identityAddr,
-		created: new Date(Date.now()),
+		created: new Date(),
 		fallbackUnit: 'QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 		ipfs: 'QmWWQSuPMS6aXCbZKpEjPHPUZN2NjB3YrhJTHsV4X3vb2t',
 		title: 'Test slot 1',
 		description: 'Test slot for running integration tests',
 		archived: false,
-		modified: new Date(Date.now()),
+		modified: new Date(),
 	}),
 }
 
