@@ -19,6 +19,11 @@ async function run() {
 	const allRecords = await websitesCol
 		.find({
 			blacklisted: { $ne: true },
+			// Update records only if they haven't been updated in a while, or they're new
+			$or: [
+				{ created: { $gt: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
+				{ updated: { $lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
+			],
 		})
 		.toArray()
 
