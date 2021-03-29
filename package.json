@@ -1,6 +1,6 @@
 {
   "name": "adex-market",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Adex Market",
   "main": "index.js",
   "engines": {
