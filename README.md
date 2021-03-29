@@ -13,27 +13,52 @@ For more information, see [adex-protocol](https://github.com/adexnetwork/adex-pr
 ## ENVIRONMENT
 - ```DB_MONGO_NAME``` - Name of database to use in MongoDB
 - ```DB_MONGO_URL``` - URL for Mongo
+- ```DB_MONGO_USE_TLS``` - Flag showing wether mongo should use TLS certificate for connections
+- ```DB_MONGO_CA``` - Path to the SSL CA certificate
+- ```DB_MONGO_CERT``` - Path to SSL certificate
+- ```DB_MONGO_KEY``` - Path to SSL public key
+- ```DB_MONGO_REPLSET``` - Flag, shows wether we will use a replica set or not
 - ```PORT``` - Port
 - ```IPFSHOST``` - Host address for ipfs
 - ```IPFSPORT``` - Port for ipfs
 - ```IPFSPROTOCOL``` - Protocol for IPFS
-- ```NODE_ENV``` - Environment for node production/test
+- ```NODE_ENV``` - Environment for node, currently `production`, `test` and `benchmark`
 - ```API_KEY``` - API key for infura
 - ```REDIS_PORT``` - Port for redis
 - ```REDIS_HOST``` - Host address for redis
 - ```REDIS_PASSWD``` - Password for redis
-- ```REDIS_SSL``` - SSL for redis
-- ```REDIS_KEY```
-- ```REDIS_CERT```
-- ```REDIS_CA```
+- ```REDIS_SSL``` - Flag, shows wether redis should use SSL certificate or not
+- ```REDIS_KEY``` - Path to SSL public key for redis
+- ```REDIS_CERT``` - Path to SSL certificate for redis
+- ```REDIS_CA``` - Path to SSL CA certificate for redis
 - ```TEST_MARKET_URL``` - Used for integration tests, URL of the server instance used for the tests
-- ```CLUSTERING``` - Enables clustering, defaults to false
+- ```CLUSTERED``` - Enables clustering, defaults to false
+- ```MAX_WORKERS``` - Limit of service workers when in clustered mode
+- ```RELAYER_HOST``` - Hostname of relayer that will be used
+- ```DATASET_NAME``` - Name of dataset in big query
+- ```GOOGLE_CLOUD_PROJECT``` - Name of google cloud big query project
+- ```AWIS_KEY``` - API key for Alexa Web Information Service
+- ```WEBSHRINKER_KEY_AND_SECRET```  - Key and secret for webshrinker
+- ```ADEX_MARKET_URL```  - URL of current market instance (used in `bigquery.js`)
+- ```TOKEN_DECIMALS```  - Decimals for token used (used in `bigquery.js`)
+- ```GOOGLE_APPLICATION_CREDENTIALS``` - Credentials for google cloud project
 ## How to run
 
 ```
 npm start
 ```
 
+## How to run tests
+#### Unit tests:
+```
+npm test
+```
+
+#### Integration tests:
+```
+npm run test-integration
+```
+The tests require IPFS installed locally.
 
 ## Build a Docker image
 
