@@ -50,7 +50,7 @@
     "redis": "^3.1.1",
     "request": "^2.88.0",
     "tape": "^4.12.1",
-    "ua-parser-js": "^0.7.21",
+    "ua-parser-js": "^0.7.24",
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
