@@ -316,7 +316,7 @@ async function createCampaignsTable() {
 					: null,
 				adUnits: campaign.spec.adUnits.map(i => i.ipfs),
 				validUntil: campaign.validUntil || null,
-				status: campaign.status.name,
+				status: campaign.status ? campaign.status.name : null,
 				title: campaign.title || campaign.spec.title,
 				legacyTargeting: !!campaign.spec.targetingRules,
 			}
