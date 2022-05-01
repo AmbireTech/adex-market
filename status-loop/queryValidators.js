@@ -87,21 +87,23 @@ async function getStatusOfCampaign(campaign) {
 	const leader = validators[0]
 	const follower = validators[1]
 
-	const callLeader = getRequest(
-		`${leader.url}/channel/${campaign.id}/last-approved?withHeartbeat=true`
-	)
-	const callFollower = getRequest(
-		`${follower.url}/channel/${campaign.id}/last-approved?withHeartbeat=true`
-	)
-	const callLeaderForLatestNewState = getRequest(
-		`${follower.url}/channel/${campaign.id}/validator-messages/${leader.id}/NewState`
-	)
+	const leaderLastApprovedURL = `${leader.url}/channel/${campaign.id}/last-approved?withHeartbeat=true`
+	const followerLastApprovedURL = `${follower.url}/channel/${campaign.id}/last-approved?withHeartbeat=true`
+	const followerValidatorMessagesURL = `${follower.url}/channel/${campaign.id}/validator-messages/${leader.id}/NewState`
 
-	const [dataLeader, dataFollower, dataLatestNewState] = await Promise.all([
-		callLeader,
-		callFollower,
-		callLeaderForLatestNewState,
-	])
+	const {
+		failed_calls,
+		dataLeader,
+		dataFollower,
+		dataLatestNewState,
+	} = await handleValidatorCalls(
+		leaderLastApprovedURL,
+		followerLastApprovedURL,
+		followerValidatorMessagesURL
+	)
+	if (failed_calls) {
+		return { error: 404 }
+	}
 
 	const lastApproved = dataLeader.lastApproved
 	const leaderHeartbeats = dataLeader.heartbeats || []
@@ -218,35 +220,67 @@ async function queryValidators() {
 	await Promise.all(
 		campaigns.map(c =>
 			getStatusOfCampaign(c).then(async status => {
-				const [fundsDistributedRatio, usdEstimate] = await Promise.all([
-					getDistributedFunds(c, status.lastApprovedBalances),
-					getEstimateInUsd(c),
-				])
-				const statusObj = {
-					...c.status,
-					...status,
-					lastChecked: Date.now(),
-					usdEstimate,
+				// skipping campaign if a validator is failing
+				if (status.error === 404) {
+					console.log(`Skipping campaign ${c.id} with status ${c.status.name}`)
+					return Promise.resolve()
 				}
-				// If the status was closed we don't want to update the funds distribution ratio as it will be 100%
-				if (status.humanFriendlyName !== 'Closed') {
-					statusObj.fundsDistributedRatio = fundsDistributedRatio
-				}
-
-				if (status.humanFriendlyName === 'Completed' && !statusObj.closedDate) {
-					statusObj.closedDate = Date.now()
-				}
-
-				if (status.verified) {
-					console.log(`Status of campaign ${c._id} updated: ${status.name}`)
-					return campaignsCol.updateOne(
-						{ _id: c._id },
-						{ $set: { status: statusObj } }
-					)
-				}
-				return Promise.resolve()
+				return handleNewCampaignStatus(c, status, campaignsCol)
 			})
 		)
+	)
+}
+
+async function handleValidatorCalls(leaderUrl, followerUrl, newStateUrl) {
+	try {
+		const [dataLeader, dataFollower, dataLatestNewState] = await Promise.all([
+			getRequest(leaderUrl),
+			getRequest(followerUrl),
+			getRequest(newStateUrl),
+		])
+
+		return {
+			dataLeader,
+			dataFollower,
+			dataLatestNewState,
+		}
+	} catch (e) {
+		console.error(e)
+		return { failed_calls: true }
+	}
+}
+
+async function handleNewCampaignStatus(campaign, status, campaignsCol) {
+	const [fundsDistributedRatio, usdEstimate] = await Promise.all([
+		getDistributedFunds(campaign, status.lastApprovedBalances),
+		getEstimateInUsd(campaign),
+	])
+	const statusObj = {
+		...campaign.status,
+		...status,
+		lastChecked: Date.now(),
+		usdEstimate,
+	}
+	// If the status was closed we don't want to update the funds distribution ratio as it will be 100%
+	if (status.humanFriendlyName !== 'Closed') {
+		statusObj.fundsDistributedRatio = fundsDistributedRatio
+	}
+
+	if (status.humanFriendlyName === 'Completed' && !statusObj.closedDate) {
+		statusObj.closedDate = Date.now()
+	}
+
+	if (status.verified) {
+		return updateCampaign(campaign, statusObj, campaignsCol)
+	}
+	return Promise.resolve()
+}
+
+function updateCampaign(campaign, status, campaignsCol) {
+	console.log(`Status of campaign ${campaign._id} updated: ${status.name}`)
+	return campaignsCol.updateOne(
+		{ _id: campaign._id },
+		{ $set: { status: status } }
 	)
 }
 
