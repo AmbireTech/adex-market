@@ -6,6 +6,7 @@ const {
 	verifyPublisher,
 	detectExtraFlags,
 	BLACKLISTED_HOSTNAMES,
+	PLAYSTATION,
 } = require('../lib/publisherVerification')
 const db = require('../db')
 // import env
@@ -23,6 +24,8 @@ async function run() {
 			$or: [
 				{ created: { $gt: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
 				{ updated: { $lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
+				// Make sure playstation users are selected just in case
+				{ publisher: { $in: PLAYSTATION } },
 			],
 		})
 		.toArray()
@@ -79,6 +82,7 @@ async function run() {
 			$or: [
 				{ hostname: { $in: BLACKLISTED_HOSTNAMES } },
 				{ alexaDataUrl: { $in: BLACKLISTED_HOSTNAMES } },
+				{ publisher: { $in: PLAYSTATION } }
 			],
 		},
 		{ $set: { blacklisted: true } }
